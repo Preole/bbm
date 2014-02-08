@@ -40,6 +40,5 @@
   },
   "scripts": {
    "prepublish": "grunt"
-  },
-  "private": true
+  }
 }
