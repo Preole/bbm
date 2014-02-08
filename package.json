@@ -3,6 +3,11 @@
   "author": "Preole Soandso",
   "version": "1.0.0",
   "description": "BakaBakaMark: An Extensible LML-HTML Compiler.",
+  "repository": { 
+   "type": "git",
+   "url": "https://github.com/preole/bbm/"
+  },
+  "bugs": "https://github.com/preole/bbm/issues/",
   "license": "BSD-2-Clause",
   "keywords": [
     "lml",
