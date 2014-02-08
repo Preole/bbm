@@ -52,7 +52,7 @@ USAGE (WEB BROWSER)
  Grab """bbm.html""" and """bbm.min.js""" from """$(ROOT)/lib/""". 
  Launch the """.html""" file from a web browser.
 
- Alternatively: """<script src="${YOUR-DIR}/bbm.min.js"></script>""", then 
+ Alternatively: """< script src="${YOUR-DIR}/bbm.min.js"></script>""", then 
  refer to **USAGE (API)** for using the program.
  
  === Browser Compatibility ===
