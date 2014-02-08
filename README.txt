@@ -266,7 +266,7 @@ Complete reference:
   ]
  },
  
- //Compiler configuration; See: **OPTIONS**
+ //Compiler configuration; See: **OPTIONS (COMPILER)**
  "cfg": {
  
   //Basic options
@@ -424,9 +424,6 @@ you plan to automatically outline the HTML document containing this snippet.
 
 
 === Sample Default JSON ===
-
-Feed this JSON file content into the compiler if executing from the 
-command line.
 
 """
 {
