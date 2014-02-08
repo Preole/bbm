@@ -1,0 +1,6 @@
+===== One-Liner = Quick and Easy =====
+
+////
+No whitespace after ATX_END; Should not render the trailing equal signs as 
+part of the header.
+////

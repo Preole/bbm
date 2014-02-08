@@ -1,0 +1,123 @@
+<h3>
+HTML 4 &amp; 5 Backend Options Listing
+</h3>
+<p>
+Format: @@@": " Definition Phrase "(" Default-Parameter ")"@@@
+</p>
+<dl>
+ <dt>
+Remove newlines (Off)
+ </dt>
+ <dd>
+  <p>
+Removes new line characters in phrasing level content.
+  </p>
+  <p>
+<strong>This option is primarily for East-Asian languages to prevent erraneous
+white-space, as East-Asian text usually don't treat line breaks as white 
+space.</strong>
+  </p>
+ </dd>
+ <dt>
+Generate table of content (Off)
+ </dt>
+ <dd>
+  <p>
+Generate a table of content for the document.
+  </p>
+  <p>
+<strong>Disable this option if your use case only involves generating document
+fragments, like a commenting system.</strong>
+  </p>
+ </dd>
+ <dt>
+Generate complete document (Off)
+ </dt>
+ <dd>
+  <p>
+Generates an entire HTML document, including meta information, doctype
+declaration and all the good stuff.
+  </p>
+  <ul>
+   <li>
+    <p>
+CSS-Internal ("")
+    </p>
+    <p>
+Include a CSS file and embed it into the generated HTML document. The
+parameter here is a file path. File names are separated by (Some delimiter 
+character).
+    </p>
+   </li>
+   <li>
+    <p>
+CSS-External ("")
+    </p>
+    <p>
+Generates a link to an external CSS file, which will be used by the HTML
+document. File names are separated by (Some delimiter character).
+    </p>
+   </li>
+  </ul>
+  <p>
+(I don't think this is doable in Javascript, except by using hard-coded
+header. However, converting UTF-8 to other character set is going to be 
+a headache.)
+  </p>
+ </dd>
+ <dt>
+Input charset ("UTF-8")
+ </dt>
+ <dt>
+Output charset ("UTF-8")
+ </dt>
+ <dd>
+  <p>
+Defines the expected input document character set, as well as the output. By
+default, UTF-8, because it's the de-facto standard for the web. (Don't think
+this is doable for Javascript.)
+  </p>
+ </dd>
+ <dt>
+CSS-Class-Prefix ("XXX")
+ </dt>
+ <dd>
+  <p>
+Defines the CSS prefix for the class attribute, which acts as the hook for
+CSS selectors.
+  </p>
+ </dd>
+ <dt>
+CSS-ID-Prefix ("XXX")
+ </dt>
+ <dd>
+  <p>
+As above, except this is for the ID attribute, which are used for internal
+links within the same document. This should be a sufficiently random
+integer that wouldn't collide with an existing ID in the same document.
+  </p>
+  <p>
+(Suggestion: At least 8 digits. Cryptographically strong random numbers
+are not necessary. If invoked from a web browser, the browser should
+first check if the generated ID prefix already exists.)
+  </p>
+ </dd>
+ <dt>
+"javascript:" Directive (Off)
+ </dt>
+ <dd>
+  <p>
+Allow "javascript:" directive inside hyperlink and image element. If
+disabled, the "javascript:" directive will be subtituted with something
+harmless.
+  </p>
+ </dd>
+ <dt>
+"data:" Directive (Off)
+ </dt>
+ <dd>
+  <p>
+As above, except this one is for Data URI.
+  </p>
+ </dd>
+</dl>

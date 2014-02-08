@@ -1,0 +1,5 @@
+<pre><code>"""Derp!"""
+</code></pre>
+<p>
+Code block terminated.
+</p>

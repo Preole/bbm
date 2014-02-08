@@ -1,0 +1,5 @@
+** __ __ **
+
+////
+This example should produce no output.
+////

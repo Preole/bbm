@@ -1,0 +1,7 @@
+''Trouble! This punctuation is apostrophes'''
+
+////
+This is the correct behavior. To emphasize the ending apostrophe as well, 
+escape the first of the three single quotes with a single backslash:
+''This is italic with apostrophes\''' single quotes.
+////

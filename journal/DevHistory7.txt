@@ -1,0 +1,51 @@
+December 8^^th^^, 2013
+======================
+
+First, I should document a sneaky trick about Javascript regular expressions, 
+which can be found in this URL: ?<http://siderite.blogspot.ca/2011/11/careful
+-when-reusing-javascript-regexp.html> In short, if I'm using a Javascript 
+regular expression with the global flag enabled, I need to reset its 
+"""lastIndex""" property before I use it on a different string. Failing to 
+do so means the regular expressions starts a match somewhere down the String 
+object, rather than from the beginning of the String.
+
+Next, Javascript regular expressions are evil; Every time I use the literal 
+notation for regular expressions, the engine creates a gigantic new regular 
+expression under the hood. The testimonials can be found in the following 
+list of blogs, with the latter providing some benchmark from ?<http://jsPerf
+.com>.
+
+- ?<https://blogs.oracle.com/greimer/entry/pre_compile_and_cache_yer> 
+- ?<http://www.levihackwith.com/javascript-performance-tip-
+  precompile-your-regular-expressions/>
+  
+  > By storing the regex in a variable before using it to replace the 
+    word "test" with the word "kittens", we increase the performance of 
+    the code. When a regex is used and not stored in a variable, it gets 
+    reevaluated every time the replace method is called. By storing it 
+    in a variable before use, we guarantee that the expression only gets 
+    evaluated once. [...]
+    
+Next, BakaBakaMark Version 2 compiler is complete. I now have a fully 
+functional reference implementation to port over to other platforms or 
+languages. It took me quite a while to settle many design decisions, as 
+well as polishing the specifications. I do not plan to extend the language's 
+feature set any further than as it is.
+
+I feel accomplished.
+
+I should address some hidden problem with the compiler in the next week. 
+Issues such as inputs from character sets other than UTF-8 can, and will 
+break the compiler hideously. Besides that, the compiler's not exactly 
+efficient in memory usage, meaning it creates a lot of garbage, which does 
+not bode well with performance. Code readability, and consequently maintenance 
+is still an issue. These three problems currently plague the compiler, and 
+until I can solve these issues formally, it's going to be hard porting 
+BakaBakaMark onto other platforms in a consistent manner.
+
+As for the writing experience itself, I'm pretty satisfied with the language 
+and the design decisions I've made for it. It's lightweight enough to 
+experiment on the fly, and it's also feature-rich enough to author a 
+moderately complex HTML document. (And in the future, other formats as well) 
+There's only so many rules to keep track of.
+

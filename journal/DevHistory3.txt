@@ -1,0 +1,146 @@
+November 21^^st^^, 2013
+=======================
+
+I've re-written my compiler at the phrasing-level structure twice in the 
+last three days with little success. The compiler breaks down easily and 
+produces inconsistent results on error test cases. While every compiler 
+has its own error recovery scheme, which makes this behavior perfectly 
+understandable, I do want my output on these error cases to make sense.
+
+I should elaborate on my error recovery requirement first in the upcoming 
+list.
+
+
+
+No Retreat
+----------
+
+The parser should never backtrack in the case of an error. This is the 
+"No retreat" rule. 
+
+{++
+Update: Reference URL Anchor is the only syntax that violates the "No 
+retreat" rule. In the worst case where the entire document is on one line, 
+the parser will take O(N), or 2N in time complexity, where N is 
+the character count of the document. The parser needs to parse the document 
+**once**, locate the error, then backtrack and parse a paragraph, which will 
+consume the entire document.
+++}
+
+For performance and security reasons, the parser should not attempt to 
+perform error recovery via backtracking. Backtracking error recovery
+leads to O(N^^2^^) asymptotic running time and memory consumption, as 
+the previous diary entry has already explored.
+
+I'm personally not aware of any algorithm that can stay in linear running 
+time in the worst case. The only algorithm that comes to mind is 
+#[Packrat]-[Packrat Parsing [Ford 2002]], which has the downside of using 
+significantly more memory from an excerpt in Page 2:
+
+> The main disadvantage of packrat parsing is its space consumption.
+  Although its asymptotic worst-case bound is the same as those of
+  conventional algorithms—linear in the size of the input—its space
+  utilization is directly proportional to input size rather than maximum
+  recursion depth, which may differ by orders of magnitude.
+  However, for many applications such as modern optimizing compilers,
+  the storage cost of a pacrkat parser is likely to be no greater than
+  the cost of subsequent processing stages. This cost may therefore
+  be a reasonable tradeoff for the power and flexibility of linear-time
+  parsing with unlimited lookahead.
+
+Therefore, it's better to adopt the "No retreat" rule at the expense of 
+*some*, but not all correctness on the output. As such, relaxing the 
+requirement on output correctness is a reasonable compromise that ensures 
+system security as well as performance.
+
+
+Error -> Verbatim Rendering
+---------------------------
+
+All text in between the last syntactically correct and the error section 
+can never be part of a node's attribute.
+
+Specifically, a paragraph with nothing but """?<""" should treat the 
+entire paragraph as unformatted text, instead of a URL value belonging 
+to the unclosed external link.
+
+"""
+ """
+  ?<?<?<?< 
+ """
+
+ Should produce (Not HTML escaped, to aid readability)
+ 
+ """
+ <p> ?<?<?<?< </p>
+ """
+ 
+ Instead of
+ 
+ """
+ <a href="?<?<?<"> ?<?<?< </a>
+ """
+"""
+   
+   
+   
+Content & Structural Integrity
+------------------------------
+   
+The output should never lose text content in the event of an error.
+That is, if a paragraph contains an unclosed delete token, the delete 
+token needs to be preserved literally, instead of being silently 
+dropped.
+
+"""
+Stray close tag--}
+
+<p>Stray close tag--}</p>
+
+**__This is improperly nested**__
+
+<p>__This is improperly nested</p>__
+
+{++{++Improperly Nested++}
+
+<p>{++<ins>Improperly Nested</ins></p>
+"""
+
+However, all properly nested elements should have their formatting 
+preserved, with the respective delimiter tokens consumed from the 
+input.
+
+
+
+Progress
+--------
+
+It's difficult addressing all the forementioned issues. While I have 
+protected the parser from syntax abuse, the parser keeps erraneously 
+add or remove unbalanced tokens on negative test cases. For example, 
+I may have an open bold tag (Two asterisks) that never gets closed in 
+the paragraph, and these asterisks never appear in my output. Other 
+times, I even get the paragraph structure all tangled up, and my source 
+code is quickly becoming unreadable. I ended up rewriting as a result, 
+and I am a fair bit away from finished.
+
+Most of my efforts are focused on source readability and the URL syntax, 
+which is the language's selling point. It's hard trying to make my 
+functions concise & readable without repeating my code all over the place.
+
+
+
+
+
+References
+==========
+
+. Packrat
+"""
+FORD, B. 2002. Packrat parsing: Simple, powerful, lazy, linear time. In 
+  International Conference on Functional Programming (ICFP'02). SIGPLAN 
+  Notices Series, vol. 37. ACM, 36–47.
+  
+  ?<http://bford.info/pub/lang/packrat-icfp02.pdf>
+"""
+

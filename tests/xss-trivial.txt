@@ -1,0 +1,3 @@
+<p>
+&gt;.&lt; &lt;.&lt; &gt;.&gt; &amp;.&amp; &lt;script&gt;alert("TrivialXSS");&lt;/script&gt;
+</p>

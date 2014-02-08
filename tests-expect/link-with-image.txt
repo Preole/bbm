@@ -1,0 +1,3 @@
+<p>
+<a href="Multiline"><img src="Image" alt="&quot;&quot;&quot;The code snippet symbols should be part of the alt text attribute."></a>
+</p>

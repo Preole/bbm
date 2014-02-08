@@ -1,0 +1,13 @@
+{
+ "title": "This is your document's Title",
+ "meta": [],
+ "extern": {
+  "css" : [],
+  "js" : []
+ },
+ "intern": {
+  "css" : [],
+  "js" : []
+ },
+ "cfg": {}
+}

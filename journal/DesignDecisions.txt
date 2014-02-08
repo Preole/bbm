@@ -1,0 +1,140 @@
+; Design Decision: Forced Line Break
+
+: - """MD""": Markdown. 2+ Spaces after the line = Linebreak.
+  - """GFM""": Github flavored Markdown. All newlines are line breaks.
+  - """NONE""": No forced line break in normal paragraphs, ever.
+  - """WIKI""": """\\\\""" Double backslash = Linebreak.
+  
+: In the end, I chose "NONE", because there are too few effective use cases 
+  for this syntactical construct, given the amount of design headache needed 
+  to incorporate the construct.
+  
+  - "MD" style is non-intuitive and invisible markup in source code. It's the 
+    most readable of all choices, at the cost of hidden-gotchas. The similar-
+    looking source code will end up producing radically different documents.
+    
+    Typists who tend to type two spaces after a punctuation mark, or those 
+    with fat fingers, are likely to make accidental line breaks. When these 
+    line breaks happen, they're not so easy to spot in the text editor 
+    without careful analysis of the source code.
+    
+  - "GFM", or "Blog-style" line break, is the preferred style for those 
+    who're accustomed to using word processors like Microsoft Word. For 
+    these writers, pressing an enter key **once** equates to a line break.
+    
+    This line breaking style makes the other group of people unhappy; The 
+    technically inclined. They are used to working with plain text, such as 
+    the RFC (Request For Comment) documents, where automatic word-wraps are 
+    not available. In such contexts, blank lines are more effective at 
+    separating paragraphs of text compared to single-line paragraph with 
+    leading indentations. (Or the document will become a literal wall of 
+    text.) 
+    
+    If all these user-entered line breaks turned into real, forced line 
+    breaks, viewers with smaller screen estate will see fragmented text 
+    all over the compiled document. On the other hand, if the author 
+    doesn't use line breaks, the source document can become difficult to 
+    read on text editors without word-wrapping. (Even though such terrible
+    text editor software should be castrated.) Even if word wrapping is 
+    available, it's not necessarily a pleasant viewing experience when 
+    monitors in the 2010s can easily stretch beyond 20 inches.
+    
+  - "WIKI", or line breaks with the explicit syntax "\\\\", no longer have 
+    the invisible markup issue that "MD" style suffers. Unfortunately, 
+    explicit syntax create visual noise which makes the source document 
+    harder to read. 
+    
+    Besides the visual noise, there's also resolution ambiguity within 
+    inline code segments. The explicit markup can either be part of the 
+    code, or it can be a forced line break of this particular language. 
+    There's no perfect solution to this dilemma.
+    
+  - "NONE" simply provides no line break syntax at all.
+  
+    ; Benefits
+    
+      : No ambiguity about line breaks; Both manual line breakers and 
+        word wrappers can write in the style they're comfortable with, 
+        without worrying about accidental line breaks, or mangling their 
+        sense of aesthetics. Both styles of source code will result in 
+        the nice and neat paragraph format, and even fat-finger typers 
+        can remain at each with their space keys.
+        
+      : Mr. Ping, __Kung-Fu Panda__:
+      
+        > The secret ingredient is... nothing!
+        
+        It's easier to not implement something compared to implementing 
+        a feature.
+        
+    ; Drawbacks
+    
+      : It's not available if it becomes **really** necessary.
+      
+; Wiki Link
+; External Link
+; Internal Link
+; Image Link
+; Inline Code
+; Image Alt Text
+
+  : {--
+    If their ending tokens are not found, the parser needs to abandon all 
+    the text it has parsed, roll back to the starting token, and treat that 
+    token as a TEXT token instead.
+    --}
+    
+    {++
+    I've decided to not mandate error-recovery behavior. If these elements 
+    are not properly terminated by their respective ending tokens, it's up 
+    to the implementer to decide on how to recover.
+    ++}
+
+    
+////
+"""
+BareLink
+ | (?<=[\\s]) BareLinkStart BareLinkContent (?=[\\s])
+ | (?<=[<]) BareLinkStart BareLinkContent (?=[\\s>])
+ ;
+
+BareLinkStart
+ | "http://"
+ | "https://"
+ | "ftp://"
+ | "sftp://"
+ | "file://"
+ | "mailto:"
+ | "magnet:?"
+ | "irc://"
+ | "callto:"
+ ;
+ 
+BareLinkContent
+ | [\\S]+
+ ;
+"""
+ 
+Barelinks are effective until it's separated by a whitespace character,
+including new lines. It'll consume any other characters as part of the URL 
+up to, but not including the whitespace character., so long as the text 
+segment starts with one of these protocols. 
+
+Alternatively, if the barelink is immediately preceded by "<", it will also 
+recognize ">" as an ending symbol, in addition to whitespace.
+
+As of November 22, 2013, bare links are not part of the official 
+implementation, as the algorithm is not powerful enough for practical 
+usage. 
+
+That is, this algorithm cannot automatically detect the protocol when an 
+input URL drops the protocol prefix, such as """someone@example.com""". That 
+E-mail address can either be a relative path URL for the """http://""" 
+protocol, or an e-mail address for the """mailto:""" protocol in the strictest 
+sense. In other words, there's simply too much clever variations in URL, such 
+that I cannot reliably guess the protocol used for that URL.
+
+Since this algorithm relies on protocol headers, which are normally absent, 
+it's simply not worth the effort implementing when the external link syntax 
+can do a much better job.
+////

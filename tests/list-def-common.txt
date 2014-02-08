@@ -1,0 +1,25 @@
+; Bracket Matching 
+ 
+  : Allows a wide range of URL, including ones with supposedly illegal characters and Unicode 
+  : Often used by the wiki markup community, so some people will be familiar with it. 
+  : Also allows a fair number of valid link display text, except for other square brackets as part of the link. 
+  : A bit bothersome to type. 
+ 
+; ASCIIDoc Named Macro 
+ 
+  : Intuitive, foreign language friendly with some localization effort. However, **localization does need quite a lot of effort.** 
+  : Very slow to type compared to double brackets. 
+  : Requires additional code in lexical analysis regarding text. 
+ 
+; URL Detection 
+ 
+  : No thought required. Copy and paste and I'm done. 
+  : Lacks custom display text 
+  : Lacks URL substitution. 
+  : Possible conflict with punctuation. Use angle bracket to negate it. 
+ 
+; URL Reference anchor 
+ 
+  : Highest range of URL detection. Pretty much anything on the line works. 
+  : Removes Ugly URL from text, nice and clean. 
+  : Idea from Markdown and APA, MLA, and IEEE citation style. 

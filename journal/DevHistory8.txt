@@ -1,0 +1,89 @@
+December 12th, 2013
+===================
+
+It's 4PM where I'm writing, and the sun's has already disappeared from the 
+horizon. I've been sleeping in lately, averaging about 12 hours of sleep and 
+still feeling tired every day. That's how boring it is to live in Canada.
+
+First, I have removed the pre-formatted paragraph syntax. I feel that syntax 
+is the result of a feature creep, because it's hard to define an unambiguous 
+formal specification that's easy to understand and implement correctly. That 
+syntax is too context sensitive and volatile, and there's no guarantee whether 
+a particular white space or line break will be preserved.
+
+Next, I have fully implemented an error checking stage to the compiler's 
+architecture. It's primarily meant to remove parts of the input that are 
+syntactically correct with no real semantic value. Examples include removing 
+empty bullet lists, paragraphs, and text nodes containing only invisible 
+characters. This stage helps me guarantee valid code generation in the face 
+of clever input abuse.
+
+I integrated some permission utilities into the compiler as well. That is, 
+one can decide whether this particular writer is permitted to use images, 
+links and other specified elements. This is useful for limiting XSRF and 
+click-jacking attacks caused by these elements, especially if the specific 
+writer has a reputation for posting such links and images.
+
+I've also fixed too many subtle bugs that are too numerous to document, most 
+of which has to do with the hyperlink elements. There's even an embarassingly 
+simple XSS vulnerability with hyperlinks.
+
+"""
+?<<script\>alert('xss');</script\>>
+"""
+
+Since the hyperlink has no explicit display text defined, it tries to use the 
+URL itself as the display text. Boom. My document has been pwned by XSS.
+
+"""
+<a href="[This part is escaped...]"><script>alert('xss');</script></a>
+"""
+
+It's a pretty long week of debugging, and there are still corner cases within 
+BakaBakaMark that would leave the language open to abuses. In fact, there are 
+so many corner cases, it has become difficult for me to document them all, 
+even though I have no job and I'm spending almost all of my time on the 
+project. The worst offender is the code itself; The code base is readable for 
+the most part, but I have no clue on making paragraph-level parsing more 
+readable. Personally, I feel that paragraph-level grammar is not readable 
+enough.
+
+Meanwhile, I still have these major problems left unresolved:
+
+- Insert and Delete nesting abuse. """{--{--{--{--..."""
+- Redundant nesting. """**?<SomeURL>-[**SomeText**]**"""
+  
+The former is easy; Putting an upper limit on maximum nesting level solves the 
+issue, and very rarely does a legitimate writer wants to abuse many levels of 
+nesting. In the case of abuse, the output will be glaringly obvious such that 
+a moderator or a passer-by can easily notice and take care of the offender, 
+without endangering the hosting backend.
+
+The latter is a little harder; When I'm inside the link display text section 
+(Inside the square brackets), and I have a bold tag defined outside the link 
+element, I don't want to have a new bold tag inside the link element, nor do 
+I want to backtrack and make the URL portion of the link alone bold. As such, 
+I'm getting these kinds of HTML:
+
+"""
+<strong><a href="URL"><strong>Boo</strong></a></strong>
+"""
+
+There's nested """<strong>""" tags in the code snippet. It's not wrong per se, 
+but it feels redundant, clunky, and inelegant. I suppose I can simply let it 
+go because it is part of the defined grammar.
+
+Finally, there's the code smell issue. The link continuation context; I've 
+designed my grammar so that if I want to put square brackets inside my link 
+display text (or alt text), I can include them so long as they're wrapped in 
+a code snippet, or they're perfectly balanced. That way, I won't have to 
+resort to escaping, which makes the source text extremely ugly and defeats 
+the purpose of this language. Fully implementing this feature (in linear time 
+performance) is not an easy task; The price is code bloat, and one of the 
+last hurdles to calling the project complete.
+
+There's one more hurdle to the project; Allowing configuration parameters. 
+This part is pretty darn easy, to the point where I'm deferring this issue 
+until everything else has been resolved.
+
+I hope to resolve the code smell by the end of this week.

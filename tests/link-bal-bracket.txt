@@ -1,0 +1,8 @@
+?<SomeAwesomeURL>-[[Display Text With][Nested Brackets]]
+
+This is some text pushing the URL to the edge. ?<SomeAwesomeURL>
+-[Display Text]
+
+#[This URL has balanced square brackets, #[so it doesn't] need backslash 
+escapes.]-[Display text with #[Nested internal links] is not allowed, but 
+I should be able to nest square brackets the same way I did with the URL.]

@@ -1,0 +1,42 @@
+<p>
+This is 
+preferred. 
+Everything is lining up 
+against the left-margin.
+</p>
+<p>
+This is acceptable, if one wants to ensure spaces are visible within the
+ same paragraph, if manual line breaks are not to be interpreted as white
+ spaces. Some typesetting tools and markup languages, such as HTML, treat
+ line breaks as white space for automatic word-wrapping by default.
+</p>
+<p>
+This treatment is okay for English and most languages from the
+ Latin and Cyrillic alphabet, but that line break conversion is going to
+ cause problems in other alphabets.
+</p>
+<p>
+Some languages, such as Chinese, Japanese and Korean (CJK) don't have space
+ characters in their alphabet. If writers were to write in such a language,
+ and they want to manually line-wrap their text, they're going to see
+ unwanted space in their text because of the conversion from line break
+ to space.
+</p>
+<p>
+BakaBakaMark can be configured eliminate that conversion for writers who
+ prefer to manually line-wrap in such languages. If one enables that
+ configuration and one wishes to deliberately preserve the space in a 
+ visible manner, one can write in this style.
+</p>
+<p>
+Alternatively, one can put the space at the end of every line. This 
+results in invisible syntax, which can be difficult to track down if 
+line breaks are not interpreted as spaces.
+</p>
+<p>
+This is bad. Insufficient
+</p>
+<p>
+indentation level terminates the ongoing paragraph and 
+starts a new one.
+</p>

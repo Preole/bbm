@@ -1,0 +1,29 @@
+<ul>
+ <li>
+  <blockquote>
+   <ul>
+    <li>
+     <blockquote>
+      <ul>
+       <li>
+        <blockquote>
+         <ul>
+          <li>
+           <blockquote>
+            <p>
+- &gt; - &gt; This is a too-deeply nested list. There should be
+        an upper nesting limit to prevent endless nesting, 
+        or the code will run the parser out of memory.
+            </p>
+           </blockquote>
+          </li>
+         </ul>
+        </blockquote>
+       </li>
+      </ul>
+     </blockquote>
+    </li>
+   </ul>
+  </blockquote>
+ </li>
+</ul>

@@ -1,0 +1,31 @@
+<table>
+ <tr>
+  <th>
+   <p>
+Row 1 Column 1
+   </p>
+  </th>
+  <th>
+   <p>
+Row 1 Column 2
+   </p>
+   <blockquote>
+    <p>
+This cell has a blockquote.
+    </p>
+   </blockquote>
+  </th>
+ </tr>
+ <tr>
+  <td>
+   <p>
+Row 2 Column 1
+   </p>
+  </td>
+  <td>
+   <p>
+Row 2 Column 2
+   </p>
+  </td>
+ </tr>
+</table>

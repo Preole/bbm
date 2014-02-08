@@ -1,0 +1,11 @@
+****
+Paragraph should always terminate when seeing an aside block 
+delimiter alone on a line, even if the delimiter won't terminate 
+the previous starting one.
+  ****
+  This is the inner aside block.
+  ****
+This is another paragraph in the outer aside block.
+****
+
+The outer aside block ends here.

@@ -1,0 +1,11 @@
+<p>
+Aside blocks with negatively indented content will be terminated, 
+without needing a delimiter. In this case, the first aside block 
+should be empty (And generates no <code>&lt;div&gt;</code> tags)
+</p>
+<div>
+ <p>
+If an aside block is indented, so should all the block elements 
+that wants to be inside the aside block.
+ </p>
+</div>

@@ -1,0 +1,9 @@
+  !<Multi
+line>-
+[URL 
+Alt 
+Text]
+
+////
+This should not be an image, due to negative indentation within paragraph.
+////

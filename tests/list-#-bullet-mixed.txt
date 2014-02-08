@@ -1,0 +1,11 @@
+1. One
+#. Two
+2. Three
+
+* X
+- Y
++ Z
+
+4. Not 4
+5. Not 5
+6. Not 6

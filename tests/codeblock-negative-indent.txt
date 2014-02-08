@@ -1,0 +1,14 @@
+- """
+A
+ B
+  C
+   D
+    E
+     F
+      G
+  """
+
+////
+Each line within the code block needs to be trimmed X leading white space, 
+if available, where X is indentation level of the opening fenced block.
+////

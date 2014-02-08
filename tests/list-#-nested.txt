@@ -1,0 +1,19 @@
+1. A paragraph, an ordered list.
+
+   1. One
+   2. Two
+   3. Three
+   
+   And an ending paragraph, plus a bullet list.
+   
+   1. Woof
+   2. Bark
+   3. Green
+   
+2. Second item.
+3. Third item. There's no fourth item because the 4th item is an empty 
+   item, which is discarded from the output. (Comment blocks do not count.)
+4. ////
+   This item should not be rendered in the output.
+   ////
+5. Fifth item. (or fourth, as the original 4th has been removed)

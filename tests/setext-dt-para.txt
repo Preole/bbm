@@ -1,0 +1,10 @@
+; Definition Term
+  Another line plus ?<RelativeURL>-[A relative URL.]
+  ===============
+  
+: Description
+
+////
+The Setext line should not transform the paragraph into a header; Instead, 
+that paragraph should stay a """<dt>""".
+////

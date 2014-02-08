@@ -1,0 +1,294 @@
+December 1^^st^^, 2013
+======================
+
+- Modify EBNF grammar to disallow TABLE_ROW_DELIM from starting a table 
+  element.
+
+Note: All HTML code sample has been simplified for ease of understanding. 
+That is, no extra block-level tag wrapping, such as """<p>""" are added 
+around the samples.
+
+I've settled most of the Code Generation (HTML) for BakaBakaMark. I'm pretty 
+sure I've plugged most exploitable vectors, like Javascript injection, CSS 
+namespace poisoning and layout abuses. However, I think I do need to add a 
+semantic analysis stage to the compiler's architecture. Some attack vectors, 
+layout abuses in particular, cannot be nullified using syntax analysis alone.
+
+As a result, a semantic analysis, or error correction stage more precisely, 
+has become necessary as a step in my compiler. It is **a headache** because 
+I made the problem harder than other people want to see it. I'm making it 
+hard on myself since I want to not worry about invalid markup at all, even 
+when I, or a malicious writer decides to destroy the HTML page on purpose.
+
+
+
+
+
+
+
+General Semantics
+-----------------
+
+- Remove trailing white space """TEXT""" nodes, whose text value consists of 
+  new lines and spaces, and they are the last child of a node.
+  
+- If "RemoveEOL" is specified, remove all EOL characters within text nodes 
+  that are descendants of a Non-pre-formatted paragraph node.
+  
+- Remove """ID""", """CLASS""", """STOP""" nodes if they're the last child 
+  of their parents. This step continues until the node no longer ends with 
+  one of these children.
+  
+- Remove link and image nodes whose URL is empty, or contains only white 
+  space. (Should be rare)
+  
+- Remove all nodes whose Metadata table is empty and contains no child node.
+  There are a few exceptions:
+  
+  - """Table""", including """TableCell""", """TableRow""" and """TableHead""" 
+    nodes. They have their own semantics in the **Table Semantics** section.
+  
+  - """DivLine""", or Horizontal Rule. ("""<hr>""" in HTML)
+
+  - The """ROOT""" node.
+  
+  - """STOP""" node, if it's not the last child in a node after other 
+    deletions.
+
+All of these rules are effective and propagate up the syntax tree. That is, 
+if a node becomes empty from its children being removed, it will also be 
+removed.
+
+- After removing these semantically invalid nodes from the tree, remove 
+  leading DD nodes, as well as trailing DT nodes from definition list 
+  subtree. If a definition list becomes empty as a result, remove the 
+  definition list from the tree as well.
+  
+- Perform **Table Semantics** analysis for all tables in the syntax tree.
+
+
+
+
+Table Semantics
+---------------
+
+One of my premises in the compiler is to produce standards-compliant, valid 
+output without halting in spite of syntax errors. Unfortunately, it's hard to 
+keep the table layout sane when I think of ways I can abuse it. These ''
+abuses'' can hardly be called abuses, because they're genuine human errors 
+like a typo, or accidents from confusion. Here's a short list of ''abuses'' 
+that can appear in a table.
+
+- Empty table cells (Explicitly defined)
+
+  This one can be solved by inserting content into empty cells, either by 
+  the compiler or by the CSS that governs the output.
+
+- Infinite columns. (TODO)
+
+  This abuse involves the user trying to represent a 30-column real world 
+  SQL table. Putting an upper limit on columns easily culls this problem.
+  
+- Inconsistent column width
+
+  Not every row of data uses every column within a table. Some columns are 
+  intentionally left empty, and I have no concensus as to these cells' 
+  semantics. These cells can mean at least two different things.
+  
+  - Part of another cell on the same row
+  - Is really an empty cell
+  
+  The former semantic has use cases in comparison charts, Gantt charts and 
+  mathematics, where a row item occupies two or more columns. The latter 
+  usually represents data omission. I will need to extend the main syntax of 
+  BakaBakaMark to be able to represent both notions, at the cost of syntax 
+  elegance. I'm not willing to sacrifice that.
+  
+  Meanwhile, some writers may put too many cell within a row and end up 
+  with extra columns.
+  
+  All in all, this is by far the most difficult problem.
+
+Now it's time to solve some ambiguities.
+
+
+
+---------------
+
+Rule 1: **The first row of the table mandates the table's maximum number of
+columns.** If a subsequent contains more columns than the first row, these 
+columns are discarded.
+  
+"""
+|| Col 1
+|| Col 2
+|=======
+|| Col 1
+|| Col 2
+|| Col 3
+|=======
+|| Col 1
+|| Col 2
+"""
+
+The output (HTML in this example) should discard the cell containing the 
+data "Col 3".
+
+"""
+<table>
+<tr>
+<td>Col 1</td>
+<td>Col 2</td>
+</tr>
+<tr>
+<td>Col 1</td>
+<td>Col 2</td> <!--Col 3 in this row is discarded.-->
+</tr>
+<tr>
+<td>Col 1</td>
+<td>Col 2</td>
+</tr>
+</table>
+"""
+
+  
+Rule 2: **Rows containing insufficient number of columns shall be padded 
+using empty table cells.** Coming up next is a 2 by 2 table, where the 
+second row only has one column.
+
+"""
+|| R1 C1
+|| R1 C2
+|=======
+|| R2 C1
+"""
+
+In this example, the second row contains only 1 column, while the table 
+requires two columns on every row (Mandated by the first row, as **Rule 1**). 
+An additional cell shall be appended onto that row.
+
+"""
+<table>
+<tr>[...]</tr>
+<tr>
+<td>R2 C1</td>
+<td>&nbsp;</td>
+</tr>
+"""
+
+This means that, if the cell @(2, 2)(Row, column) needs to contain the data 
+value instead of cell @(2, 1), one must explicitly assign cell (2, 1) an 
+empty cell.
+
+"""
+|| R1 C1
+|| R1 C2
+|=======
+|| 
+|| R2 C2 should contain the value, not R2 C1
+"""
+
+> Rule 2.1: **Rule 2 does not apply to rows that are intentionally left 
+  empty**, which are identified by two consecutive row delimiters. These 
+  table rows are to be discarded.
+  
+  """
+  || R1 C1
+  || R1 C2
+  |=======
+  |=======
+  || R2 C1
+  || R2 C2
+  """
+  
+  To create an empty row, one must explicitly insert at least one empty 
+  cell in that row, which will be populated with more empty cells to match 
+  the table's column count.
+  
+  """
+  || R1 C1
+  || R1 C2
+  |=======
+  || 
+  |=======
+  || R3 C1
+  || R3 C2
+  """
+
+
+  
+////
+Scrapped. Too much implementation difficulties.
+
+Rule 2: **If a non-empty cell is followed by one or more declared empty cells 
+(N) on the same row, the non-empty cell shall have a column span of """1 + 
+N""". 
+
+That is, the said cell shall span multiple columns, up to the limit the first 
+row has implicitly declared.
+  
+"""
+!! Sales Report
+!!
+||
+||
+|=====
+!! Product Name
+!! Retail Income
+!! Factory Order Income
+!! Total
+|=====
+!! Sock Puppet Cereal
+|| 150,000$
+|| 21,000,000$
+|| 21,150,000$
+|=====
+!! K-M Oatmeal
+|| 312,000$
+|| 12,000,000$
+|| 12,312,000$
+|=====
+!! Grand Total
+|| 
+|| 
+|| 33,462,000$
+"""
+  
+"""
+<table>
+<tr>  
+<td colspan="4">Sales Report</td>
+</tr>
+<tr>
+[...]
+</tr>
+<tr>
+[...]
+</tr>
+<tr>
+<td colspan="3">Grand Total</td>
+<td>33,462,000$</td>
+</tr>
+</table>
+"""
+  
+> If one wants to display an empty cell, **and** stop a cell from spanning 
+  columns, one may insert a """Stop""" element immediately after the empty 
+  cell to stop at. The """Stop""" element is a block that contains a single 
+  fullstop """.""", followed by the end of the line (EOL).
+  
+  """
+  || This guy should only span two columns.
+  || 
+  || .
+  || Another cell.
+  """
+  
+  """
+  <tr>
+  <td colspan="2">This guy should only span two columns.<td>
+  <td></td> <!--Intentionally empty-->
+  <td>Another cell</td>
+  </tr>
+  """
+////

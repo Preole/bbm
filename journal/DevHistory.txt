@@ -1,0 +1,1279 @@
+= Project Origin =
+ 
+When I first designed BakaBakaMark in April 2013, I was a 4th year Computing 
+Science university student who's about to receive the Bachelor's Degree by 
+the end of that year. I was about to become a NEET (Not in Employment, 
+Education, or Training). 
+ 
+I'm even afraid to send my resume to my prospective employers, even though I 
+had some work experience in software development. The truth is, I'm fear I 
+am one of these developers who can't program, despite having a degree in that 
+field. My intern experience had been somewhat rough, since I was desperately 
+trying to squeeze out workable programs, and I worked alone in that company. 
+Most of my time were spent researching information for my employer and help 
+him make decisions. I didn't feel very useful, despite that my boss wanted 
+me to come back and work for him after graduation. 
+ 
+My resume looks decent. However, it appears average, and there's an average 
+person behind it with a little bit of work experience and social connection. 
+In fact, my university days were usually spent in solitude, and opportunities 
+to establish business relationships floated away from me. 
+ 
+After I've decided to graduate in the spring term, I started to look for a 
+personal software project I'm really interested in developing for myself. My 
+final choice has to do with a tangent I should describe briefly. 
+ 
+I got hooked into Japanese Anime and Visual Novels in the mean time, and it's 
+the first time I've felt that writing's an art. The first four months of 2013 
+were usually spent by burying my head in one of these things. A few Internet 
+searches later, I came across visual novel translation communities such as 
+?<Fuwanovel>. Thanks to these communities, I've gotten a lot of indescribably 
+blissful experience out of reading. 
+ 
+:{Fuwanovel}: http://fuwanovel.org 
+ 
+Surely, I can contribute as a software developer by building better tools for 
+the writers, or the publishers for that matter. I thought about that, and I 
+decided to spend these months researching document production software, such 
+as MS Word. I eventually settled on a personal, offline document editor app as 
+my project. 
+ 
+ 
+ 
+= Project Requirement =
+ 
+I wanted my document editor project to satisfy these requirements: 
+ 
+1. Works offline, requires no administrator's privilege to install. 
+ 
+2. Feature rich in semantic constructs, like lists and blockquotes. 
+ 
+3. Searching (& Indexing & Tagging) 
+ 
+4. Integrates media (Images) beautifully with text. 
+ 
+5. Highly portable, preferably in exactly ONE file. 
+ 
+6. User-friendly. Even the technical idiots (like me) can run it, preferably 
+   without reading a manual. 
+ 
+7. Requires no administrator's privilege to install and run. 
+ 
+8. Relationships between pieces of information in the same document. 
+ 
+In short, I want to build a personal Encyclopedia. 
+ 
+As with any engineering project, I should first research the market before 
+commiting my time into development. 
+ 
+ 
+ 
+= GUI Document Editors =
+ 
+My first research targets are the GUI (Graphic User Interface) document editors. 
+MS Word and OpenOffice Writer cross my mind, but especially MS Word. These 
+editors are powerful and fully packed with features, and they can pretty much 
+do any formatting you needed on your document. Unfortunately, these documents 
+are easy to break, often exhibit strange behaviors and worst, they are bound by 
+their proprietary software to be readable, because the source code is a mess. 
+Here's the first two lines of source code of an assignment I've composed in 
+WordPad: 
+ 
+"""
+{\\rtf1\\adeflang1025\\ansi\\ansicpg950\\uc2\\adeff0\\deff0\\stshfdbch31505\\stshfloch31506\\stshfhich31506\\stshfbi0\\deflang1033\\deflangfe1028\\themelang1033\\themelangfe1028\\themelangcs0{\\fonttbl{\\f0\\fbidi \\froman\\fcharset0\\fprq2{\\*\\panose 02020603050405020304}Times New Roman;} 
+{\\f14\\fbidi \\froman\\fcharset136\\fprq2{\\*\\panose 02020500000000000000}\\'b7\\'73\\'b2\\'d3\\'a9\\'fa\\'c5\\'e9{\\*\\falt PMingLiU};}{\\f34\\fbidi \\froman\\fcharset0\\fprq2{\\*\\panose 02040503050406030204}Cambria Math;} 
+"""
+ 
+It's an insane markup. (To me) Therefore, in order to read these documents, I 
+have to depend on the proprietary editors, which I do not necessarily like, 
+and they're not necessarily available on every computer, especially on 
+computers that are locked down. Worst, I don't want to develop a graphical 
+user interface, because even genius from Microsoft and other big companies 
+don't get it quite right. (See: Internet Explorer) 
+ 
+ 
+ 
+= Web Service Based Editors =
+ 
+Next, I noticed the power of web browsers. Mainstream graphical web browsers 
+such as Google Chrome, Safari and Mozilla Firefox are so powerful, they can 
+practically display any kind of document thinkable in the world. 
+ 
+I figured I should leverage the power of web browser for rendering my documents. 
+That takes care of requirement 2 and 4, and a little bit about 5. HTML, the 
+markup language for web browsers, is significantly easier to write compared to 
+proprietary markup, but it still proves distracting to my writing effort. Worse, 
+in order to address requirement 1 and 3, there needs to be a web service behind 
+the documents, because HTML documents are not permitted to modify my computer's 
+file system by design. 
+ 
+I tried bundling a tiny HTTP server with my application, but it turns out 
+that setting up a HTTP server is no trivial task. There's so much management 
+and setup necessary to run the server, usability has become non-existent for 
+a personal project like this. 
+ 
+On the other hand, if I move my editor to a web hosting service, I would be 
+violating requirement 1, because I need the Internet to use it. 
+ 
+Therefore, this doesn't work well. 
+ 
+ 
+= Plaintext editor =
+ 
+WYSIWIM. (What I see is what I mean) Plain text documents are beautiful in that 
+I have full control over it. I get to decide whether I want to allow invisible 
+characters and markup, and where I want to place my text. Best of all, I get to 
+dictate the semantics of my document. 
+ 
+However, formatting power is extremely limited. There's text, and there's text. 
+Many text editors like Notepad++, BBEdit and UltraEdit already do a good job at 
+this. I have no confidence in building one that's better, nor am I confident in 
+making significant contribution to these projects. 
+ 
+ 
+ 
+= TiddlyWiki =
+ 
+The sole exception to these solutions is ?<TiddlyWiki>, which is a wiki 
+embedded in a single HTML file. This single paged web application is almost as 
+powerful as MediaWiki, which is the engine that powers the venerable Wikipedia. 
+Best of all, it can commit changes back to my local hard-drive without 
+requiring an Internet connection. It's awesome, until I realized that there's 
+a catch. My web browser needs to satisfy one of these requirements to fully use 
+TiddlyWiki: 
+ 
+- Internet Explorer, which has proprietary Javascript methods for writing files 
+  to my computer. This requires elevated privilege. 
+ 
+- Java plugin. 
+ 
+- Support hyperlinks containing Data URI. This method generates a local 
+  downloadable link, which requires an extra step to save the document. 
+ 
+It's not quite the single paged web application I'm hoping for. But, thanks to 
+Tiddlywiki's initiative, I've discovered more options for saving a locally 
+generated HTML documents for these web browsers: 
+ 
+; Internet Explorer: 
+ 
+  : """iframe""" workaround: 
+ 
+    Copy the wiki's modified HTML into the """iframe""", then use """iframe.
+    document.saveAs()""" function to save the file. This way, I don't need to 
+    have elevated privilege to save changes in IE. 
+ 
+; Firefox & Chrome: 
+ 
+  : """CTRL+S""" They will both save the modified HTML onto the disk, 
+    so long as the save option """Webpage: Complete""" is specified. It's 
+    highly recommended that the user closes all opening wiki entries, so 
+    that Chrome and Firefox wouldn't save external resources like image. 
+ 
+I feel that TiddlyWiki's got a lot of room for improvement, judging from its 
+massive empty wiki size of 500KB. I took a look inside the code, and it turns 
+out that there's a lot of bloat in the codebase. The project's well beyond my 
+ability to edit safely. 
+ 
+At the very least, I learned the technology the wiki's operating on. It's a 
+valuable learning experience trying to build a mock prototype of the wiki. 
+I got to learn a lot of skills necessary for building Javascript powered HTML 
+web pages, especially in terms of dealing with browser inconsistencies. 
+ 
+The biggest obstacle I'm encountering now, however, is rich text editing 
+support. I need to provide an interface for the writers to write the documents 
+themselves. Since I'm building a personal encyclopedia, it's best if I research 
+on how other wiki engines are supporting editing. 
+ 
+A quick search reveals that most wiki engines are using plain text boxes, plus 
+their own markup syntax to support rich text editing. Every engine has its 
+own syntax, but the most prominent ones would have to be MediaWiki, PmWiki, 
+MoinMoin, DokuWiki, Drupal, Confluence to name a few. Their common denominator 
+is that none of them actually supports a WYSIWYG editor. 
+ 
+Judging from my programming skill and the project's requirement, I'm better off 
+offering a plain text box and choose a markup language to support... or build 
+my own. 
+ 
+:{TiddlyWiki}: http://tiddlywiki.com/ 
+ 
+ 
+ 
+= Choosing a Markup Language =
+ 
+I have a long list of candidates for my project's markup language. I'll name 
+the most significant few, including ones that aren't strictly used in a wiki 
+context. 
+ 
+- Markdown 
+ 
+  There's a few hundred flavors of Markdown, judging from one of the Markdown 
+  standardization project named ?<Babelmark>. 
+ 
+  :{Babelmark}: http://johnmacfarlane.net/babelmark2/ 
+ 
+  - Stackoverflow 
+  - Github 
+  - Confluence 
+  - PHPMarkdownExtra 
+  - Marked 
+  - MultiMarkdown 
+  - Pandoc 
+  
+- Textile 
+- ASCIIDoc 
+- MediaWiki 
+- WikiCreole 
+- Skriv 
+- ReStructuredText 
+- LaTeX 
+- BBCode 
+- Straight up HTML 
+ 
+**LaTeX** and **MediaWiki** aren't ideal, because their source code can 
+easily turn into a big mess, not to mention very difficult to implement. 
+LaTeX, however, has been a very long standing format for producing documents 
+with professional-level typography. 
+ 
+BBCode is no different from HTML, except perhaps being more error prone due to 
+an extra translation step. 
+ 
+**WikiCreole** doesn't offer enough features; It's missing key features such 
+as Tables. It's about as feature rich as my first version of BakaBakaMark, 
+and it's also a little visually noisy. 
+ 
+Different flavors of Markdown are technically different languages with subtle 
+differences in each of them. Some of them added their own syntaxes, such as 
+Stackoverflow's forced URL or Github's fenced code blocks. Some of them have 
+made improvements. It's definitely one of the easiest to read, and its feature 
+set is more than enough to cover most use cases. Moreover, it's easy to 
+implement a nice working version of it. Unfortunately, there is no *standard* 
+implementation, as this code snippet on Babelmark2 reveals: 
+ 
+ """
+ ### ATX-Header followed by SeText Line ### 
+ =======
+ """
+ 
+**Skriv** comes in pretty close to ideal for generating HTML snippet comparable 
+to Markdown. It does have a little bit of syntactical changes, and it's fairly 
+readable. 
+ 
+**ReStructuredText** is primarily for documentation in the Python programming 
+language, while **Textile** is for Ruby. Both of them have a lot of special 
+syntax that only work under specific contexts. Fully implementing these 
+languages will be fairly difficult. 
+ 
+Finally, there's **ASCIIDoc**. It's feature complete enough to the point of 
+writing an entire book using plaintext alone. The syntax is beautiful for the 
+most part, with a ton of build-in macros and constructs. It practically has 
+anything I can think about a book covered. Only problem is that, it's too 
+powerful, and thus too difficult to implement. 
+ 
+There's no one best markup language for a personal encyclopedia project 
+similar to TiddlyWiki. In fact, my plain text writing style, aside from 
+the very basic ones like paragraphs, is very picky about semantics. I often 
+like to write my paragraphs like this: 
+ 
+ """
+ Paragraph 1 contains information about X. 
+ 
+   Paragraph 2 is related to paragraph 1. 
+ 
+   Paragraph 3 is also related to paragraph 1, but not 2. 
+ 
+     Paragraph 4 is additional information about paragraph 3. 
+ 
+   Paragraph 5 -> Paragraph 1. 
+ 
+ Paragraph 6. New subtree of thought. Paragraph 2-5 have nothing to do with 
+ paragraph 6. 
+ """
+ 
+This is indentation-based syntax, which is the philosophy shared by the Python 
+community. In indentation based syntax, an element belongs to a particular 
+block so long as it's sufficiently indented. The block ends as soon as it 
+meets an insufficiently indented block element. 
+ 
+I personally like this syntax, because I don't have to think at all, and 
+I have already established the relationship between these paragraphs. 
+However, this syntax is actually ambiguous, because indentation alone is 
+not sufficient to decide the type of relationship between different pieces 
+of information. The indented paragraph may be interpreted as a list of 
+paragraphs underneath a paragraph, a blockquote, a really long phrase or a 
+description for that phrase. Some wiki syntax even use indentation as 
+computer program code blocks, like Skriv. 
+ 
+As a result, I may have to resort to a more explicit, but noisy syntax, like 
+this ASCIIDoc code snippet describing a trivial C program: 
+ 
+ """
+ -------------------------------------- 
+ #include <stdio.h> 
+ 
+ int main() { 
+    printf("Hello World!\\n"); 
+    exit(0); 
+ } 
+ -------------------------------------- 
+ """
+ 
+In that code snippet, it's an ASCIIDoc "listing block", which contains a block 
+of verbatim text describing a C program. In that C program, there's a function 
+block called "main", with its content enclosed inside a pair of opening and 
+closing curly braces. 
+ 
+The computer has an easy time discerning when the verbatim text block ends, 
+thanks to the extra syntax. To us human beings however, we tend to leave these 
+blocks open by mistake, just as much as we don't match brackets properly when 
+we write mathematical formulas. 
+ 
+= BakaBakaMark Version 1 =
+ 
+In the meantime, I have developed a first version prototype of my own markup 
+language. (BakaBakaMark_V1) It's primarily symbol driven, using punctuations 
+and whitespace to perform text formatting. 
+ 
+It's pretty good at creating complicated HTML snippets while remaining 100% 
+semantically valid. For example, BakaBakaMark can handle nested lists within 
+blockquotes within nested lists. It can distinguish a list item containing 
+three paragraphs from a list containing three list item, with each one of them 
+containing one paragraph. Other markup languages such as MediaWiki simply don't 
+have the tools to do so, while Markdown is ambiguous in the way to do these. 
+Here's a Markdown snippet trying to do blockquote and list nesting: 
+ 
+  """
+  - > Block 
+    > Block 
+    > - List 
+    > - List 
+    > - List 
+  """
+ 
+I personally think that's a blockquote, which starts with two lines of text 
+and a list of three list items. If I feed that input into BabelMark, there's 
+at least four different classes of interpretations. 
+ 
+.Markdown.pl 1.0.2b8 
+"""
+<p> 
+ <ul> 
+  <li>> Block</p> 
+<blockquote> 
+ <p>Block - List - List - List</li> 
+  </ul> 
+ </p> 
+</blockquote> 
+"""
+ 
+**Whoa, that wasn't even correct HTML.** The nesting structure is a bloody mess. 
+ 
+"""
+<ul> 
+ <li> 
+  <blockquote> 
+   <p>Block Block</p> 
+   <ul> 
+    <li>List</li> 
+    <li>List</li> 
+    <li>List</li> 
+   </ul> 
+  </blockquote> 
+ </li> 
+</ul> 
+"""
+ 
+marked 0.2.6 is more or less of what I'm expecting. 
+ 
+"""
+<ul> 
+ <li> 
+  <blockquote>Block Block 
+   <ul> 
+    <li>List</li> 
+    <li>List</li> 
+    <li>List</li> 
+   </ul> 
+  </blockquote> 
+ </li> 
+</ul> 
+"""
+ 
+Pandoc (strict) 1.12.1 is also valid, though it's missing the paragraph 
+for the "Block" words in the blockquote. Not a big deal. 
+ 
+<ul> 
+ <li> 
+  <blockquote> 
+   <p>Block Block - List - List - List</p> 
+  </blockquote> 
+ </li> 
+</ul> 
+ 
+PHP Markdown Extra 1.2.7 also has a perfectly valid interpretation, but that's 
+not what one would expect when they wanted to place a list inside a block quote. 
+ 
+Meanwhile, here's the equivalent source code and output in BakaBakaMark_V1: 
+ 
+"""
+- {{{ 
+  Block 
+  Block 
+ 
+  - List 
+ 
+  - List 
+ 
+  - List 
+  }}} 
+"""
+ 
+.BBM_V1 
+"""
+<ul> 
+ <li> 
+  <blockquote> 
+   <p>Block Block</p> 
+   <ul> 
+    <li> 
+     <p>List</p> 
+    </li> 
+    <li> 
+     <p>List</p> 
+    </li> 
+    <li> 
+     <p>List</p> 
+     <!-- The paragraph tag can be stripped if it's the only thing 
+     in the list item. --> 
+    </li> 
+   </ul> 
+  </blockquote> 
+ </li> 
+</ul> 
+"""
+ 
+I generated a little too much newlines and whitespace with my code generator. 
+There's an unordered list, with one list item containing a blockquote, which 
+contains a paragraph and another list. The list after the inner paragraph 
+contains three list item with each one having one paragraph. 
+ 
+The point here is that, by introducing **a little more** discipline in syntax, 
+it'll become a lot easier to generate precise and correct markup compared to 
+leaving the standards undefined. 
+ 
+In my grammar, paragraphs are the block elements responsible for containing the 
+content no matter the context. They must all end with a blank line, save for 
+unusual circumstances such as a header title or a glossary term. With a simple 
+rule like that, there's no more ambiguity as to when or where the block element 
+will end. It's also easy to implement, because there's only a few simple rules 
+to be aware of. 
+ 
+ 
+ 
+= BakaBakaMark Version 2 =
+ 
+I'm not perfectly happy with my first version. I still had to refer to the 
+cheat sheet every now and then. The syntax has a long way to go to be called 
+''elegant'', and it is missing powerful features such as tables, internal 
+linking within the document, and automatic link recognition. Moreover, the 
+parser engine can use a little help in speed and memory consumption. In short, 
+version 1 has a lot of room for improvement. 
+ 
+Some of its syntax choices were questionable. For example, single quotes are an 
+integral part of English writing, yet I decided to use double and triple single 
+quotes for "No parse" sections. Blockquotes and code blocks are delimited using 
+lines starting with certain character combination, meaning I have to remember 
+the magical character to create these constructs. 
+ 
+I thought spending months researching all the lightweight markup languages 
+had made me knowledgeable. I was wrong. I'm personally very swamped with a lot 
+of tiny issues. At the same time, I need to perfect my HTML, CSS and Javascript 
+skills, plus a few million other facts I need to remember. Worst, I often 
+forget to record these facts. 
+ 
+ 
+ 
+== Lightweight Syntax Methodology Basis ==
+ 
+November 1st, 2013: 
+ 
+I've just realized that the basis towards a lighter syntax, at least compared 
+to HTML, is to omit using syntactical constructs whenever I can. HTML, XML, 
+data markup languages in general, as well as programming languages have 
+un-rivaled expression power and relatively few ambiguities compared to the 
+natural languages we're speaking. Their power comes at the cost of heavyweight 
+syntax, or they run the risk of being ambiguous in their interpretation. 
+Natural and spoke languages such as English, on the other hand, let the 
+context determine their semantic meanings; as a result, they have the luxury 
+of skipping all these closing HTML tags, and end up with less total text 
+compared to the data markup languages. 
+ 
+Lightweight Markup Languages (LML) are "light", because less syntax are needed 
+to convey the semantics compared to the "heavy" languages. As for measuring the 
+"amount" of syntax, I shall use the number of pen-strokes, or key-strokes on 
+a QWERTY keyboard for that matter. I shall also conduct a small case-study 
+on HTML against popular LML such as Markdown, involving the construction of 
+various semantic constructs typically present in a document. 
+ 
+Let's suppose we have a list of three items, the letters [A, B, C]. To 
+construct a bullet list with these items, HTML needs at least the following 
+markup to determine the proper semantics: 
+ 
+"""
+<ul> 
+<li>A</li> 
+<li>B</li> 
+<li>C</li> 
+</ul> 
+"""
+ 
+Discounting shift-key and enter-key usage on a QWERTY keyboard, HTML 
+needed *36* characters dedicated to markup syntax, just so it can 
+display *3* characters of data. That is a terrible, terrible markup 
+to data ratio. The ratio improves if our data is a bit longer, but 
+spending 9-10 characters, or keystrokes on each matching tag can be 
+considered tiresome even for professional typists. 
+ 
+Meanwhile, Markdown, Textile, ASCIIDoc and RestructuredText only need three 
+key strokes per list item: The list bullet, the space, and the return key after 
+the content. It's also more visually appealing compared to HTML: 
+ 
+"""
+- A 
+- B 
+- C 
+"""
+ 
+These markup languages' matching opening and closing syntax is the culprit 
+that makes these languages very "fat". Additionally, for every semantic the 
+writer needs to define, the writer needs to write the name of the semantic, 
+such as "Strong" for strong emphasis, twice. Here's a small formula for 
+calculating the necessary keystrokes to define a semantic construct. 
+ 
+"""
+X = Length of the tag's name, where X > 1. 
+F(X) = # of characters to type, given the tag's name. 
+"""
+ 
+First, there's two pairs of angle brackets, one pair of each of the 
+opening and closing tags. Next, each closing tag needs one forward slash. 
+The formula so far is: 
+ 
+"""
+F(X) = 2 + 2 + 1 = 5 
+"""
+ 
+For most tags, the writer's forced to type out these five characters before 
+getting to the semantics. 
+ 
+The name of the semantic, times 2. It needs to be written once in the 
+opening tag, and again in the closing tag. 
+ 
+"""
+F(X) = 5 + 2X 
+"""
+ 
+Now, let's suppose we're placing a very strong emphasis around a snippet of 
+text, which is the HTML tag """<strong>""". "Strong" is six characters long, 
+which means X = 6. Plugging that value into our makeshift formula gives us 
+a whopping 17 characters count, which is *a lot* to type before the writer 
+gets to type out the content. ASCIIDoc on the othe hand, only requires two 
+asterisks; one in the beginning of the strong area, and one at the 
+end. The five mandatory characters accompanying each HTML tags aren't 
+there, and the semantic's name is only as long as a single asterisk 
+character, which is by far easier to type. 
+ 
+It gets even more unfair against HTML and XML when we're talking about basic 
+text-formatting constructs: paragraphs. Most LML don't need the writer to 
+specify anything at all to start a paragraph; instead, they just type away 
+and the LML will magically determine the start and the end of a particular 
+paragraph. HTML, unfortunately, still needs the author to explicitly state 
+"""<p></p>""", and it's pretty apparent as to why HTML is not so easy to write 
+in. 
+ 
+The key here is to reduce the amount of constant, repetitive work the writer 
+needs to perform every time the writer needs to introduce a syntax. LMLs 
+succeeded in this regard because for most constructs, there's no need for 
+writers to write these mandatory angle brackets. The semantic constructs are 
+shorter, intuitive, and sometimes, need to be defined only once, and they can 
+convey just as much as the HTML or XML equivalent. This is pretty much why 
+LML syntaxes are mostly punctuation-based. 
+ 
+However, LML does fall a little short when it comes to parsing structures of 
+a plain-text document. (TODO) 
+ 
+ 
+ 
+== Facts Recollection: URL ==
+ 
+URLs are evil. ?<RFC1738> says that most "unsafe" characters should be 
+encoded. However, not everybody likes to follow standards, seeing that even 
+some big websites like to use prohibited characters inside URL. Maybe it's 
+because it's ?<convenient>, but non-standard URLs make link syntax design a 
+headache, especially if it's a big popular website people will link to. I 
+personally don't care what my URL looks like so long as I can access the 
+website I wanted... Except that I cannot, because the URL contains square 
+brackets which breaks up my hyperlink syntax. 
+ 
+:[RFC1738]: http://www.ietf.org/rfc/rfc1738.txt 
+ 
+:[convenient]: http://perishablepress.com/stop-using-unsafe-characters-in-urls/ 
+ 
+As soon as I started thinking about readable URLs, URLs with international 
+characters come to mind. There's a big difference between a sequence of 
+percentage encoded URL """http://ja.wikipedia.org/wiki/%E3%82%B7%E3%83%B3%E3%83 
+%95%E3%82%A9%E3%83%8B%E3%83%83%E3%82%AF%3D%E3%83%AC%E3%82%A4%E3%83%B3""" and a 
+URL in someone's native language: """http://ja.wikipedia.org/wiki/シンフォニック%3Dレイン 
+""". These URLs point to the Japanese Wikipedia page for Symphonic Rain, except 
+that the latter is clearly more readable. I personally want to support this kind 
+of URL for usability experience. Picking the syntax that's both human readable 
+and conflict-free of URL strings is not an easy task. 
+ 
+According to RFC 1738, """< > " # % { } | \\ ^ ~ [ ] `""" are the unsafe 
+characters. I should never encounter one of these characters even inside 
+an insane URL. It turns out that Wiki syntax authors have thought about 
+this, and decided to use the double square bracket syntax for link elements. 
+("""[[X]]""") ?<Wikimatrix>'s  external link syntax comparison reveals that, 
+pretty much everybody's using that syntax. 
+ 
+:[Wikimatrix]: http://www.wikimatrix.org/syntax.php?i=139 
+ 
+Meanwhile, some people like to enclose URLs within angle brackets, because 
+RFC 1738 says angle brackets should never appear inside URLs. As such, The 
+__Purdue Online Writing Lab__'s ?<OWL> MLA section recommends that URL 
+appearing in citations should be surrounded within angle brackets. 
+ 
+:[OWL]: https://owl.english.purdue.edu/owl/resource/747/08/ 
+ 
+Some people are absolutely insane when it comes to URL. Some PHP servers do use 
+square brackets to represent Arrays in POST data, like the following code 
+snippet: 
+ 
+ """
+ http://www.example.com/foo.php?bar[]=1&bar[]=2&bar[]=3 
+ """
+ 
+The implication is disturbing: I can encounter all kinds of crazy URL if web 
+servers decide to forget standards. Double square brackets aren't exactly safe; 
+similarly, angle brackets and other symbols are just as dangerous. 
+ 
+I should definitely study the English grammar in depth, because I feel like 
+punctuation marks are really getting in the way of my writing. For example, 
+I shouldn't have to use lots of square brackets to write URLs. I should be able 
+to use Markdown's implicit link style, which is just two pairs of opening and 
+closing square brackets, and have the hyperlinking automatically done for me. 
+It's also visually cleaner to see one to two pairs of matching brackets 
+compared to stacked brackets. 
+ 
+ 
+Here's a summary of bracket type for enforcing URL so far: 
+ 
+; Parenthese 
+ 
+  : Most dangerous, because it's allowed in URL. While valid URLs containing 
+    parentheses are relatively rare, they happen pretty often compared to 
+    other brackets. This also interferes with common English writing, 
+    especially when it comes to internal linking and formal citation. 
+ 
+; Square bracket 
+ 
+  : The de-facto standard for wiki-style hyperlinks. While they're not allowed in URL strings, some PHP servers use square brackets in their URL to pass arrays of parameters in the URL. This will unforunately break the forced URL syntax, and for websites people wants to go to, this isn't acceptable. (Most people don't know even URLs have standards.) 
+ 
+    One cheap solution is to match the number of square brackets used in the syntax matching. For example, if a hyperlink opens with two square brackets, it must also close with two consecutive square brackets. 
+ 
+    However, this solution's also a problem when the user wants to write literal square brackets, such as doing IEEE style citation, quoting, inserting replacement text. [...] In summary, square brackets are often used literally. 
+ 
+; Curly Braces 
+ 
+  : De-facto standard for wiki-style images. This symbol clashes with writing mathematics. Curly braces are often used to denote a group of choices or a set of items, like {Apple, Orange, Banana, Lettuce}. They're also often used in a programming language's context, like Java's function enclosing braces. 
+ 
+    The curly syntax will get triggered by mistake when writing nested sets of items, like a set of items containing a set of fruit and another set of meat: 
+ 
+     """
+     {{Apple, Pears, Tomato}, {Pork, Beef}} 
+     """
+ 
+    The double curly braces "{{" will mistake the opening set notation braces as a hyperlink opening. Since the braces are balanced, these items will be interpreted as URL, and the mathematical formula gets turned into a link. A prefix character should solve this matching braces problem. 
+ 
+; Angle Brackets 
+ 
+  : Appears to be the safest choice for hyperlink elements. I have yet to spot a URL that actually uses angle brackets, because they can potentially allow XSS attacks against the server. According to OWL, It's also common for E-mail clients and academic writing to use angle brackets to delimit URL, which implies that angle brackets should never appear inside URLs. (At least the sane ones.) 
+ 
+    UPDATE 10/29/2013: Busted. Some URLs *do* use angle brackets, like below: 
+ 
+    http://mail-archives.apache.org/mod_mbox/ant-user/200512.mbox/<4397C619.5010106@gmx.de> 
+ 
+    Angle brackets are seldom used in formal writing. They are pretty common in mathematics and computer programming as comparison operators, bit shift operators, and replacement for arrows and directional symbols. I also recall that angle brackets are often used to represent ASCII emoticons, like happy faces, angry faces, troubled faces and so on. 
+ 
+    A little regular expression look-around should be able to handle these ASCII cases. Very rarely do people end, or start their URLs and file names with equal signs and hyphens. Moreover, angle brackets are not valid characters for file name on Windows, which shuts down a lot of insanity involving file name or URL with angle brackets. Mac OS X and Linux OS are much more lenient: ?<1>[Only slashes and colons are prohibited.] 
+ 
+    Update @ November 14, 2013: 
+ 
+    {++In the end, I decide to simply tack an extra symbol in front of the "<", or less than sign, and call it a day. I made sure the extra symbol all required the shift-key on the QWERTY keyboard like the angle brackets themselves. ("!", "#", "?")++} 
+ 
+    {++I've also decided to stick with angle brackets to delimit the URL without accounting for angle bracket balancing. Unlike parentheses, curly brackets, and square brackets, angle brackets are often used as comparison operators (Less than, greater than), which means they are unbalanced, like a forum post titled "Something < Something Else".++} 
+ 
+I'm personally leaning towards angle brackets, because the syntax is the least likely to conflict with everyday writing. 
+ 
+:[1]: http://support.grouplogic.com/?p=1607 
+ 
+Techniques to keep in mind: 
+ 
+- Match equal number of opening and closing angle brackets. {++(Dropped, as that still doesn't handle cases that have unbalanced angle brackets, like the title "node.js < nginx".++)} 
+ 
+- Only start matching URL if opening is neither followed nor preceded by the white space character. In the case of follow-up character, it cannot be """* , < . > ; : ' " - = _ : |""" {++(Dropped, because that adds significant parsing complexity.++)} 
+ 
+  {--It also cannot starts with the following symbols:--} 
+ 
+  {--"<3 " "</3 "--} 
+ 
+  {--Similarly, the closing angle bracket is only recognized if it's 
+  not preceded by a whitespace character, including new lines.--} 
+ 
+  {--Whoa, whoa, whoa, this is getting more complicated than I 
+  would like it to  be. It's impossible to filter out all creative 
+  uses of the angle bracket.--} 
+ 
+No matter which syntax I choose for hyperlinks, the writer needs to remember the magical characters to do things, which is no better than compared to other markup languages. Markdown's square bracket and parentheses pairing syntax look the most natural, though I wish the URL part is first defined instead of later. Moreover, I want it to use angle brackets to delimit URL, like the following code snippet: 
+ 
+ """
+ !<ImageURL>[Alt Text] 
+ 
+ ?<LinkURL>[Display Text] 
+ 
+ ?<LinkURL>[!<ImageURL>[Image Alt Text]] 
+ """
+ 
+The syntax below is simply much easier to look at compared to double square brackets with pipe symbols. 
+ 
+ 
+ 
+== BakaBakaMark Version 2: Linking ==
+ 
+I should touch on hyperlinks and images' syntax, because they are extremely important to an HTML document. An HTML document without image might be okay, but a HTML document without external hyperlink is a sure-fire way to become forgotten. 
+ 
+The most common hyperlinking syntax I've seen consists of matching brackets of different flavors, like """<SomeURL | SomeDisplayText.>""" for TiddlyWiki. I personally think they're fine, but they're still visually obstructive. 
+ 
+The other solution involves detecting free-standing URL, such as recognizing 
+prefixes like """http://www.somewhere.com""". Unfortunately, this isn't bullet 
+proof even to common use cases such as """(http://www.somewhere.com)""", which 
+will generate a link with extra closing parentheses, like 
+"""http://www.somewhere.com)""". 
+ 
+ASCIIDoc solves this problem rather well by using macros. The macro goes like this: """image:URL[AltText] link:URL[DisplayText]""". This syntax is intuitive and uses natural English conventions, which opens door for internalization similar to Python's Chinese port @ ?<http://www.chinesepython.org/>. 
+ 
+It does have a problem with bad URL characters; Namely, "[" and whitespace " ". These macro looks pretty natural as part of the paragraph. Yet, Some websites like to use unsafe characters in URL such as this: """image:somewhere/someScript.php?=&[Param][Run this script]""" which is a URL pointing to a image generation script. The opening square bracket in the URL will make ASCIIDoc's algorithm mistake the alt text to be "Param", rather than "Run this script". 
+ 
+ASCIIDoc also has trouble when it comes to locally referenced URLs, such as "images/Tiger & Panther.jpg", which is a perfectly valid use case for a file name with white spaces. Instead of getting the file name with white space, the whitespace will end up breaking the URL into "images/Tiger", leaving the rest of the name out. Since I'm building a personal encyclopedia, which can refer to file names with characters normally not allowed in URL, I do need to be able to use these characters. 
+ 
+Here's a summary of these methods: 
+ 
+; Bracket Matching 
+ 
+  : Allows a wide range of URL, including ones with supposedly illegal characters and Unicode 
+  : Often used by the wiki markup community, so some people will be familiar with it. 
+  : Also allows a fair number of valid link display text, except for other square brackets as part of the link. 
+  : A bit bothersome to type. 
+ 
+; ASCIIDoc Named Macro 
+ 
+  : Intuitive, foreign language friendly with some localization effort. However, **localization does need quite a lot of effort.** 
+  : Very slow to type compared to double brackets. 
+  : Requires additional code in lexical analysis regarding text. 
+ 
+; URL Detection 
+ 
+  : No thought required. Copy and paste and I'm done. 
+  : Lacks custom display text 
+  : Lacks URL substitution. 
+  : Possible conflict with punctuation. Use angle bracket to negate it. 
+ 
+; URL Reference anchor 
+ 
+  : Highest range of URL detection. Pretty much anything on the line works. 
+  : Removes Ugly URL from text, nice and clean. 
+  : Idea from Markdown and APA, MLA, and IEEE citation style. 
+ 
+No one particular method is perfect, but URL Detection, Bracket Matching and URL reference combined together should handle most use cases. They're also relatively easy to implement in the lexer by hand. 
+ 
+Now, I do want to support line-wrapping for External links and images' URLs. Specifically, if I hard line-wrap my hyperlink URL to the next line, I can still treat the URL as if it doesn't contain the new line characters. 
+ 
+ 
+ 
+=== Facts Recollection: Punctuations & Linking ===
+ 
+Implementing an elegant syntax is another issue. If I use more syntactical constructs, I'll have an easier time writing in English grammar convention without automatic interpretations. 
+ 
+On the other hand, I don't want to try too hard to remember the syntax when I write in a particular grammar style. For example, IEEE citation style uses square brackets to denote inline citations, while MLA uses author names and Gregorian years with the latter enclosed in parentheses. I can simply typeup these citation styles literally, but I want to be able to automatically generate internal links and indices while keeping the literal presentation. This is harder than I imagined. Currently, my internal link syntax proposal looks like this: 
+ 
+ """
+ According to Mr. X, manual memory management is the biggest hinderance to 
+ software productivity. [#[1> 
+ 
+ ... //Later in the document 
+ 
+ .1 
+ 1 Mr. X, publication information, page number... 
+ """
+ 
+The internal link will produce a hyperlinked "1". However, to comply with the IEEE standard, I need to wrap an extra set of square brackets around the syntax manually. This is FAR from intuitive. I should be able to add the hash mark right before the opening square bracket, like "#[" and leave it to my document to generate that. IEEE has it easy because citations in IEEE are inside square brackets. 
+ 
+It gets even harder with MLA citation style, because unlike IEEE, MLA citation tends to use parentheses around the year while leaving the authors standing free. Suppose we have a paragraph like the following: 
+ 
+ """
+ Burns & Martin (1993) has openly voiced their oppositions against policy Y, 
+ claiming that policy Y does nothing to help homeless people. 
+ """
+ 
+One hash mark before the opening parentheses sound like it can do the trick, except there's a lot of publications happening in the year 1993. Surrounding the parentheses around the authors, once again, sounds very unintuitive. I had to markup the authors' names explicitly with parentheses. Reading this plain text file in source form is going to leave me wondering why all the numbers and names are enclosed in strange brackets. 
+ 
+It's not a good experience. In the end, I can't figure out the best place to mark an internal link without murdering the text. The best I can do is to make writing in IEEE style as smoothly as possible; Namely, using Michel Fortin's PHP Markdown Footnote """[^This is an internal link]"""
+ 
+ 
+ 
+=== Punctuation & Text Formatting ===
+ 
+Punctuation-based markup language prevents the writer from using punctuation 
+at will, especially when it involves creative writing. For example, asterisks 
+are commonly used as obfuscator for vulgar words or for hidden form fields. 
+However, sometimes I want to write a chapter of censorship, """***** *** ***** 
+*** ********** **** ****""", or "where all words are obfuscated like this". 
+However, markup languages such as Markdown uses asterisks as text-formatting 
+constructs. This makes typing out literal asterisks, as well as bold & italic 
+variants of these asterisks, a very difficult task. 
+ 
+When I feed that censored sentence into Babelmark, it turns out that asterisks 
+are used for horizontal lines as well. Prefixing the sentence with a real 
+English letter gives me at least five different kinds of answer, with insane 
+markup like the following: 
+ 
+ """
+ <p>A <strong><em></strong>  <strong></em> <em>*</em></strong> 
+ <strong>* <em>*</em><em>*</em><em>*</strong>  <strong></em>* **</strong> 
+ </p> 
+ 
+ <p>A <strong>*</strong>  <strong><em> **</em></strong> 
+ <strong><em> <strong><em>*</em></strong> 
+ </em> 
+ </strong> <strong><strong> </strong></strong> 
+ </p> 
+ """
+ 
+There's still some sanity left like this output: 
+ 
+ """
+ <p>A ***** *** ***** *** ********** **** ****</p> 
+ """
+ 
+It's not really clear which asterisks represent the start of a bold text 
+section, its end, or maybe if it's italic text, or worst, just literal 
+asterisks. 
+ 
+Fencing off these problem areas is a quick solution to the problem, but it's 
+not a complete solution. Here's the Github fenced code block: 
+ 
+ """
+ ``` 
+ ***** *** ***** *** ********** **** **** 
+ ``` 
+ """
+ 
+I can now write literal asterisks, but I needed an extra set of ugly markup to 
+do so, and it still doesn't solve all of my problems. For example, I cannot 
+represent bold and italic asterisks, and I cannot have asterisks right next 
+to my bold and italic asterisks. Markdown alleviates this problem with a 
+backslash preceding the asterisk, but I still find this solution to be ugly. 
+It's a small use case, but once we start involving more text formatting like 
+underline, superscript and so on, all of our punctuation marks will be tied up. 
+I don't want to think what will happen when someone holds down his shift key 
+and rolls his head across the number line... and back. 
+ 
+ 
+ 
+=== Liberal Punctuation Usage ===
+ 
+Now, my problem in these markup languages is that I cannot use punctuation 
+marks at will. This is a very big problem in creative writing like novels, 
+where punctuation marks can be important to the story, like an Emoji in a 
+text message in the plot. 
+ 
+The easiest way around this problem is to detect word boundaries with these 
+punctuation marks. That way, text-formatting only happens when the writer 
+actually intends to use the text-formatting, instead of having them happening 
+the instant the punctuation mark appears. 
+ 
+I know that ASCIIDoc solves the punctuation problem by word boundary detection. 
+In English, all words are separated by at least one white space inbetween each 
+one of them, including new lines. Therefore, I can simply match a formatting 
+start if the symbol happens before a non-whitespace, and it's preceded by a 
+white space character. Similarly, the ending is matched only if there's some 
+non-word character before it, and white-space follows the symbol immediately 
+after. 
+ 
+This looks like a good solution on the surface, but it falls apart the instant 
+I become picky. This solution still can't make asterisks themselves bold 
+without resorting to backslashes. It also chokes when I want to have some 
+inter-word emphasis, like """Some**Body**'s Bag.""". Worst, attempting to match 
+word boundaries is fruitless against Chinese, Korean, Japanese, and many other 
+languages, where each character is a word by itself, and there's no white space 
+in their sentences. There's a lot of in-phrase emphasis in these languages, 
+which means it's unacceptable to not provide this functionality. 
+ 
+At the very least, I need to be able to do inter-word text formatting, without 
+restricting punctuation mark usage and ad-hoc ASCII symbol representation 
+*too much*. It's not like these punctuation symbols themselves need to be 
+text-formatted. 
+ 
+Markdown itself parses formatting the instant it encounters a symbol, which 
+leads to a really, really compact and clean syntax, and stops parsing once it 
+encounters another symbol of the same kind. Then there's those that tries to 
+solve the word boundary problem. The other uses slightly more verbose markup, 
+such as ?<Skriv>, which uses two symbols in succession instead of just one. 
+If I need even more power than this, I'll need matching starting and ending 
+tags, similar to ?<CriticMarkup> and ?<BBCode>, which clearly mark the 
+start and the end of a formatting boundary. The syntax is getting closer and 
+closer to HTML in complexity, and at this point, the syntax isn't so easy to 
+type anymore; It's like coding an extra layer of HTML myself. 
+ 
+:[Skriv]: http://markup.skriv.org/language/syntax 
+:[BBCode]: https://www.phpbb.com/community/faq.php?mode=bbcode 
+:[CriticMarkup]: http://criticmarkup.com/ 
+ 
+I suppose I can take ASCIIDoc's approach for word boundary detection, but with 
+a twist. I will keep adding symbols, and then, if it's followed *or* preceded 
+by something that is not white-space, it's a valid formatting token. That way, 
+I can do the following: 
+ 
+ """
+ *A*xe 
+ 
+ Ma*ce* 
+ 
+ Ra*cist* 
+ """
+ 
+But when I do want to use asterisks alone, I create a word out of asterisks. 
+If I really want censorship though... it's not necessary, and there's always 
+other characters to do the job, like "#". 
+ 
+ 
+ 
+=== Facts Recollection: Forced Line Breaks ===
+ 
+Forced line break is a text control tool that forces the paragraph to start 
+on a new line regardless of its current position. This tool exists 
+because it has to do with the history of computers, when there were no 
+automatic word-wrapping or switching to new lines. Everything that entered a 
+computer's terminal are preserved, so if one needs to display a line of text 
+longer than the limit, one has to fold the continuing text and display them 
+on a new line. (They would run past the hardware screen otherwise.) As such, 
+people usually used a blank line between paragraphs to distinguish one from 
+the other. Despite advanced word processing tools nowadays, some people prefer 
+to have full control over line breaks. 
+ 
+There's a ?<Line Break>-[discussion] on WikiCreole talking about line 
+breaks. Some people think it simply shouldn't be supported at all, because 
+it tends to display poorly on screens with different resolutions, especially 
+with word wrapping algorithms being so advanced these days. Others are talking 
+about the best syntax for line breaks. Eventually, the discussion ended without 
+any significant progress. 
+ 
+The issue of invisible markup is the primary subject of debate. ?<Invisible> 
+markups are troublesome because the writers can't see or do anything to them, 
+unless they're knowledgeable about computers. As such, the writer look at 
+their word processors, delete some characters and suddenly, the page layout 
+has changed significantly, and the writer can't understand why. In the case 
+of line breaks, the easiest solution is to add an explicit syntax to that 
+construct, but that comes at the cost of visual noise in the source document. 
+Nobody likes to read a document that's littered with backslashes all over the 
+place. 
+ 
+In the real world, markup languages have already taken a stand to this issue. 
+HTML, the web browsers' language, have decided that word wraps are the norm 
+unless the user uses explicit tags to insert them. The last time I checked, 
+there's no option to force a line break within the same paragraph in OpenOffice 
+Writer 3.4.1 and MS Word 2007; In fact, these users start a new paragraph every 
+time they press their enter key. John Gruber's Markdown has decided to use two 
+trailing whitespace at the end of a paragraph. WikiCreole uses an explicit 
+markup in the form of two backslash characters. Finally, ASCIIDoc uses plus 
+signs at the end of a line with a whitespace before it as forced line break. 
+ 
+It's a difficult issue. Disallowing forced line break improves usability at the 
+cost of control and freedom. On the other hand, forced line breaks don't play 
+nicely with different hardware. Even if I do allow forced line break, there's 
+the issue of markup visibility. Invisible line breaks look clean and nice, 
+while visible line breaks returns the control back to the user. So far, there's 
+no satisfactory solution that renders line breaks visible, without littering 
+the screen into a mess of ugly markup. 
+ 
+:[Line Break]: http://wikicreole.org/wiki/Talk.ChangeLinebreakMarkupProposal 
+:[Invisible]: http://www.codinghorror.com/blog/2006/05/invisible-formatting-tags-are-evil.html 
+ 
+Currently, most text editors like Notepad, Notepad++, BBEdit and others support 
+word wrapping. It's perfectly okay to type a paragraph out on a long line. 
+ 
+In languages such as HTML, web browsers treat line breaks as ordinary white 
+space. Here, it's okay if I "soft break" my writing into multiple lines so 
+long as they're not separated by a blank line. Some writers do prefer to write 
+this way, letting line-wrapping algorithms take care of everything. 
+ 
+ 
+ 
+=== Fact Recollection: Localization ===
+ 
+The Python programming language has a translation from English to Traditional 
+Chinese, which is the ?<ChinesePython> project. The translation project was 
+originally used to port Python into Chinese for the purpose of education, 
+teaching people about programming. From that project, it goes to show that 
+a good language, programming or otherwise, should be easily understandable 
+even if all the keywords have been localized into other languages. Moreover, 
+if I'm using punctuations to delimit my syntax, I need to be considerate of 
+other natural languages and keyboard layout. Not everyone's got an QWERTY 
+ASCII keyboard. 
+ 
+:[ChinesePython]: http://www.chinesepython.org/ 
+ 
+Most punctuation-based languages, such as PHP and C++ as described in the 
+Chinese Python webpage, make learning software engineering unnecessarily 
+difficult. Software engineering is already difficult on a theoretical and 
+philosophical level, because like any other disciplines of study, the correct 
+mindset is much more important than anything else. Unfortunately, all these 
+combinations of punctuation marks in PHP and C++ are adding unnecessary 
+difficulties towards learning. 
+ 
+In PHP, all variables start with a dollar sign, and future references to the 
+variable also needs to start with the dollar sign. In both C++ and PHP, all 
+expressions and statements must end with a semi-colon. There's even the 
+empty statement construct, which is just a semi-colon by itself, which leads 
+to things like two semi-colons side by side. The translator didn't like 
+these punctuations very much, arguing that they get in the way of learning, 
+and that most people don't write like that. 
+ 
+I personally think punctuation-based languages are okay for programming 
+languages, where precision and ambiguity resolution is extremely important. 
+However, a readable document markup language, especially one designed to 
+facilitate *Writing*, cannot be so dependent on punctuation marks to shape 
+the document's structure. 
+ 
+I've just attempted to find special ASCII characters with equivalents in 
+other languages. It turns out that many keyboard layout, as well as many 
+spoken and written languages, simply don't have some of the ASCII punctuation 
+marks. For example, the Arabic dialect has no semi-colon, and the Mongolian 
+language don't have the number sign (#) in their native alphabet. Fortunately, 
+every keyboard layout for a language always have a fallback ASCII QWERTY 
+keyboard layout, which the user can switch back and forth at will. It's 
+still not as smooth as seeing the keys on your hardware keyboard, however... 
+Something ?<iOSMongolianKB>-[Apple's iOS excels] with. 
+ 
+:[iOSMongolianKB]: KeyboardImg/iOSMongolianKB 
+ 
+In the end, I decided to not deal with this issue and use ASCII punctuations 
+at will. It's a lot easier to worry less that way. 
+ 
+On an unrelated note, MS Gothic is a great monospace font for most Chinese, 
+Korean, and Japanese character. I should use this in my text editors. 
+ 
+On another unrelated note, I should probably have my Lexer count the number 
+of different white space, including Unicode ones. That way, when it comes to 
+inserting white space, it'll automatically insert the ones most suitable 
+for the writer's language. E.g: If Ideographic whitespace is the most 
+commonly used in the document, use ideographic whitespace for space 
+insertion. (So that the document looks good.) 
+ 
+ 
+ 
+== Paragraphs, Indentation & Line-Wrapping ==
+ 
+BakaBakaMark Version 1 (BBM_V1) forces all paragraphs to terminate with 
+a blank line, which has made implementing the language considerably easier. 
+That way, if a container element such as a list or a blockquote need 
+to contain multiple paragraphs, the blank line makes it clear as to 
+where the paragraph ends. 
+ 
+BBM_V1 uses a relaxed indentation rule to mark a block element's continuity. 
+Normally, indentation doesn't matter until the writer starts a container 
+block that can contain other block elements. Once the writer starts say, a 
+bullet list, the writer only needs to indent the first line of his paragraph 
+indented at least one space more than the starting column of the bullet point 
+symbol. 
+ 
+Lastly, paragraphs are the only block elements that can directly contain 
+text. That way, there's no responsibility for other block elements to handle 
+text-formatting; It's all up to the paragraph, and other block elements can 
+decide whether this paragraph should disallow a certain formatting construct, 
+such as hyperlinks, if hyperlinks aren't appropriate for certain contexts. 
+ 
+This approach allows the writer to specify powerful, yet unambiguous 
+document structure, with the benefit of easy implementation. Once the parser 
+recognizes a paragraph, it's always a paragraph until a blank line decides 
+to terminate it. The writer has a lot of freedom formatting the paragraph 
+without unexpected termination, which is a serious problem in Markdown's 
+nested blockquotes and lists. In Markdown, one cannot be sure whether the 
+hyphen denotes the start of a list, or is a continuation of the current 
+paragraph, if the hyphen happens to start a line in a soft-wrapped 
+paragraph. 
+ 
+If the writer is in a hurry, this approach begins to show its weakness: 
+Wasting lines and white space. It's impossible to write tightly wrapped 
+bullet lists, which is very useful if someone's writing in a hurry: 
+ 
+ """
+ + Item 1 
+ + Item 2 
+ + Item 3 
+ 
+   {{{ 
+   This is a blockquote in Item 3 
+   }}} 
+ """
+ 
+I currently have a few options regarding blank lines after a paragraph. 
+ 
+1. Every line of text in a paragraph must be indented to the same level 
+   as the first line of the paragraph, or deeper. 
+ 
+   This approach lets me write tightly wrapped bullet lists without 
+   banging on the enter key all day long, at the cost of banging the space 
+   bar on every new line. In other words, if there are more list items than 
+   blocks within a list item, this approach benefits. Otherwise, this approach 
+   suffers. 
+ 
+   A good text editor has automatic indentation to migitate space bar banging, 
+   thanks to line wrapping, except web text boxes usually don't have such. 
+ 
+   The structure of the document will also become perfectly clear with this 
+   arrangement. 
+ 
+   (Parsing blockquote paragraphs with a ">" on every line is still difficult, 
+   however. Moreover, I'm going to get VERY tired typing all these angle 
+   brackets!) 
+ 
+   On the downside, if I write everything on a single long line and relies on 
+   word-wrap, it'd be difficult to see where block quotes, list items and all 
+   other things start or end. 
+ 
+2. Leave it as it is. Not bad, but vertical screen estate isn't cheap. 
+   It also promotes structurally ambiguous writing formats, especially when 
+   text lazy line-wraps around list items and other things despite the presence 
+   of hard line breaks. 
+ 
+3. Every time the parser encounters a new line, look ahead in the token 
+   stream and check for block-level constructs on the next line. If there 
+   are such constructs, the paragraph is terminated. 
+ 
+   This will negatively impact parser performance, because there's too 
+   much lookahead it has to do every time it encounters a line wrap. 
+ 
+   This approach also constrains the writer from using certain characters, 
+   like *, +, -, 1988. They can be mistaken for the start of a list if they 
+   happen to start the line... unless a backslash escape is employed, or if 
+   Option 1 used as well. 
+ 
+In the end, I *want* to choose option 1, as it results in the nicest-looking source code. Unfortunately, that's going to open a lot of rooms for ugly line breaking, like "Mr. Smith", which is supposed to be treated as a single word, gets fragmented into two lines. It also forces the user to bang against the enter/return key if they don't want paragraphs to indent against the list bullet: 
+ 
+ """
+ - Paragraph Paragraph ... This is one very long paragraph that occupies the rest of the line, and word-wrapping algorithm has wrapped the text to the next line, which end up eating into the list bullet's space. This does not look very nice on the source code on a less-advanced text editor without word-wrapping and automatic indentation. On the other hand, many people (at least myself) used to treat line breaks as the end of a paragraph, which is a habit carried over from Microsoft Word. 
+ 
+ - Paragraph Paragraph ... This is one very long paragraph that occupies the rest of the line, and word-wrapping algorithm has wrapped the text to the next line, which end up eating into the list bullet's space. This does not look very nice on the source code. 
+ 
+   - This is a nested list item ... This is one very long paragraph that occupies the rest of the line, and word-wrapping algorithm has wrapped the text to the next line, which end up eating into the list bullet's space. This does not look very nice on the source code. 
+ """
+ 
+ 
+ 
+
+ 
+ 
+ 
+=== Future-Safe Symbols ===
+ 
+"""
+! @ # $ % ^ & * () {} [] <> : ; " ' / ? | = + - _ ~ , . 
+ 
+~ ("Approximately" in Mathematics, Emoticons, accent) 
+| (Separator, used in Mathematics and physics) 
+@ (E-mail, directed speech, such as @Somebody) 
+_ (Denotes whitespace, underlining.) 
+\\ (Reverse solidus. Not used in writing, but often used as escape characters 
+  in programming and other computer-related subjects) 
+; : ' " {} [] () / ? & , . (Many obvious, common use cases in writing) 
+<> % $ # ^ + = - (Mathematics, Accounting, or numbers in general) 
+"""
+ 
+=== Future-Unsafe Symbols ===
+ 
+"""
+` (Grave accent, but some keyboards are abandoning it.) 
+"""
+ 
+ 
+ 
+ 
+=== Parser Options Listing ===
+ 
+; Block Nesting Limit (6) 
+ 
+  : Denotes the maximum numbers of structural nesting the parser will allow. 
+    Blockquotes, tables, lists, custom block elements shall all count toward 
+    this limit. 
+ 
+    This option is primarily used to prevent nesting abuse, such as tables 
+    inside tables ad-nauseum. 
+ 
+; Allow X ("ALL") 
+ 
+  : Recognizes a particular syntactical construct, like hyperlinks and images. 
+    For certain situations, it doesn't make sense to allow certain types of 
+    formatting construct in the document, like images in a bandwidth-limited 
+    bulletin board. 
+ 
+ 
+=== HTML 4 & 5 Backend Options Listing ===
+ 
+Format: """": " Definition Phrase "(" Default-Parameter ")""""
+ 
+; Remove newlines (Off) 
+ 
+  : Removes new line characters in phrasing level content. 
+ 
+    **This option is primarily for East-Asian languages to prevent erraneous 
+    white-space, as East-Asian text usually don't treat line breaks as white 
+    space.** 
+    
+; Remove WSNL between Images (Off)
+
+  : If two images are adjacent to each other with only EOL or white space
+    separating them, remove the whitespace as well. (HTML does this 
+    automatically.)
+ 
+; Input charset ("UTF-8") 
+ 
+; Output charset ("UTF-8") 
+ 
+  : Defines the expected input document character set, as well as the output. By 
+    default, UTF-8, because it's the de-facto standard for the web. (Don't think 
+    this is doable for Javascript.) 
+ 
+; CSS-Class-Prefix ("XXX") 
+ 
+  : Defines the CSS prefix for the class attribute, which acts as the hook for 
+    CSS selectors. 
+ 
+; CSS-ID-Prefix ("XXX") 
+ 
+  : As above, except this is for the ID attribute, which are used for internal 
+    links within the same document. This should be a sufficiently random 
+    integer that wouldn't collide with an existing ID in the same document. 
+ 
+    (Suggestion: At least 8 digits. Cryptographically strong random numbers 
+    are not necessary. If invoked from a web browser, the browser should 
+    first check if the generated ID prefix already exists.) 
+ 
+; "javascript:" Directive (Off) 
+ 
+  : Allow "javascript:" directive inside hyperlink and image element. If 
+    disabled, the "javascript:" directive will be substituted with something 
+    harmless. 
+ 
+; "data:" Directive (Off) 
+ 
+  : As above, except this one is for Data URI.

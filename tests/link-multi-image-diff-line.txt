@@ -1,0 +1,10 @@
+?<Multiline>-[
+!<Image1>-["""This should be literal]
+!<Image2>-["""This should be literal]
+!<Image3>-["""This should be literal]
+''Some more content''
+]
+
+////
+It's okay if there are no newlines between images. 
+////

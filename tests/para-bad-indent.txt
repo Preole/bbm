@@ -1,0 +1,10 @@
+  This is 
+  preferred.
+  
+  This is acceptable, if 
+   one wants to ensure spaces are 
+   within the visible within the same paragraph.
+   
+  This is bad. Insufficient 
+ indentation level terminates the ongoing paragraph and 
+ starts a new one.

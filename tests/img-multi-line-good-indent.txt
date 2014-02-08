@@ -1,0 +1,10 @@
+  !<Multi
+  line>
+  -[URL 
+  Alt 
+  Text]
+
+////
+Note the invisible trailing white space after each word character. They're 
+significant and they should influence the resulting attribute value.
+////

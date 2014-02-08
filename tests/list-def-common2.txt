@@ -1,0 +1,11 @@
+; Term 1
+; Term 2
+; Term 3
+: Description 1
+
+  Another paragraph in description 1.
+  
+: Description 2
+: Description 3
+
+This signals the end of a definition list.

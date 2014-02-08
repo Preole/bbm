@@ -1,0 +1,6 @@
+: This is not allowed.
+; This list shall be removed.
+
+////
+Should produce no code.
+////

@@ -1,0 +1,8 @@
+<h3>
+ATX With Setext H2
+</h3>
+<hr>
+<p>
+Should produce an ATX-header and a divider line, not a SeTeXT-header 
+paragraph.
+</p>

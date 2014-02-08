@@ -1,0 +1,80 @@
+December 16^^th^^, 2013
+=======================
+
+The compiler's officially completed, and I've resolved the last code smell 
+two days ago. This is consistent with the promise I've laid down since the 
+last time I wrote. I'm certain I can still understand the code base many 
+years into the future from now; In other words, it's pretty readable, though 
+the compiler's got a monolithic architecture that can be broken down into 
+smaller, more digestible units.
+
+The compiler's performance isn't spectacular; That is, at around ~40KB or so 
+of source code, there's a very small delay before it outputs the HTML. I have 
+yet to optimize the compiler's performance, and I know that the thing creates 
+a lot of garbage in the memory. As a result, the garbage collector is a little 
+overworked cleaning after my mess. 
+
+That's okay however; I don't need to optimize until I know that I need it, 
+and know where I absolutely need it.
+
+From a usability perspective, I'm very happy with this language. It's light 
+enough to make me not feel BakaBakaMark at all, especially when I am focused 
+on the content. It's powerful enough to do the things I need to do, such as 
+tables, lists, and hyperlinking. The most important feature though is 
+extensibility; There are a total of three primary syntaxes dedicated to that 
+issue, and the possibilities are already unlimited, without requiring any 
+modification to the existing syntax.
+
+I have also taken great pain in providing excellent, non-halting error 
+recovery in the face of abuses. It keeps running when I tried nesting a list 
+within a list within a list. It's still running when I nested hyperlinks 
+inside hyperlinks. No matter what I did, the parser doesn't crash or halt on 
+errors. This error recovery behavior is very important for lightweight markup 
+compilers that must deal with suspicious input, such as forums or blog 
+commenting system.
+
+Next, I made sure the compiler refuses to output invalid HTML and evil 
+Javascript under **all** possible input. It's impossible (As far as I know) 
+to explode the web page's within BakaBakaMark. Not even the sneaky XSS attacks 
+using """javascript:""" and """data:uri""" directives within hyperlinks can 
+slip past these defences. The only way to mangle a web page's layout is if 
+the CSS author messed up by accident, which isn't really the compiler's 
+responsibility.
+
+I even recorded all the error recovery behaviors, grammar rules, and whatever 
+finicky details to make these happen, which can be found under the ancient 
+"""readme""" file ?<EBNFGrammar.txt>
+
+Now, I can finally get back to the task of creating the portable Wiki... 
+which needed a complete rewrite even before I started this long ''side'' 
+project.
+
+However, I should finish some peripheral document of the language first, 
+like the introduction.
+
+
+
+December 17^^th^^, 2013
+=======================
+
+- Introduction, philosophy, licensing and most peripheral documents have been 
+  completed.
+- Fixed an accidental line break insertion bug when a hyperlink is the last 
+  element of an indented paragraph.
+- Removed debugging printing functions. (They're no longer needed)
+- Need to work on """Usage.txt"", as well as refactoring the code to allow 
+  easier interfacing with other Javascript code.
+  
+  
+  
+December 22^^nd^^, 2013
+=======================
+
+Installed an HTML/XHTML DOM Node version of the code generator into the 
+compiler. That way, other client-side Javascript may choose to install DOM 
+nodes into the webpage instead of using """innerHTML""", which is brittle 
+and prone to XSS attacks.
+
+TODO: Allow custom compilation options.
+
+

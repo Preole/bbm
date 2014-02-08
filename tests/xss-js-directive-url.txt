@@ -1,0 +1,3 @@
+?<javascript:alert('xss');>
+
+!<data:javascript:alert('xss');>

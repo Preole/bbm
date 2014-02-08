@@ -1,0 +1,11 @@
+""" """" """"" """""" """"""" Code Abuse, 
+resulting in N^^2^^ run time, and also generates 
+an unnecessary amount of garbage due to backtracking.
+
+////
+A strictly correct implementation may render """^^2^^""" as superscript. 
+However, the preceding code snippet syntax will induce a lot of unnecessary 
+backtracking and degrade performance. It's acceptable to parse the rest of 
+the document literally, if a verbatim text context fails to close properly 
+before the end of the paragraph.
+////

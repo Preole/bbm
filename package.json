@@ -1,0 +1,36 @@
+{
+  "name": "bbm",
+  "author": "Preole",
+  "version": "1.0.0",
+  "description": "BakaBakaMark: An Extensible LML-HTML Compiler.",
+  "license": "BSD-2-Clause",
+  "keywords": [
+    "lml",
+    "html",
+    "bbm",
+    "bakabakamark",
+    "Lightweight markup language",
+    "text-processing",
+    "scaffolding"
+  ],
+  "devDependencies": {
+    "grunt": ">=0.4.0",
+    "grunt-contrib-jshint": ">=0.8.0",
+    "grunt-contrib-uglify": ">=0.3.0",
+    "grunt-contrib-clean": ">=0.5.0"
+  },
+  "main": "./lib/bbm.js",
+  "bin": { 
+   "bbm" : "./cli.js"
+  },
+  "man": [
+    "./man/bbm.1",
+    "./man/bbm.2",
+    "./man/bbm.3",
+    "./man/bbm.4",
+    "./man/bbm.5"
+  ],
+  "engines": {
+    "node": ">=0.8.0"
+  }
+}

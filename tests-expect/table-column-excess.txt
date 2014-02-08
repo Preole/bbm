@@ -1,0 +1,26 @@
+<table>
+ <tr>
+  <td>
+   <p>
+Team Left
+   </p>
+  </td>
+  <td>
+   <p>
+Team Right
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+30
+   </p>
+  </td>
+  <td>
+   <p>
+15
+   </p>
+  </td>
+ </tr>
+</table>

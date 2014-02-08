@@ -1,0 +1,9 @@
+Setext header without a following
+blank line should work. Though for 
+the best aesthetics, it's recommended 
+to have a blank line after the SeTexT. 
+Otherwise, there's a little too much 
+visual noise. 3
+=================================
+This some text preventing SeTexT from working, 
+but SeTexT should still work fine.

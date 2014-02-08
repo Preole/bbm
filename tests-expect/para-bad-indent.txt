@@ -1,0 +1,16 @@
+<p>
+This is 
+preferred.
+</p>
+<p>
+This is acceptable, if 
+ one wants to ensure spaces are 
+ within the visible within the same paragraph.
+</p>
+<p>
+This is bad. Insufficient
+</p>
+<p>
+indentation level terminates the ongoing paragraph and 
+starts a new one.
+</p>

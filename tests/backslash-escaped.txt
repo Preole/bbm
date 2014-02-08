@@ -1,0 +1,7 @@
+"""\\\\\\\\"""
+
+
+////
+The code snippet should produce four, not eight backslashes. Four 
+are used to escape the other four that are rendered in the output.
+////

@@ -1,0 +1,4 @@
+<pre><code>[^\\s|\\s$]
+</code></pre>
+<pre><code>[^\s|\s$]
+</code></pre>

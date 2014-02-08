@@ -1,0 +1,24 @@
+. Gallery 1
+.. right
+.. template gallery
+****
+?<SomeURL>
+-[
+!<Image1>-[Alt Text]
+!<Image2>-[Alt Text]
+!<Image3>-[Alt Text]
+]
+
+This is a right-floating gallery of clickable images all pointing to the 
+same URL. The image identifiers should be substituted by the reference 
+links defined at the end of the document: HTML1, HTML2 and HTML3.
+
+Whitespace in CSS classes and ID should be removed.
+****
+
+This is some paragraph text floating around the right-floating gallery, 
+if CSS support is available.
+
+:{Image1}: HTML1
+:{Image2}: HTML2
+:{Image3}: HTML3

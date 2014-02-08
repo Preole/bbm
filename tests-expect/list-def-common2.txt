@@ -1,0 +1,32 @@
+<dl>
+ <dt>
+Term 1
+ </dt>
+ <dt>
+Term 2
+ </dt>
+ <dt>
+Term 3
+ </dt>
+ <dd>
+  <p>
+Description 1
+  </p>
+  <p>
+Another paragraph in description 1.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Description 2
+  </p>
+ </dd>
+ <dd>
+  <p>
+Description 3
+  </p>
+ </dd>
+</dl>
+<p>
+This signals the end of a definition list.
+</p>

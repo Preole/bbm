@@ -1,0 +1,66 @@
+<table>
+ <tr>
+  <th>
+   <p>
+Candidate
+   </p>
+  </th>
+  <th>
+   <p>
+Won
+   </p>
+  </th>
+ </tr>
+ <tr>
+  <td>
+   <p>
+Joe Smith
+   </p>
+  </td>
+  <td>
+
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+Joe Blogg
+   </p>
+  </td>
+  <td>
+
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+Reo Adriana
+   </p>
+  </td>
+  <td>
+   <p>
+Winner
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+Asparagus Vreo
+   </p>
+  </td>
+  <td>
+
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+Somethingsky
+   </p>
+  </td>
+  <td>
+
+  </td>
+ </tr>
+</table>

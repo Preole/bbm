@@ -1,0 +1,9 @@
+- > - > - > - > - > - > This is a too-deeply nested list. There should be
+                        an upper nesting limit to prevent endless nesting, 
+                        or the code will run the parser out of memory.
+
+////
+In this particular test, only eight block-level nesting are permitted. 
+The last four list item and blockquote markers should be rendered as 
+literals.
+////

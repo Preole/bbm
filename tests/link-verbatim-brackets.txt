@@ -1,0 +1,2 @@
+?<Link>-["""]]] These closing square bracket should not 
+be counted as closing the links, due to verbatim code mode."""]

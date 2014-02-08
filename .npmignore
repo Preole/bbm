@@ -1,0 +1,9 @@
+./node_modules/
+./journal/
+./doc/
+./tests/
+./tests-expect/
+./doc.js
+./test.js
+./git*
+./Gruntfile.js

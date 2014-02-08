@@ -1,0 +1,7 @@
+<blockquote>
+ <p>
+<strong>Emphasis
+Should work across Multiple
+Lines</strong>
+ </p>
+</blockquote>

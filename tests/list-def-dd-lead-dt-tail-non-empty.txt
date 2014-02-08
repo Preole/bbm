@@ -1,0 +1,17 @@
+: This description shall be removed because definition lists cannot begin
+  with a description.
+: The next term shall be removed because it's an empty term.
+; 
+; A proper term.
+
+  : A proper description
+  
+; Another proper term
+
+  : A proper description two.
+  
+  : The next description is removed due to it being empty.
+  
+  : 
+  
+; This term is to be removed because definition lists cannot begin with terms.

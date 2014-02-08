@@ -1,0 +1,5 @@
+=== ATX With Setext H2 ===
+--------------------------
+
+Should produce an ATX-header and a divider line, not a SeTeXT-header 
+paragraph.

@@ -1,0 +1,7 @@
+<p>
+{--
+Deletion Bad Nesting due to indentation
+</p>
+<p>
+--}
+</p>

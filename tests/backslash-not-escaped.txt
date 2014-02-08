@@ -1,0 +1,11 @@
+"""\"\"\""""
+
+A backslash character always turns the next character into a literal text 
+character, except space and newlines. The backslash character is always 
+discarded regardless of context.
+
+////
+Note: The escape entity "&quot;" can be replaced with the typewriter's 
+double quote in normal HTML context, such as inside a <p> tag. If the 
+build target is XHTML, then it needs to be escaped.
+////

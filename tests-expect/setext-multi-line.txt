@@ -1,0 +1,4 @@
+<h1>
+Multi-line paragraph with
+Setext ending.
+</h1>

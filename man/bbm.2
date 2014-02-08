@@ -1,0 +1,295 @@
+BakaBakaMark Quick Syntax Reference
+===================================
+
+
+
+Inline Element: Links
+---------------------
+
+; """?<ExternalURL>-[Display Text]"""
+: Default External Hyperlink. If protocol prefix such as """http://""" is 
+  omitted, it is defined a relative link.
+
+; """#<PlatformSpecificURL>-[Display Text]"""
+: By default, same effect as External hyperlink. However, its URL values 
+  may have special effects that transform the link into something else 
+  depending on the hosting backend. 
+  
+  For **BareBonesWiki**, This links to another entry within the wiki with 
+  the title denoted by the URL value.
+
+; """!<ImageURL>-[Alt Text]"""
+: Image element.
+
+; """#[LinkID]-[Display Text]"""
+: Internal Link within the same document.
+
+
+
+Inline Element: Text-Formatting
+-------------------------------
+
+""""
+**Bold** 
+
+''Italic'' 
+
+^^Superscript^^ 
+
+,,Subscript,, 
+
+__Underline__
+
+{++Insertion++} 
+
+{--Deletion--} 
+
+"""Verbatim Text/Code Snippet"""
+""""
+
+
+
+Block Element: Reference-Style Links
+------------------------------------
+
+One of the four hyperlink types, then define the identifier and 
+URL pairing elsewhere. (It is considered a block-level element)
+
+"""
+!<RefID>-[Reference-Style Image]
+
+:{RefID}: image.jpg
+"""
+
+
+
+Block Element: Paragraphs
+-------------------------
+
+"""
+    Type away. If you line-wrap manually, 
+    make sure every line starts on the 
+    same column, lined up against the 
+    left-margin.
+
+    Use blank lines (Two enter keys) to 
+    separate paragraphs.
+
+    Insufficient indentation
+will prematurely terminate the paragraph.
+
+Tabstops are considered as one space for 
+the purpose of determining indentation. 
+Spaces are highly recommended.
+"""
+
+
+
+Block Element: Blockquotes
+--------------------------
+
+"""
+> Greater than sign, then insert the block 
+  element of choice.
+
+  """
+  Use indentation to denote that the block 
+  element is nested inside the blockquote.
+  """
+
+  > Use multiple """>""" to nest blockquotes.
+"""
+
+
+
+Block Element: Setext Header
+----------------------------
+
+"""
+Most important header is underlined 
+with a row of equal signs. Do not 
+include trailing spaces after these 
+signs. They may span multiple lines.
+===================================
+
+A row of hyphen minus denotes the 
+second most-important header. **May 
+contain inline elements such as 
+phrase emphasis.**
+-----------------------------------
+"""
+
+
+
+Block Element: One-liner Header
+-------------------------------
+
+"""
+= Most important
+== 2nd most important
+=== 3rd most important
+[...]
+[...]
+[...]
+======= Six or more "=" are equally important
+
+=== Optionally close with equal signs ====
+=== Inline elements are **ineffective**. ===
+"""
+
+
+Block Element: Fenced Code (Verbatim) Block
+-------------------------------------------
+
+""""
+"""
+Begin a line with at least three or 
+more double quotes, then press return.
+
+All text will be interpreted literally.
+**No text formatting**. All spaces and 
+line breaks are preserved.
+
+Place an equal number of double quotes 
+on the same column as the starting fence, 
+then end the line immediately to end 
+the code block.
+"""
+""""
+
+
+
+Block Element: Bullet Lists
+---------------------------
+
+"""
+- Bullet 1
+* Bullet 2
+
+  - 2.1
+  - 2.2
+
+    Another paragraph in 2.2
+
+  - 2.3
+
++ Bullet 3
+"""
+
+
+
+Block Element: Numbered Lists
+-----------------------------
+
+"""
+1. One
+2. Two
+#. Three
+4. Four
+"""
+
+
+
+Block Element: Definition List
+------------------------------
+
+"""
+; Term
+: Description
+
+  Another paragraph in description
+
+  ; Nested Term
+  : Nested Description
+
+; Term 2
+: Description 2
+"""
+
+
+
+Block Element: Tables
+---------------------
+
+"""
+!! Header Cell Row 1 Col 1
+!! Header Cell Row 1 Col 2
+|====
+|| Normal Cell Row 2 Col 1
+|| Normal Cell Row 2 Col 2
+"""
+
+
+
+Block Element: Horizontal Rule
+------------------------------
+
+A row of 4+ hyphens with no text in 
+the previous line.
+
+"""
+----------------
+"""
+
+
+
+Block Element: Aside Block
+--------------------------
+
+"""
+****
+This is an aside, or an arbitrary 
+block. Use a pair of lines of four 
+or more asterisks to fence off the 
+block area, or prematurely end it 
+with insufficient indentation.
+
+Mostly used to add hooks for CSS 
+selectors, so that the block element 
+can be selected to undergo further 
+processing.
+****
+"""
+
+
+
+Block Element: Custom ID & Classes
+----------------------------------
+
+"""
+. My Identifier
+.. My Class
+
+The next content-holding block 
+element will be given the CSS 
+ID and Class defined in these 
+lines, such as this paragraph.
+"""
+
+Block Element: Comment Block
+----------------------------
+
+"""
+////
+This part of the document shall 
+not be rendered.
+////
+"""
+
+
+
+Backslash Escape
+----------------
+
+"""
+\\*\\*Treats the next visible 
+character as literal text.\\*\\*
+
+The leading backslash always 
+disappear, even in code blocks, 
+URLs and other verbatim text 
+context.
+
+Double the number of backslashes 
+\\\\ to print literal backslashes.
+"""

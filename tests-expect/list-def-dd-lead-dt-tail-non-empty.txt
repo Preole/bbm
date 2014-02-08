@@ -1,0 +1,23 @@
+<dl>
+ <dt>
+A proper term.
+ </dt>
+ <dd>
+  <p>
+A proper description
+  </p>
+ </dd>
+ <dt>
+Another proper term
+ </dt>
+ <dd>
+  <p>
+A proper description two.
+  </p>
+ </dd>
+ <dd>
+  <p>
+The next description is removed due to it being empty.
+  </p>
+ </dd>
+</dl>

@@ -1,0 +1,4 @@
+=== ATX With Setext H1 (a.k.a ATX-END) ===
+========
+
+Should produce an ATX-header, but not a SeTeXT header

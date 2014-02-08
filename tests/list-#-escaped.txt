@@ -1,0 +1,4 @@
+1\. This paragraph, along with the next paragraph, should not be a bullet 
+list, and has no indentation requirement.
+
+\2. Ditto as above.

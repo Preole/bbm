@@ -2,9 +2,7 @@ BakaBakaMark README
 ===================
 
 A short comprehensive guide to the Lightweight Markup Language (LML), 
-BakaBakaMark, and its compiler. It can be installed as a javascript library 
-or a command-line application for generating complete HTML documents under
-node.js.
+BakaBakaMark, and its compiler.
 
 
 

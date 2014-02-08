@@ -1,0 +1,10 @@
+#[Hyperlink]-[Oops]-[**Oops. Chaining**]
+
+
+////
+Bad example:
+
+<p>
+<a href="#bbm-Hyperlink">Oops<strong>Oops. Chaining</strong></a>
+</p>
+////

@@ -1,0 +1,12 @@
+= 
+== 
+=== 
+==== 
+===== 
+======
+
+////
+The last ATX line (Six equal signs) has its line ended immediately. 
+Therefore, these equal signs are treated as part of a Setext header. 
+The other five lines have a trailing space.
+////

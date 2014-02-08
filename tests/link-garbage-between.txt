@@ -1,0 +1,2 @@
+?<SomeURL> This garbage text should prevent
+one from setting the link's display text. -[LinkText]

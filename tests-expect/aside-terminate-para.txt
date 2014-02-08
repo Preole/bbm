@@ -1,0 +1,19 @@
+<div>
+ <p>
+Paragraph should always terminate when seeing an aside block 
+delimiter alone on a line, even if the delimiter won't terminate 
+the previous starting one.
+ </p>
+ <div>
+  <p>
+This is the inner aside block.
+  </p>
+ </div>
+ <p>
+This is another paragraph in the outer aside block.
+ </p>
+</div>
+
+<p>
+The outer aside block ends here.
+</p>

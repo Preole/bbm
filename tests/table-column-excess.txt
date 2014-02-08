@@ -1,0 +1,6 @@
+|| Team Left
+|| Team Right
+|====
+|| 30
+|| 15
+|| Extra column should be discarded.

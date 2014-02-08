@@ -1,0 +1,6 @@
+<p id="bbm-1">
+This paragraph has ID <code>1</code>.
+</p>
+<p>
+This paragraph does not have an ID, because <code>1</code> has already been used.
+</p>

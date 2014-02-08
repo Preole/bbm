@@ -1,0 +1,6 @@
+<pre><code>Oops. The closing code block fence is not on the same column as the opening 
+fence. 
+ """
+ 
+- The rest of the document is a code block.
+</code></pre>

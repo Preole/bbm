@@ -1,0 +1,84 @@
+<dl>
+ <dt>
+Bracket Matching
+ </dt>
+ <dd>
+  <p>
+Allows a wide range of URL, including ones with supposedly illegal characters and Unicode
+  </p>
+ </dd>
+ <dd>
+  <p>
+Often used by the wiki markup community, so some people will be familiar with it.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Also allows a fair number of valid link display text, except for other square brackets as part of the link.
+  </p>
+ </dd>
+ <dd>
+  <p>
+A bit bothersome to type.
+  </p>
+ </dd>
+ <dt>
+ASCIIDoc Named Macro
+ </dt>
+ <dd>
+  <p>
+Intuitive, foreign language friendly with some localization effort. However, <strong>localization does need quite a lot of effort.</strong>
+  </p>
+ </dd>
+ <dd>
+  <p>
+Very slow to type compared to double brackets.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Requires additional code in lexical analysis regarding text.
+  </p>
+ </dd>
+ <dt>
+URL Detection
+ </dt>
+ <dd>
+  <p>
+No thought required. Copy and paste and I'm done.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Lacks custom display text
+  </p>
+ </dd>
+ <dd>
+  <p>
+Lacks URL substitution.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Possible conflict with punctuation. Use angle bracket to negate it.
+  </p>
+ </dd>
+ <dt>
+URL Reference anchor
+ </dt>
+ <dd>
+  <p>
+Highest range of URL detection. Pretty much anything on the line works.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Removes Ugly URL from text, nice and clean.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Idea from Markdown and APA, MLA, and IEEE citation style.
+  </p>
+ </dd>
+</dl>

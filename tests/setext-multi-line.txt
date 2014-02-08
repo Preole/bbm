@@ -1,0 +1,3 @@
+Multi-line paragraph with
+Setext ending.
+=========================

@@ -1,0 +1,10 @@
+"""
+These newlines should be preserved.
+
+
+
+     Whitespace preserved     as well.
+     
+     
+     
+"""

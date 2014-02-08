@@ -1,0 +1,2 @@
+?<Multiline>-[!<Image>-["""The code snippet symbols should be part of the 
+alt text attribute.]]

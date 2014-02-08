@@ -1,0 +1,21 @@
+<div id="bbm-Gallery1" class="bbm-right bbm-templategallery">
+ <p>
+<a href="SomeURL">
+<img src="HTML1" alt="Alt Text">
+<img src="HTML2" alt="Alt Text">
+<img src="HTML3" alt="Alt Text">
+</a>
+ </p>
+ <p>
+This is a right-floating gallery of clickable images all pointing to the 
+same URL. The image identifiers should be substituted by the reference 
+links defined at the end of the document: HTML1, HTML2 and HTML3.
+ </p>
+ <p>
+Whitespace in CSS classes and ID should be removed.
+ </p>
+</div>
+<p>
+This is some paragraph text floating around the right-floating gallery, 
+if CSS support is available.
+</p>
