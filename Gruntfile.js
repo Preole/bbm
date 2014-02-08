@@ -59,7 +59,8 @@ module.exports = function(grunt) {
     [
      "./*.html",
      "./doc/*.html",
-     "./lib/bbm.min.js"
+     "./lib/bbm.min.js",
+     "./*.log"
     ]
    }
   }
