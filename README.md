@@ -1,4 +1,4 @@
-<pre>
+```
 BakaBakaMark README
 ===================
 
@@ -601,4 +601,4 @@ SEE ALSO
    
  ; bbm(5)
  : Detailed Javascript API for integrating with other Javascript projects.
-</pre>
+```
