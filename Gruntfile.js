@@ -76,7 +76,7 @@ module.exports = function(grunt) {
  //Tasks
  grunt.registerTask("lint", "Lint & Validate compiler", ["jshint"]);
  grunt.registerTask("build", "As Lint, plus minify", ["jshint", "uglify"]);
- grunt.registerTask("default", function() {
+ grunt.registerTask("default", "Build, test, then doc", function() {
   grunt.task.run("build");
   require("./test.js")();
   require("./doc.js")();
