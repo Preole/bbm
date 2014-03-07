@@ -47,7 +47,7 @@ function loopDoc()
     manPath = manMap[fName];
     html = templ({
      title : path.basename(fName, ext),
-     html : bbm.compileStr(src)
+     html : bbm.compile(src)
     });
 
    fs.writeFileSync(docDir + bName + ".html", html, fsOptW);

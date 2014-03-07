@@ -80,11 +80,8 @@ USAGE (API)
  var bbm = require("bbm"); //node.js import
  var bbmBrowser = BBMCompiler; //Browser import or copy & paste
 
- var htmlString = bbm.compileStr("?<http://www.google.com>"); //String
+ var htmlString = bbm.compile("?<http://www.google.com>"); //String
  someDomNode.innerHTML = htmlString;
-
- var docFrag = bbm.compileDOM("?<http://www.google.com>"); //Browser
- someDomNode.appendChild(docFrag);
  
  //Sample jquery usages; Hook event handler.
  $(docFrag).find(".wiki-bbm").on("click", function(event){
@@ -99,24 +96,32 @@ USAGE (API)
  
  === Specifying options ===
 
- There are two sets of options; The first set is front-end specific, 
- the second set is back-end, for when the language starts to support 
- compiling into other document markup languages.
-
- Use """null""" to omit specifying a set of options; In such cases, the 
- compiler shall use the built-in default for that set. For a full set of 
- available options, refer to the section **OPTIONS (API)**.
+ There are two ways to specify the compiler's options; At preparation time, 
+ or right before compilation. Options set in preparation time shall be 
+ applied to all future parses, while options passed into the compilation
+ function are effective only for this parse.
+ 
+ Permanent option setting:
  
  """
- bbm.setOptions({ 
+ //Permanent
+ var optUsed = bbm.setOptions({
   MAX_BLOCKS : 4,
-  MAX_SPANS : 4
- },
- { 
+  MAX_SPANS : 4,
   XHTML : 1
  });
 
- bbm.compileStr("...");
+ bbm.compile("...");
+ """
+ 
+ Temporary option setting:
+ 
+ """
+ bbm.compile("...", {
+  MAX_BLOCKS : 4,
+  MAX_SPANS : 4,
+  XHTML : 1
+ });
  """
 
  
@@ -266,28 +271,23 @@ Complete reference:
   ]
  },
  
- //Compiler configuration; See: **OPTIONS (COMPILER)**
+ //Compiler configuration; See: **OPTIONS (COMPILER)**. The beginning half
+ //denotes front-end specific options, while the other half are specific
+ //to HTML output.
  "cfg": {
- 
-  //Basic options
-  "OPT_BASE" : {
-   "RM_EOL" : 0,
-   "MAX_BLOCKS" : 8,
-   "MAX_SPANS" : 10,
-   "ALLOW_IMG" : 1,
-   "ALLOW_LINK" : 1,
-   "ALLOW_CLASS" : 1,
-   "ALLOW_ID" : 1
-  },
-
-  //HTML-specific options
-  "OPT_HTML" : {
-   "MAX_ATTR_CHARS" : 2048,
-   "CSS_PRE" : "bbm-",
-   "CSS_WIKI" : "w-bbm",
-   "MIN_HEADER" : 0,
-   "XHTML" : 0
-  }
+  "RM_EOL" : 0,
+  "MAX_BLOCKS" : 8,
+  "MAX_SPANS" : 10,
+  "ALLOW_IMG" : 1,
+  "ALLOW_LINK" : 1,
+  "ALLOW_CLASS" : 1,
+  "ALLOW_ID" : 1,
+  
+  "MAX_ATTR_CHARS" : 2048,
+  "CSS_PRE" : "bbm-",
+  "CSS_WIKI" : "w-bbm",
+  "MIN_HEADER" : 0,
+  "XHTML" : 0
  }
 }
 """"
@@ -301,12 +301,7 @@ Note: All option parameters of type """boolean""" can use a "falsy" or
 """1, 0, null""".
 
 
-=== OPT_BASE ===
-
-Front-end customization. Options under this category applies to all output 
-regardless of the code generator (In the future) used.
-
-
+=== Front-end ===
 
 ==== MAX_SPANS ====
 
@@ -356,7 +351,7 @@ Allows Images.
 
 Type: """boolean"""; Default: """true"""
 
-Allows custom CSS ID
+Allows the custom CSS ID syntax.
 
 
 
@@ -364,16 +359,13 @@ Allows custom CSS ID
 
 Type: """boolean"""; Default: """true"""
 
-Allows custom CSS classes
+Allows custom CSS classes syntax.
 
 
 
-=== OPT_HTML ===
-
-HTML output specific setting used by the code generator. The following list 
-describes the possible options present in the built-in HTML code generator.
 
 
+=== HTML Backend ===
 
 ==== MAX_ATTR_CHARS ====
 
@@ -427,23 +419,19 @@ you plan to automatically outline the HTML document containing this snippet.
 
 """
 {
- "OPT_BASE" : {
-  "RM_EOL" : 0,
-  "MAX_BLOCKS" : 8,
-  "MAX_SPANS" : 10,
-  "ALLOW_IMG" : 1,
-  "ALLOW_LINK" : 1,
-  "ALLOW_CLASS" : 1,
-  "ALLOW_ID" : 1
- },
-
- "OPT_HTML" : {
-  "MAX_ATTR_CHARS" : 2048,
-  "CSS_PRE" : "bbm-",
-  "CSS_WIKI" : "w-bbm",
-  "MIN_HEADER" : 0,
-  "XHTML" : 0
- }
+ "RM_EOL" : 0,
+ "MAX_BLOCKS" : 8,
+ "MAX_SPANS" : 10,
+ "ALLOW_IMG" : 1,
+ "ALLOW_LINK" : 1,
+ "ALLOW_CLASS" : 1,
+ "ALLOW_ID" : 1
+ 
+ "MAX_ATTR_CHARS" : 2048,
+ "CSS_PRE" : "bbm-",
+ "CSS_WIKI" : "w-bbm",
+ "MIN_HEADER" : 0,
+ "XHTML" : 0
 }
 """
 
@@ -452,8 +440,8 @@ use the dot notation to access the groups of options:
 
 """
 var bbmOpt = JSON.parse(fs.readFileSync("config.json"));
-bbm.setOptions(bbmOpt.OPT_BASE, bbmOpt.OPT_HTML);
-bbm.compileStr(someSnippet);
+bbm.setOptions(bbmOpt);
+bbm.compile(someSnippet);
 /*...*/
 """
 

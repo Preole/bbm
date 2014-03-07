@@ -625,14 +625,7 @@ var BBMTestBench = (function()
    rmAll(htmlRender, true);
    rmAll(viewArea);
    
-   /*
-   var htmlDOM = BBMCompiler.compileDOM(srcInputNode.value);
-   htmlRender.appendChild(htmlDOM);
-   viewArea.appendChild(htmlRender);
-   */
-   
-   
-   var htmlCode = BBMCompiler.compileStr(srcInputNode.value);
+   var htmlCode = BBM.compile(srcInputNode.value);
    htmlOutput.value = htmlCode;
    htmlRender.innerHTML = htmlCode;
    viewArea.appendChild(htmlRender);

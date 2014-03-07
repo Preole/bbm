@@ -7,14 +7,22 @@ Application Functions
 For general, application-level use cases, these functions should suffice.
 
 
-=== compileStr(BBMCode) ===
+=== compile(BBMCode, options) ===
 ==== Parameters ====
 
-; BBMCode
+; """BBMCode"""
 : ; Type
   : """string"""
   ; Description
   : A block of BakaBakaMark String to compile into HTML.
+  
+; """options"""
+: ; Type
+  : """object"""
+  ; Description
+  : A hash map of options to pass to the compiler. Options passed in this 
+    manner shall be used only for this parsing run. For permanent settings, 
+    use """.setOptions()""" instead.
 
 ==== Returns ====
 
@@ -22,42 +30,27 @@ For general, application-level use cases, these functions should suffice.
 
 
 
-=== compileDOM(BBMCode) ===
+
+=== setOptions(options) ===
 ==== Parameters ====
 
-; BBMCode
-: ; Type
-  : """string"""
-  ; Description
-  : A block of BakaBakaMark String to compile into HTML.
-
-==== Returns ====
-
-"""HostObject""" Implementing """DocumentFragment""" interface. 
-Reference: ?<DFrag>
-
-:{DFrag}: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-B63ED1A3
-
-Use this function if you're planning to insert the HTML snippet right into 
-the DOM, without the """.innerHTML""" step in the middle.
-
-
-
-=== setOptions(frontOpt, backOpt) ===
-==== Parameters ====
-
-; frontOpt, backOpt
+; options
 : ; Type
   : """object"""
   ; Description
-  : A Javascript object (hash map) of front-end specific options. Refer to
+  : A Javascript object (hash map) of compilation options. Refer to
     """README.txt""" @ **OPTIONS (COMPILERS)** for further details.
     
-    Pass in """null""" to avoid specifying this group of options, using 
-    the defaults instead.
+    Necessary fields will be filled in with defaults if left unspecified, 
+    while filled fields shall overwrite the defaults of the parser.
     
-    The compiler will use the specified option set until another call to 
-    """setOptions(2)""" is made.
+==== Returns ====
+
+"""object"""; The current option object that will be used for all future 
+parses, until changed otherwise. Modifying this object is effectively the 
+same as additional calls to """.setOptions()""" with different objects.
+
+
 
 
 

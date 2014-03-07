@@ -18,41 +18,22 @@ path = require("path"),
 //Some basic HTML templates for importing JS/CSS, and inserting meta data.
 templ = (function()
 {
- var REGEX_CTRL_G = new RegExp("[\\u0000-\\u001f\\u007f-\\u009f\\u2028\\u2029]+", "g"),
-  REGEX_AMP = /&/g,
-  REGEX_GT = />/g,
-  REGEX_LT = /</g,
-  REGEX_APOS = /'/g,
-  REGEX_QUOT = /"/g,
-  REGEX_GRAVE = /`/g;
-
  function encodeHTMLAttr(str)
  {
-  REGEX_CTRL_G.lastIndex = 0;
-  REGEX_AMP.lastIndex = 0;
-  REGEX_GT.lastIndex = 0;
-  REGEX_LT.lastIndex = 0;
-  REGEX_APOS.lastIndex = 0;
-  REGEX_QUOT.lastIndex = 0;
-  REGEX_GRAVE.lastIndex = 0;
-
-  return str.replace(REGEX_AMP, "&amp;")
-   .replace(REGEX_LT, "&lt;")
-   .replace(REGEX_GT, "&gt;")
-   .replace(REGEX_QUOT, "&quot;")
-   .replace(REGEX_APOS, "&#x27;")
-   .replace(REGEX_GRAVE, "&#x60;")
-   .replace(REGEX_CTRL_G, " ");
+  return str.replace(/&/g, "&amp;")
+   .replace(/</g, "&lt;")
+   .replace(/>/g, "&gt;")
+   .replace(/"/g, "&quot;")
+   .replace(/'/g, "&#x27;")
+   .replace(/`/g, "&#x60;")
+   .replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, " ");
  }
  
  function encodeHTML(str)
  {
-  REGEX_AMP.lastIndex = 0;
-  REGEX_GT.lastIndex = 0;
-  REGEX_LT.lastIndex = 0;
-  return str.replace(REGEX_AMP, "&amp;")
-   .replace(REGEX_LT, "&lt;")
-   .replace(REGEX_GT, "&gt;");
+  return str.replace(/&/g, "&amp;")
+   .replace(/</g, "&lt;")
+   .replace(/>/g, "&gt;");
  }
  
  function cssExt(fpath, mediaQStr)
@@ -177,11 +158,11 @@ function outputHTML(bbmSrcPath, cliJSONPath)
 //Wrapper function before calling the compiler.
 function compile(bbmSrc, cfgJSON)
 {
- if (typeof cfgJSON === "object" || typeof cfgJSON === "function")
+ if (cfgJSON instanceof Object)
  {
-  bbm.setOptions(cfgJSON.OPT_BASE, cfgJSON.OPT_HTML);
+  bbm.setOptions(cfgJSON);
  }
- return bbm.compileStr(bbmSrc);
+ return bbm.compile(bbmSrc);
 }
 
 //If "-v" print version info and exit.

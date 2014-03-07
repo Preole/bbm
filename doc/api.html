@@ -69,14 +69,14 @@ Application Functions
 For general, application-level use cases, these functions should suffice.
 </p>
 <h3>
-compileStr(BBMCode)
+compile(BBMCode, options)
 </h3>
 <h4>
 Parameters
 </h4>
 <dl>
  <dt>
-BBMCode
+<code>BBMCode</code>
  </dt>
  <dd>
   <dl>
@@ -98,64 +98,8 @@ A block of BakaBakaMark String to compile into HTML.
    </dd>
   </dl>
  </dd>
-</dl>
-<h4>
-Returns
-</h4>
-<p>
-<code>string</code>; Valid (X)HTML snippet.
-</p>
-<h3>
-compileDOM(BBMCode)
-</h3>
-<h4>
-Parameters
-</h4>
-<dl>
  <dt>
-BBMCode
- </dt>
- <dd>
-  <dl>
-   <dt>
-Type
-   </dt>
-   <dd>
-    <p>
-<code>string</code>
-    </p>
-   </dd>
-   <dt>
-Description
-   </dt>
-   <dd>
-    <p>
-A block of BakaBakaMark String to compile into HTML.
-    </p>
-   </dd>
-  </dl>
- </dd>
-</dl>
-<h4>
-Returns
-</h4>
-<p>
-<code>HostObject</code> Implementing <code>DocumentFragment</code> interface. 
-Reference: <a href="http:&#x2F;&#x2F;www.w3.org&#x2F;TR&#x2F;DOM-Level-3-Core&#x2F;core.html#ID-B63ED1A3">DFrag</a>
-</p>
-<p>
-Use this function if you're planning to insert the HTML snippet right into 
-the DOM, without the <code>.innerHTML</code> step in the middle.
-</p>
-<h3>
-setOptions(frontOpt, backOpt)
-</h3>
-<h4>
-Parameters
-</h4>
-<dl>
- <dt>
-frontOpt, backOpt
+<code>options</code>
  </dt>
  <dd>
   <dl>
@@ -172,21 +116,64 @@ Description
    </dt>
    <dd>
     <p>
-A Javascript object (hash map) of front-end specific options. Refer to
-<code>README.txt</code> @ <strong>OPTIONS (COMPILERS)</strong> for further details.
-    </p>
-    <p>
-Pass in <code>null</code> to avoid specifying this group of options, using 
-the defaults instead.
-    </p>
-    <p>
-The compiler will use the specified option set until another call to 
-<code>setOptions(2)</code> is made.
+A hash map of options to pass to the compiler. Options passed in this 
+manner shall be used only for this parsing run. For permanent settings, 
+use <code>.setOptions()</code> instead.
     </p>
    </dd>
   </dl>
  </dd>
 </dl>
+<h4>
+Returns
+</h4>
+<p>
+<code>string</code>; Valid (X)HTML snippet.
+</p>
+<h3>
+setOptions(options)
+</h3>
+<h4>
+Parameters
+</h4>
+<dl>
+ <dt>
+options
+ </dt>
+ <dd>
+  <dl>
+   <dt>
+Type
+   </dt>
+   <dd>
+    <p>
+<code>object</code>
+    </p>
+   </dd>
+   <dt>
+Description
+   </dt>
+   <dd>
+    <p>
+A Javascript object (hash map) of compilation options. Refer to
+<code>README.txt</code> @ <strong>OPTIONS (COMPILERS)</strong> for further details.
+    </p>
+    <p>
+Necessary fields will be filled in with defaults if left unspecified, 
+while filled fields shall overwrite the defaults of the parser.
+    </p>
+   </dd>
+  </dl>
+ </dd>
+</dl>
+<h4>
+Returns
+</h4>
+<p>
+<code>object</code>; The current option object that will be used for all future 
+parses, until changed otherwise. Modifying this object is effectively the 
+same as additional calls to <code>.setOptions()</code> with different objects.
+</p>
 <h2>
 Advanced Functions &amp; Objects
 </h2>

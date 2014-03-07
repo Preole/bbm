@@ -9,7 +9,7 @@ Outputs any failed test cases to stderr stream.
 var bbmtest = (function()
 {
  var assert = require("assert"),
- compiler = require("./lib/bbm.js"),
+ bbm = require("./lib/bbm.js"),
  fs = require("fs"),
  fsTestDir = "./tests/",
  fsTestExpectDir = "./tests-expect/",
@@ -22,23 +22,14 @@ var bbmtest = (function()
  //Local String library, with unicode whitespace & line break support
  str_ = (function()
  {
-  "use strict";
-  var NL = "[\\v\\f\\r\\n\\u0085\\u2028\\u2029]+",
-   WSNL =
-    "[ \\v\\f\\r\\n\\u0085\\u2028\\u2029\\u2000-\\u200d\\t\\u202f\\u205f" +
-    "\\u3000\\u1680\\u180e\\u00a0\\u00b7\\u237d\\u2420\\u2422\\u2423]",
-   REGEX_NL_G = new RegExp(NL, "g"),
-   REGEX_HEAD_TAIL_WSNL = new RegExp("^" + WSNL + "+|" + WSNL + "+$");
-   
   function str_trim(str)
   {
-   return (str.replace(REGEX_HEAD_TAIL_WSNL, ""));
+   return str.replace(/(^\s+)|(\s+$)/g, "");
   }
   
   function str_unifyNL(str)
   {
-   REGEX_NL_G.lastIndex = 0;
-   return str.replace(REGEX_NL_G, "\n");
+   return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+/g, "\n");
   }
   
   return {
@@ -51,12 +42,6 @@ var bbmtest = (function()
  function postProc(str)
  {
   return str_.unifyNL(str_.trim(str));
- }
-
- //Compiles some BakaBakaMark source code, outputting HTML snippets.
- function compile(str)
- {
-  return postProc(compiler.compileStr(str));
  }
  
  function compareDir()
@@ -80,7 +65,7 @@ var bbmtest = (function()
     errCount += 1; continue;
    }
    var expectText = postProc(fs.readFileSync(fPathDest, fsOptR)),
-    actualText = postProc(compile(fs.readFileSync(fPathSrc, fsOptR)));
+    actualText = postProc(bbm.compile(fs.readFileSync(fPathSrc, fsOptR)));
 
    //Simple minded exact string comparison.
    try {assert.strictEqual(actualText, expectText);}
