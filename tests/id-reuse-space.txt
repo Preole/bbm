@@ -1,0 +1,5 @@
+. Identifier Rage
+#[Identifier Rage]
+
+. IdentifierRage
+Do these identifiers clash?

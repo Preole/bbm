@@ -1,0 +1,6 @@
+<p id="bbm-IdentifierRage">
+<a href="#bbm-IdentifierRage">Identifier Rage</a>
+</p>
+<p>
+Do these identifiers clash?
+</p>

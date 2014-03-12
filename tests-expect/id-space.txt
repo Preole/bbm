@@ -1,0 +1,7 @@
+
+<p id="bbm-IdentifierRage">
+<a href="#bbm-IdentifierRage">Identifier Rage</a>
+</p>
+<p class="bbm-IdentifierRage">
+Should be class = <code>IdentifierRage</code>
+</p>
