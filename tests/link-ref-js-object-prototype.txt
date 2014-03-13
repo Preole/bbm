@@ -1,0 +1,10 @@
+?<hasOwnProperty> ?<constructor>
+
+:{hasOwnProperty}: RealURL
+:{constructor}: RealURL
+
+////
+Reference link (URL) substitution should 
+be able to use keywords that are reserved 
+in Javascript
+////

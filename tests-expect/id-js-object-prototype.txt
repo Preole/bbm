@@ -1,0 +1,7 @@
+<p id="bbm-hasOwnProperty">
+I should have the ID "bbm-hasOwnProperty"
+</p>
+<p class="bbm-hasOwnProperty">
+I should have the class "bbm-hasOwnProperty", where "bbm" is the 
+namespace prefix.
+</p>

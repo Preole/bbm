@@ -1,0 +1,11 @@
+. hasOwnProperty
+I should have the ID "bbm-hasOwnProperty"
+
+.. hasOwnProperty
+I should have the class "bbm-hasOwnProperty", where "bbm" is the 
+namespace prefix. 
+
+////
+One should be able to use Javascript reserved keywords when 
+assigning CSS ID, classes, and applying URL transclusions.
+////
