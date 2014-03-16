@@ -1,7 +1,7 @@
 {
   "name": "bbm",
   "author": "Preole Soandso",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "BakaBakaMark: An Extensible LML-HTML Compiler.",
   "repository": { 
    "type": "git",
@@ -10,13 +10,12 @@
   "bugs": "https://github.com/preole/bbm/issues/",
   "license": "BSD-2-Clause",
   "keywords": [
-    "lml",
-    "html",
-    "bbm",
-    "bakabakamark",
-    "Lightweight markup language",
-    "text-processing",
-    "scaffolding"
+   "lml",
+   "html",
+   "bbm",
+   "bakabakamark",
+   "Lightweight markup language",
+   "text-processing"
   ],
   "devDependencies": {
     "grunt": ">=0.4.0",
@@ -25,9 +24,6 @@
     "grunt-contrib-clean": ">=0.5.0"
   },
   "main": "./lib/bbm.min.js",
-  "bin": { 
-   "bbm" : "./cli.js"
-  },
   "man": [
     "./man/bbm.1",
     "./man/bbm.2",

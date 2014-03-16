@@ -1,10 +1,13 @@
+
+
 BakaBakaMark README
 ===================
 
+**Currently Defunct: Do not use**
+
 A short comprehensive guide to the Lightweight Markup Language (LML), 
 BakaBakaMark, and its compiler. It can be installed as a javascript library 
-or a command-line application for generating complete HTML documents under
-node.js.
+for generating complete HTML documents under node.js.
 
 
 
@@ -20,12 +23,10 @@ DESCRIPTION
 
  BakaBakaMark (bbm) is an experimental lightweight markup language built for
  read, writ-ability, and a versatile main syntax. It comes with a compiler 
- producing W3C-valid, XSS-safe HTML snippets or standalone files with 
- permission settings. Moreover, the language features a stable, comprehensive 
- grammar definition with fairly complete coverage, which should help porting 
- the language into other platforms with no ambiguity.
- 
- For further philosophical details: """$(ROOT)/doc/intro.txt"""
+ producing W3C-valid, XSS-safe HTML snippets with permission settings. 
+ Moreover, the language features a stable, comprehensive grammar definition 
+ with fairly complete coverage, which should help porting the language into 
+ other platforms with no ambiguity.
  
  Note: """$(ROOT)""" denotes the root folder of this project.
  
@@ -138,159 +139,6 @@ USAGE (API)
  For full API references, please consult """$(ROOT)/doc/api.txt"""
 
 
-
-USAGE (COMMAND-LINE)
---------------------
-
-=== SYNOPSIS ===
-
-"""
-bbm inFile outFile [-options] [-cfg config-file]
-"""
-
-
-
-=== NOTES ===
-
-bbm currently only accepts and outputs UTF-8 encoded files.
-
-
-
-=== OPTIONS ===
-
-; """-v"""
-: Prints version information and exits.
-
-; """-h"""
-: Prints this help file and exits.
-
-; """-cfg path/to/CONFIG.JSON"""
-: Specifies a configuration file for inserting meta data into the generated 
-  HTML file. This configuration file should be in valid JSON format. For 
-  detailed information, consult the sample JSON files @ CONFIG JSON
-
-
-
-=== CONFIG JSON ===
-
-Minimal configuration file: (Also the default if the config file is left 
-unspecified.)
-
-""""
-{
- "title": "This is your document's Title",
- "meta": [],
- "extern": {
-  "css" : [],
-  "js" : []
- },
- "intern": {
-  "css" : [],
-  "js" : []
- },
- "cfg": {}
-}
-""""
-
-
-
-Complete reference:
-
-""""
-{
- //string: HTML Page Title
- "title": "This is your document's Title",
- 
- //Array: Recommended meta tags to insert into the page.
- //Use an empty array if no meta tags to specify.
- "meta": [
-  {
-   "key" : "author",
-   "value" : "Your Name(s) Here"
-  },
-  {
-   "key" : "description",
-   "value" : "The description of the web page. (For SEO)"
-  },
-  {
-   "key" : "keywords",
-   "value" : "Keywords for search engines, Comma-Separated."
-  }
- ],
- 
- //External CSS & Javascript, referenced using relative path.
- "extern": {
- 
-  //Required; Use empty array if not importing anything
-  /*
-  Each object has these two properties:
-   fpath : Relative file path to the CSS file.
-   mediaQ : (Optional) The media query string, which specifies the type and 
-    specific conditions this CSS applies to the webpage. An incorrect media 
-    query string will result in invalid W3C HTML.
-  */
-  "css" : [
-   {
-    "fpath" : "file1.css",
-   },
-   {
-    "fpath" : "file2.css",
-   }
-  ],
-  
-  //Required; Use empty array if not importing anything
-  //Expects a list of strings (file path to javascript files to link to)
-  "js" : [
-   "f1.js",
-   "f2.js"
-  ]
- },
- 
- //Embedded Javascript & CSS; These are read from an external file and 
- //written directly into the HTML file. If the files are not found, an
- //exception will be generated.
- "intern": {
- 
-  //Required; Use empty array if not embedding anything.
-  //Same object as extern.css
-  "css" : [
-   {
-    "fpath" : "file1.css",
-    "mediaQ" : ""
-   },
-   {
-    "fpath" : "file2.css",
-    "mediaQ" : ""
-   }
-  ],
-  
-  //Required; Use empty array if not embedding anything
-  "js" : [
-   "f1.js",
-   "f2.js"
-  ]
- },
- 
- //Compiler configuration; See: **OPTIONS (COMPILER)**. The beginning half
- //denotes front-end specific options, while the other half are specific
- //to HTML output.
- "cfg": {
-  "RM_EOL" : 0,
-  "MAX_BLOCKS" : 8,
-  "MAX_SPANS" : 10,
-  "ALLOW_IMG" : 1,
-  "ALLOW_LINK" : 1,
-  "ALLOW_CLASS" : 1,
-  "ALLOW_ID" : 1,
-  
-  "MAX_ATTR_CHARS" : 2048,
-  "CSS_PRE" : "bbm-",
-  "CSS_WIKI" : "w-bbm",
-  "MIN_HEADER" : 0,
-  "XHTML" : 0
- }
-}
-""""
 
 
 OPTIONS (COMPILER)
@@ -494,10 +342,6 @@ of relevant files are as follows:
   output achieve "exact" string match, character by character. They may 
   have their line breaks normalized to "\\n" prior to testing, as well as 
   stripping leading and trailing spaces.
-
-; ${ROOT}/cli.js
-: Command line interface for the compiler, which generates a complete, 
-  standalone HTML web page.
   
 ; ${ROOT}/doc.js
 : Automated HTML documentation generation script, compiling BakaBakaMark 
@@ -546,13 +390,7 @@ node doc.js
 grunt doc
 """
 
- 
 
-EXIT STATUS
------------
-
-(Command-Line only) Always 0
- 
 
 LICENSE
 -------

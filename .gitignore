@@ -1,3 +1,2 @@
-./journal/
-./node_modules/
-journal/DesignDecisions.txt
+./journal/*
+./node_modules/*
