@@ -1,7 +1,7 @@
 {
   "name": "bbm",
   "author": "Preole Soandso",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "BakaBakaMark: An Extensible LML-HTML Compiler.",
   "repository": { 
    "type": "git",
