@@ -39,8 +39,6 @@ line:
 npm install bbm
 """
 
-Add """-g""" if using it as a compiler in your favorite shell.
-
 
 
 USAGE (WEB BROWSER)
@@ -76,7 +74,7 @@ USAGE (API)
 
  """
  var bbm = require("bbm"); //node.js import
- var bbmBrowser = BBMCompiler; //Browser import or copy & paste
+ var bbmBrowser = bbm; //Browser import or copy & paste
 
  var htmlString = bbm.compile("?<http://www.google.com>"); //String
  someDomNode.innerHTML = htmlString;
