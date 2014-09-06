@@ -1,8 +1,1 @@
-./journal/
-./doc/
-./tests/
-./tests-expect/
-./doc.js
-./test.js
-./Gruntfile.js
-./*log
+./*.log
