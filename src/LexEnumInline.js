@@ -1,16 +1,11 @@
 
 (function (global){
  "use strict";
- var STREX =
- {
-  WS : "[ \\t\\u2000-\\u200d\\u205f\\u1680\\u237d\\u2420\\u2422\\u2423\\u3000]",
-  CTRL : "[\\u0000-\\u0008\\u000e-\\u001f\\u007f-\\u009f\\u2028\\u2029]"
- };
-
+ 
  var RULES = (function (){
  return [
   {
-   pattern : "\\\\" + STREX.CTRL.replace("[", "[^"),
+   pattern : "\\\\.",
    name : "TEXT"
   },
   {
@@ -80,14 +75,6 @@
   {
    pattern : "\\]",
    name : "BRACKET_R"
-  },
-  {
-   pattern : "[\\v\\f\\n]|\\r\\n?",
-   name : "NL"
-  },
-  {
-   pattern : STREX.WS + "+",
-   name : "WS"
   }
  ];
  }());
