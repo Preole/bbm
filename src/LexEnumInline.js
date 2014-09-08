@@ -10,7 +10,7 @@
   },
   {
    pattern : "{--",
-   name : "DEL_START"
+   name : "DEL"
   },
   {
    pattern : "--}",

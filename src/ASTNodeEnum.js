@@ -8,6 +8,7 @@
   P : "P",
   STOP : "STOP",
   BLOCKQUOTE : "BLOCKQUOTE",
+  COMMENT : "COMMENT",
   PRE : "PRE",
   DIV : "DIV",
   ID : "ID",

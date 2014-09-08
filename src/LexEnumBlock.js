@@ -26,12 +26,12 @@
    name : "TRSEP"
   },
   {
-   pattern : "===[=]+" + "(?=" + STREX.NL + ")",
-   name : "ATX_END" //Also used as Setext H1
+   pattern : "=+" + "(?=" + STREX.NL + ")",
+   name : "ATX_END"
   },
   {
-   pattern : "===[=]+",
-   name : "ATX_START"
+   pattern : "=+",
+   name : "ATX"
   },
   {
    pattern : "---[\\-]+" + "(?=" + STREX.NL + ")",
@@ -51,11 +51,11 @@
   },
   {
    pattern : ">" + STREX.WS,
-   name : "BLOCKQUOTE"
+   name : "BQ"
   },
   {
    pattern : ":{",
-   name : "REF_START"
+   name : "REF"
   },
   {
    pattern : "}:",
@@ -74,15 +74,15 @@
    name : "OL"
   },
   {
-   pattern : "\\*\\*\\*[*]+",
-   name : "ASIDE"
+   pattern : "\\*\\*\\*[*]+" + "(?=" + STREX.NL + ")",
+   name : "DIV"
   },
   {
    pattern : "[\\-\\+\\*\\u2022\\u2043]" + STREX.WS,
    name : "UL"
   },
   {
-   pattern : "\\\"\\\"[\\\"]+",
+   pattern : "\\\"\\\"[\\\"]+" + "(?=" + STREX.NL + ")",
    name : "CODE"
   },
   {

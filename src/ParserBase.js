@@ -27,15 +27,24 @@
   
   function shift()
   {
-   this.currPos += 1;
+   if (this.currPos < this.tokens.length)
+   {
+    this.currPos += 1;
+   }
   }
   
   function shiftUntil(callback)
   {
-   while (callback.call(this, this.lookAhead()))
+   var params = Array.prototype.slice.call(arguments, 1),
+   while (callback.apply(this, [this.lookAhead()].concat(params)))
    {
     this.shift();
    }
+  }
+  function shiftUntilPast(callback)
+  {
+   this.shiftUntil.apply(this, arguments);
+   this.shift();
   }
 
   function shiftTo(toPos)
@@ -45,9 +54,12 @@
   
   function sliceText(fromPos, toPos)
   {
-   return this.tokens.slice(fromPos, toPos).reduce(function (acc, token){
-    return acc += typeof token === "object" ? (token.lexeme || "") : "";
-   }, "");
+   return this.tokens.slice(fromPos, toPos).reduce(doSliceText, "");
+  }
+
+  function doSliceText(acc, token)
+  {
+   return acc += typeof token === "object" ? (token.lexeme || "") : "";
   }
 
   return {
@@ -55,6 +67,7 @@
    lookAhead : lookAhead,
    shift : shift,
    shiftUntil : shiftUntil,
+   shiftUntilPast : shiftPast,
    shiftTo : shiftTo,
    sliceText : sliceText
   };
