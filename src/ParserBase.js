@@ -1,6 +1,6 @@
 
 //Baseline Parser class. Implements token list traversal methods.
-(function (global){
+(function (){
  "use strict";
 
  function ParserBase()
@@ -70,5 +70,5 @@
  {
   module.exports = ParserBase;
  }
-}(this));
+}());
 

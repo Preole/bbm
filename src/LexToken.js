@@ -1,5 +1,5 @@
 
-(function (global){
+(function (){
  "use strict";
 
  function LexToken(lexeme, type, col)
@@ -34,4 +34,4 @@
  {
   module.exports = LexToken;
  }
-}(this));
+}());

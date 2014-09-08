@@ -1,5 +1,5 @@
 
-(function (global){
+(function (){
  "use strict";
 
  var nodeEnum =
@@ -45,4 +45,4 @@
  {
   module.exports = ASTNodeEnum;
  }
-}(this));
+}());

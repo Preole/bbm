@@ -1,5 +1,5 @@
 
-(function (global){
+(function (){
  "use strict";
  
  var RULES = (function (){
@@ -94,9 +94,5 @@
  {
   module.exports = expose;
  }
- else
- {
-  global.LexEnumInline = expose;
- }
 
-}(this));
+}());

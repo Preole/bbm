@@ -1,5 +1,5 @@
 
-(function (global){
+(function (){
  "use strict";
  var LexToken = require("./LexToken.js");
  
@@ -75,8 +75,4 @@
  {
   module.exports = Lexer;
  }
- else
- {
-  global.Lexer = Lexer;
- }
-}(this));
+}());

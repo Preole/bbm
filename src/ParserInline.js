@@ -1,5 +1,5 @@
 
-(function (global){
+(function (){
  "use strict";
 
  var Lexer = require("./Lexer.js"),
@@ -36,4 +36,4 @@
  {
   module.exports = ParserInline;
  }
-}(this));
+}());

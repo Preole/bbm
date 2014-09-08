@@ -1,5 +1,5 @@
 
-(function (global){
+(function (){
  "use strict";
  function ASTNode(type, attr)
  {
@@ -34,8 +34,4 @@
  {
   module.exports = ASTNode;
  }
- else
- {
-  global.ASTNode = ASTNode;
- }
-}(this));
+}());

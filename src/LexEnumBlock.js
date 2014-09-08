@@ -1,5 +1,5 @@
 
-(function (global){
+(function (){
  "use strict";
  var STREX =
  {
@@ -111,9 +111,5 @@
  {
   module.exports = expose;
  }
- else
- {
-  global.LexEnumBlock = expose;
- }
 
-}(this));
+}());
