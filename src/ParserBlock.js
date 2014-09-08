@@ -37,13 +37,13 @@
     DD : parseList,
     OL : parseList,
     UL : parseList,
-    DT : parseDT,
+    DT : parseList,
     HR : parseHR,
     REF : parseRef,
     ATX : parseATX,
     TRSEP : parseTR,
-    COMMENT : parseComment,
-    CODE : parseCode,
+    COMMENT : parsePre,
+    CODE : parsePre,
     ASIDE : parseDiv,
     CLASS : parseLabel,
     ID : parseLabel
@@ -134,11 +134,10 @@
    return node;
   }
   
-  function parseDT()
+  function parseHR(lexTok)
   {
-   var nodeDT = ASTNode.create(ASTEnum);
-   nodeDT.nodes = parsePara.call(this).nodes;
-   return nodeDT;
+   this.shiftUntilPast(untilBR);
+   return ASTNode.create(ASTEnum.HR);
   }
 
   function parseDiv(lexTok)
