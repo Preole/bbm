@@ -70,9 +70,9 @@
 
   function untilPre(token, tokStart)
   {
-   return token.isSameType(tokStart) &&
+   return token.type === tokStart.type &&
     token.col === tokStart.col &&
-    token.lexeme.length === tokStart.lexeme.length &&
+    token.lexeme === tokStart.lexeme &&
     isLineStart.call(this);
   }
 
@@ -80,10 +80,12 @@
   {
    return token.isType(enumLex.NL);
   }
+
   function untilLinkRefEnd(token)
   {
    return listRefEnd.indexOf(token.type) !== -1;
   }
+
   function untilATXEnd(token)
   {
    return listATXEnd.indexOf(token.type) !== -1;

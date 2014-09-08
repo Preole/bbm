@@ -38,20 +38,18 @@
   function shiftUntil(callback)
   {
    var params = Array.prototype.slice.call(arguments, 1),
-   while (callback.apply(this, [this.lookAhead()].concat(params)))
+    token = this.lookAhead();
+    
+   while (callback.apply(this, [token].concat(params)))
    {
     this.shift();
+    token = this.lookAhead();
    }
   }
   function shiftUntilPast(callback)
   {
    this.shiftUntil.apply(this, arguments);
    this.shift();
-  }
-
-  function shiftTo(toPos)
-  {
-   this.currPos = toPos || 0;
   }
   
   function sliceText(fromPos, toPos)
@@ -70,7 +68,6 @@
    shift : shift,
    shiftUntil : shiftUntil,
    shiftUntilPast : shiftPast,
-   shiftTo : shiftTo,
    sliceText : sliceText
   };
  }());
