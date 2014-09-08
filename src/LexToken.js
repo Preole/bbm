@@ -2,16 +2,17 @@
 (function (){
  "use strict";
 
- function LexToken(lexeme, type, col)
+ function LexToken(lexeme, type, col, line)
  {
   this.lexeme = lexeme || "";
   this.type = type || "";
   this.col = col || -1;
+  this.line = line || -1;
  }
  
- function create(lexeme, type, col)
+ function create(lexeme, type, col, line)
  {
-  return new LexToken(lexeme, type, col);
+  return new LexToken(lexeme, type, col, line);
  }
 
  LexToken.create = create;

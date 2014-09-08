@@ -9,9 +9,10 @@
   ASTNode = require("./ASTNode.js");
 
 
- function ParserInline(tokens)
+ function ParserInline(options)
  {
   this.lexer = Lexer.create(rulesInline.rules, rulesInline.types.TEXT);
+  this.options = options;
   this.reset();
  }
  

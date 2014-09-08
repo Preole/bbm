@@ -1,7 +1,8 @@
 
 (function (){
  "use strict";
- var LexToken = require("./LexToken.js");
+ var LexToken = require("./LexToken.js"),
+  reNL = /[\v\f\n]|\r\n?/;
  
  function makeRegex(rulesArray)
  {
@@ -23,11 +24,11 @@
  {
   return new Lexer(rulesArray);
  }
- 
+
  function parse(strInput)
  {
-  var res = void(0),
-   ruleObj = void(0),
+  var res = null,
+   ruleObj = null,
    rules = this.rules,
    regex = this.regex,
    defType = this.defType,
@@ -65,9 +66,28 @@
     defType
    ));
   }
+  
+  addColsLines(tokens);
   return tokens;
  }
 
+ function addColsLines(tokens)
+ {
+  var col = 0,
+   line = 0;
+
+  tokens.forEach(function (token){
+   var nlCount = token.lexeme.split(reNL).length - 1;
+   token.col = col;
+   token.line = line;
+   
+   line += nlCount;
+   col += nlCount > 0 ? -col : lexeme.length;
+  });
+  
+  return tokens;
+ }
+ 
  Lexer.create = create;
  Lexer.prototype.parse = parse;
 

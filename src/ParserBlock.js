@@ -13,6 +13,7 @@
  {
   this.inlineParser = ParserInline.create(options);
   this.lexer = Lexer.create(rulesBlock.rules, rulesBlock.types.TEXT);
+  this.options = options;
   this.reset(options);
  }
  
