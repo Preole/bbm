@@ -32,7 +32,7 @@
   
   function shiftUntil(callback)
   {
-   while (callback.call(this, this.lookAhead())
+   while (callback.call(this, this.lookAhead()))
    {
     this.shift();
    }
@@ -66,13 +66,9 @@
   };
  }());
  
- if (typeof module === "object" && typeof module.exports === "object")
+ if (typeof module === "object" && module.exports)
  {
   module.exports = ParserBase;
- }
- else
- {
-  global.ParserBase = ParserBase;
  }
 }(this));
 

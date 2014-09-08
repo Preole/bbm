@@ -71,7 +71,7 @@
  Lexer.create = create;
  Lexer.prototype.parse = parse;
 
- if (typeof module === "object" && typeof module.exports === "object")
+ if (typeof module === "object" && module.exports)
  {
   module.exports = Lexer;
  }

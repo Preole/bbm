@@ -6,7 +6,7 @@
  return [
   {
    pattern : "\\\\.",
-   name : "TEXT"
+   name : "ESCAPE"
   },
   {
    pattern : "{--",
@@ -78,11 +78,11 @@
   }
  ];
  }());
-
+ 
  var TYPES = RULES.reduce(function (acc, rule){
   acc[rule.name] = rule.name;
   return acc;
- }, {});
+ }, {TEXT : "TEXT"});
  
  
  var expose = {
@@ -90,7 +90,7 @@
   rules : RULES
  };
  
- if (typeof module === "object" && typeof module.exports === "object")
+ if (typeof module === "object" && module.exports)
  {
   module.exports = expose;
  }

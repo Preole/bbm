@@ -30,12 +30,8 @@
   };
  }());
 
- if (typeof module === "object" && typeof module.exports === "object")
+ if (typeof module === "object" && module.exports)
  {
   module.exports = LexToken;
- }
- else
- {
-  global.LexToken = LexToken;
  }
 }(this));

@@ -4,15 +4,14 @@
  var STREX =
  {
   WS : "[ \\t\\u2000-\\u200d\\u205f\\u1680\\u237d\\u2420\\u2422\\u2423\\u3000]",
-  CTRL : "[\\u0000-\\u0008\\u000e-\\u001f\\u007f-\\u009f\\u2028\\u2029]",
   NL : "[\\v\\f\\n]|\\r\\n?"
  };
 
  var RULES = (function (){
  return [
   {
-   pattern : "\\\\" + STREX.CTRL.replace("[", "[^"),
-   name : "TEXT"
+   pattern : "\\\\.",
+   name : "ESCAPE"
   },
   {
    pattern : "!!" + STREX.WS,
@@ -100,7 +99,7 @@
  var TYPES = RULES.reduce(function (acc, rule){
   acc[rule.name] = rule.name;
   return acc;
- }, {});
+ }, {TEXT : "TEXT"});
  
  
  var expose = {
@@ -108,7 +107,7 @@
   rules : RULES
  };
  
- if (typeof module === "object" && typeof module.exports === "object")
+ if (typeof module === "object" && module.exports)
  {
   module.exports = expose;
  }
