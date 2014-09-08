@@ -14,7 +14,7 @@
    this.currPos = 0;
    this.nestLvl = 0;
    this.errMsgs = []; //Array of Strings. (Error Messages)
-   if (typeof newOptions === "object")
+   if (typeof newOptions === "object" && newOptions !== null)
    {
     this.options = newOptions;
    }
@@ -49,11 +49,6 @@
     return acc += typeof token === "object" ? (token.lexeme || "") : "";
    }, "");
   }
- 
-  function parse()
-  {
-   throw new TypeError("ParserBase does not implement the method parse().");
-  }
 
   return {
    reset : reset,
@@ -61,8 +56,7 @@
    shift : shift,
    shiftUntil : shiftUntil,
    shiftTo : shiftTo,
-   sliceText : sliceText,
-   parse : parse
+   sliceText : sliceText
   };
  }());
  

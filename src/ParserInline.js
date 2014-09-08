@@ -12,8 +12,7 @@
  function ParserInline(options)
  {
   this.lexer = Lexer.create(rulesInline.rules, rulesInline.types.TEXT);
-  this.options = options;
-  this.reset();
+  this.reset(options);
  }
  
  function create(tokens)
@@ -24,10 +23,31 @@
  ParserInline.create = create;
  ParserInline.prototype = (function (){
   var base = ParserBase.prototype;
-  
+
+  function parseFormat()
+  {
+  }
+  function parseLink()
+  {
+  }
+  function parseLinkCont()
+  {
+  }
+  function parseVerbatim()
+  {
+  }
+
+
   function parse(bbmStr)
   {
-   return; //TODO
+   var rootNode = new ASTNode("TODO");
+   this.tokens = this.lexer.parse(bbmStr);
+   while (this.lookAhead())
+   {
+    //TODO
+   }
+   this.reset();
+   return rootNode;
   }
   base.parse = parse;
   return base;

@@ -7,7 +7,8 @@
   ParserInline = require("./ParserInline.js"),
   ParserBase = require("./ParserBase.js"),
   ASTEnum = require("./ASTNodeEnum.js"),
-  ASTNode = require("./ASTNode.js");
+  ASTNode = require("./ASTNode.js"),
+  lexEnum = rulesBlock.types;
 
  function ParserBlock(options)
  {
@@ -24,11 +25,64 @@
  
  ParserBlock.create = create;
  ParserBlock.prototype = (function (){
-  var base = ParserBase.prototype;
+  var base = ParserBase.prototype,
+   blockSwitch = {TODO: someFunction};
   
+  function untilNotWS(currToken)
+  {
+   return !currToken.isType(lexEnum.WS) && !currToken.isType(lexEnum.NL);
+  }
+  
+  function parseBlock()
+  {
+   this.shiftUntil(untilNotWS);
+   
+   var tok = this.lookAhead() || {},
+    func = blockSwitch[tok.type];
+    
+   if (func)
+   {
+    return func.call(this);
+   }
+   return parsePara.call(this);
+  }
+  
+  function parseList()
+  {
+  }
+  function parseAside()
+  {
+  }
+  function parseComment()
+  {
+  }
+  function parseCodeBlock()
+  {
+  }
+  function parseATX()
+  {
+  }
+  function parseLabel()
+  {
+  }
+  function parseLinkRef()
+  {
+  }
+  function parsePara()
+  {
+  }
+  
+
   function parse(bbmStr)
   {
-   return;
+   var rootNode = new ASTNode("TODO");
+   this.tokens = this.lexer.parse(bbmStr);
+   while (this.lookAhead())
+   {
+    rootNode.nodes.push(parseBlock.call(this));
+   }
+   this.reset();
+   return rootNode;
   }
   
   base.parse = parse;
