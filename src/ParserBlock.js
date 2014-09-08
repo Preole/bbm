@@ -1,5 +1,6 @@
 
 //TODO: Handle escaped tokens in RefLink, Pre, Comment, and ATX contexts.
+//TODO: Implement nesting abuse protection
 (function (){
  "use strict";
  
@@ -7,17 +8,14 @@
   rulesBlock = require("./LexerEnumBlock.js"),
   ParserInline = require("./ParserInline.js"),
   ParserBase = require("./ParserBase.js"),
-  ASTEnum = require("./ASTNodeEnum.js"),
   ASTNode = require("./ASTNode.js"),
-  
-  //TODO: Refactor LEXEnum for letter case consistency; CamelCase maybe?
-  LEXEnum = rulesBlock.types; 
+  enumAST = require("./ASTNodeEnum.js"),
+  enumLex = rulesBlock.types; 
 
  function ParserBlock(options)
  {
   this.inlineParser = ParserInline.create(options);
   this.lexer = Lexer.create(rulesBlock.rules, rulesBlock.types.TEXT);
-  this.options = options;
   this.reset(options);
  }
  
@@ -38,20 +36,36 @@
     OL : parseList,
     UL : parseList,
     DT : parseList,
-    HR : parseHR,
+    HR : parseHRTR,
+    TRSEP : parseHRTR,
     REF : parseRef,
     ATX : parseATX,
-    TRSEP : parseTR,
     COMMENT : parsePre,
     CODE : parsePre,
     ASIDE : parseDiv,
     CLASS : parseLabel,
     ID : parseLabel
-   };
+   },
+   blockListASTMap =
+   {
+    TH : enumAST.TH,
+    TD : enumAST.TD,
+    BQ : enumAST.BLOCKQUOTE,
+    DD : enumAST.DD,
+    DT : enumAST.DT,
+    OL : enumAST.OL_LI,
+    UL : enumAST.UL_LI
+   },
+   listWSNL = [enumLex.WS, enumLex.NL],
+   listSetext = [enumLex.HR, enumLex.ATX],
+   listRefEnd = [enumLex.NL, enumLex.REF_END],
+   listATXEnd = [enumLex.NL, enumLex.ATX_END];
+   
+   
   
   function untilNotWSNL(token)
   {
-   return !token.isType(LEXEnum.WS) && !token.isType(LEXEnum.NL);
+   return listWSNL.indexOf(token.type) === -1;
   }
 
   function untilPre(token, tokStart)
@@ -64,7 +78,24 @@
 
   function untilBR(token)
   {
-   return token.isType(LEXEnum.NL);
+   return token.isType(enumLex.NL);
+  }
+  function untilLinkRefEnd(token)
+  {
+   return listRefEnd.indexOf(token.type) !== -1;
+  }
+  function untilATXEnd(token)
+  {
+   return listATXEnd.indexOf(token.type) !== -1;
+  }
+
+  function untilParaEnd(token, minCol)
+  {
+   return isLineStart.call(this) && (
+    isLineEnd.call(this) ||
+    listSetext.indexOf(token.type) !== -1 ||
+    listWSNL.indexOf(token.type) === -1 && token.col < minCol
+   );
   }
 
   function isLineStart()
@@ -73,8 +104,8 @@
     prev2 = this.lookAhead(-2),
     
    return !prev1 || 
-    prev1.isType(LexEnum.NL) || 
-    prev1.isType(LexEnum.WS) && (!prev2 || prev2.isType(LexEnum.NL));
+    prev1.isType(enumLex.NL) || 
+    prev1.isType(enumLex.WS) && (!prev2 || prev2.isType(enumLex.NL));
   }
 
   function isLineEnd()
@@ -83,8 +114,13 @@
     next = this.lookAhead(1);
     
    return !now || 
-    now.isType(LEXEnum.NL) ||
-    now.isType(LEXEnum.WS) && (!next || next.isType(LEXEnum.NL));
+    now.isType(enumLex.NL) ||
+    now.isType(enumLex.WS) && (!next || next.isType(enumLex.NL));
+  }
+  
+  function removeBackslash(str)
+  {
+   return str.replace(/\\(.)/g, "$1");
   }
   
 
@@ -96,8 +132,6 @@
    var tok = this.lookAhead(),
     func = tok ? blockSwitch[tok.type] : null;
 
-   //TODO: In some contexts, blocks don't have to be a line starter.
-   //e.g: "> > > > ", block quote with four nesting levels.
    if (func instanceof Function && (ignoreLine || isLineStart.call(this)))
    {
     return func.call(this, tok);
@@ -107,7 +141,7 @@
   
   function parseList(lexTok)
   {
-   var nodeType = TODO_MAP[lexTok.type],
+   var nodeType = blockListASTMap[lexTok.type],
     ignoreLineStart = true;
     node = ASTNode.create(nodeType),
     col = lexTok.col,
@@ -116,15 +150,14 @@
    this.shift();
    if (isLineEnd.call(this))
    {
-    return node; //Empty node;
+    return node;
    }
-   if (lexTok.isType(LEXEnum.DT))
+   if (lexTok.isType(enumLex.DT))
    {
     node.nodes = parsePara.call(this).nodes;
-    return node; //DT: Parse a paragraph, and extract its children.
+    return node;
    }
    
-   //All other cases, parse blocks recursively.
    while (tok = this.lookAhead() && tok.col >= col)
    {
     node.nodes.push(parseBlock.call(this, ignoreLineStart));
@@ -134,22 +167,26 @@
    return node;
   }
   
-  function parseHR(lexTok)
+  function parseHRTR(lexTok)
   {
-   this.shiftUntilPast(untilBR);
-   return ASTNode.create(ASTEnum.HR);
+   var nodeType = lexTok.isType(enumLex.HR) ? 
+    enumAST.HR : 
+    enumAST.TR;
+    
+   this.shift();
+   return ASTNode.create(nodeType);
   }
 
   function parseDiv(lexTok)
   {
-   var node = ASTNode.create(ASTEnum.DIV),
+   var node = ASTNode.create(enumAST.DIV),
     col = lexTok.col,
     tok = null;
 
    this.shift();
    while (tok = this.lookAhead() && tok.col >= col)
    {
-    if (tok.isType(LEXEnum.DIV) && tok.col === col && isLineStart.call(this))
+    if (tok.isType(enumLex.DIV) && tok.col === col && isLineStart.call(this))
     {
      break;
     }
@@ -162,9 +199,9 @@
 
   function parsePre(lexTok)
   {
-   var nodeType = lexTok.isType(LEXEnum.COMMENT) ? 
-     ASTEnum.COMMENT : 
-     ASTEnum.CODE;
+   var nodeType = lexTok.isType(enumLex.COMMENT) ? 
+     enumAST.COMMENT : 
+     enumAST.CODE;
 
    var startPos = this.currPos + 1,
     node = ASTNode.create(nodeType);
@@ -179,24 +216,23 @@
    return node;
   }
 
-  //TODO: Children with string, or attributes?
   function parseATX(lexTok)
   {
    var hLen = lexTok.lexeme.length,
-    node = ASTNode.create(ASTEnum.HEADER),
+    node = ASTNode.create(enumAST.HEADER),
     startPos = this.currPos + 1;
 
-   this.shiftUntil("TODO");
-   node.meta.level = hLen;
+   this.shiftUntilPast(untilATXEnd);
+   node.level = hLen;
    node.nodes.push(this.sliceText(startPos, this.currPos - 1));
    return node;
   }
 
   function parseLabel(lexTok)
   {
-   var nodeType = lexTok.isType(LEXEnum.ID) ? 
-    ASTEnum.ID :
-    ASTEnum.CLASS;
+   var nodeType = lexTok.isType(enumLex.ID) ? 
+    enumAST.ID :
+    enumAST.CLASS;
     
    var startPos = this.currPos + 1;
     node = ASTNode.create(nodeType);
@@ -212,7 +248,7 @@
     id = "",
     url = "";
     
-   this.shiftUntil("TODO");
+   this.shiftUntil(untilRefEnd);
    if (isLineEnd.call(this))
    {
     return;
@@ -220,24 +256,32 @@
    id = this.sliceText(startPos, this.currPos);
    
    startPos = currPos + 1;
-   this.shiftUntil("TODO");
+   this.shiftUntil(untilBR);
    url = this.sliceText(startPos, this.currPos);
    
    //TODO: URL and ID processing. Check the length after processing.
    if (url.length > 0 && id.length > 0)
    {
-    //TODO: Modify identifier table
+    
    }
   }
   
-  function parsePara(override)
+  function parsePara(lexTok)
   {
-  
+   var node = ASTNode.create(enumAST.P),
+    startPos = this.currPos,
+    paraText = "";
+    
+   this.shiftUntilPast(untilParaEnd, lexTok.col);
+   
+   paraText = this.sliceText(startPos, this.currPos - 1);
+   node.nodes.concat(this.inlineParser.parse(paraText).nodes);
+   return node;
   }
 
   function parse(bbmStr)
   {
-   var rootNode = ASTNode.create("TODO");
+   var rootNode = ASTNode.create(enumAST.ROOT);
    this.tokens = this.lexer.parse(bbmStr);
    while (this.lookAhead())
    {

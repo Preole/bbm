@@ -5,7 +5,6 @@
  {
   this.type = type || "";
   this.attr = attr || {};
-  this.meta = {}; //TODO: Meta table the best way for auxilary data?
   this.nodes = [];
  }
  function create(type, attr)

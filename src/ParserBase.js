@@ -5,7 +5,7 @@
 
  function ParserBase()
  {
-  throw new TypeError("Abstract class ParserBase is not to be instantiated.");
+  throw new TypeError("Abstract class ParserBase cannot be instantiated.");
  }
  ParserBase.prototype = (function (){
   function reset(newOptions)
@@ -14,10 +14,12 @@
    this.currPos = 0;
    this.nestLvl = 0;
    this.errMsgs = []; //Array of Strings. (Error Messages)
-   if (typeof newOptions === "object" && newOptions !== null)
+   
+   if (!(this.options instanceof Object))
    {
-    this.options = newOptions;
+    this.options = TODODefaultOption;
    }
+   this.options = TODOExtend(this.options, newOptions);
   }
   
   function lookAhead(offset)
@@ -59,7 +61,7 @@
 
   function doSliceText(acc, token)
   {
-   return acc += typeof token === "object" ? (token.lexeme || "") : "";
+   return acc += token instanceof Object ? (token.lexeme || "") : "";
   }
 
   return {
