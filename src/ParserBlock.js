@@ -54,9 +54,12 @@
    return !token.isType(LEXEnum.WS) && !token.isType(LEXEnum.NL);
   }
 
-  function untilPre(token, type, col)
+  function untilPre(token, tokStart)
   {
-   return token.isType(type) && token.col === col && isLineStart.call(this);
+   return token.isSameType(tokStart) &&
+    token.col === tokStart.col &&
+    token.lexeme.length === tokStart.lexeme.length &&
+    isLineStart.call(this);
   }
 
   function untilBR(token)
@@ -164,8 +167,7 @@
      ASTEnum.COMMENT : 
      ASTEnum.CODE;
 
-   var col = lexTok.col,
-    startPos = this.currPos + 1,
+   var startPos = this.currPos + 1,
     node = ASTNode.create(nodeType);
 
    /*
@@ -173,7 +175,7 @@
    immediately before the closing block.
    */
    this.shiftUntilPast(untilBR);
-   this.shiftUntil(untilPre, nodeType, col); //add text extraction here.
+   this.shiftUntil(untilPre, lexTok); //add text extraction here.
    this.shift();
    return node;
   }
