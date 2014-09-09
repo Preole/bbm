@@ -1,6 +1,411 @@
-BakaBakaMark EBNF Grammar (TODO)
-================================
+BakaBakaMark EBNF Grammar Version 2.0.0 (DRAFT)
+===============================================
 
+Start Symbols
+-------------
+
+"""
+BakaBakaMark
+ | Blocks EOF
+ ;
+
+Blocks
+ | (BlockStart Block)*
+ ;
+ 
+BlockStart
+ | (NL (SPACES)?)*
+ ;
+ 
+Block
+ | SPACES?
+   (
+   | Aside
+   | CodeBlock 
+   | BlockQuote 
+   | List 
+   | DefList
+   | Table
+   | HR
+   | ATXHeader
+   | BlockID
+   | BlockClass
+   | BlockStop
+   | URLAnchor
+   | Paragraph
+   )
+ ;
+"""
+
+
+
+Block-level Grammar
+-------------------
+
+=== Div Block ===
+
+"""
+Div
+ | SPACE{N} DIV_DELIM Blocks SPACE{N} DIV_DELIM
+ ;
+ 
+DIV_DELIM
+ | [*]{4,} (?=NL)
+ ;
+"""
+
+Arbitrary block-level container to be transformed with the BlockID or 
+BlockClass elements.
+
+For a """Div""" to terminate gracefully, the number of asterisks in the 
+closing delimiter token must be the same as the starting token's. Moreover, 
+these asterisks must start on the same column on a blank line.
+
+See also: **Block Element Indentation Rules** for nesting other block elements 
+inside the Div block.
+
+
+
+=== Block Directives ===
+
+"""
+BlockID
+ | FULLSTOP SPACE ~(NL)+ NL
+ ;
+ 
+BlockClass
+ | FULLSTOP{2} SPACE ~(NL)+ NL
+ ;
+ 
+FULLSTOP
+ | "."
+ ;
+"""
+
+The """BlockID""" and """BlockClass""" parses the rest of the content on 
+its line as a CSS class or ID, **One value per line**. These values will be 
+applied to the next content-holding sibling block element in the tree.
+
+The CSS Class or ID values obtained from these rules need to be processed 
+according to the section **Character Transformation Pipeline Summary**. 
+If their values are empty after processing, these elements will have no 
+effect.
+
+Identifiers described by BlockID elements must be unique. If a particular ID 
+after processing has already been defined in the document, it will have no 
+effect.
+
+////
+; TODO1
+: Consecutive BlockID Behavior, like (BlockID BlockClass BlockID BlockID).
+
+; TODO2
+: In case of TODO1, if the first BlockID identifier is invalid.
+
+; REMOVED
+: BlockStop element. (This contradicts the promise in README, but may be 
+  necessary, if I am to allow empty HTML block elements)
+////
+
+"""
+. Figure 1.
+.. Gallery
+.. Left
+****
+!<MyImage.jpg>
+!<MyImage2.jpg>
+
+This is a gallery's caption.
+****
+"""
+
+
+
+=== ATX Header ===
+
+"""
+ATXHeader
+ | ATX ~(NL | ATX_END) ATX_END
+ ;
+ 
+ATX_END
+ | [=]+ (?=(NL))
+ | NL
+ ;
+ 
+ATX
+ | [=]+
+ ;
+"""
+
+One-liner header. This particular header style parses a line of text in 
+verbatim without any inline-level processing, like bold and italic.
+
+
+
+
+=== Block Quote ===
+
+"""
+BlockQuote
+ | GT_THAN Blocks
+ ;
+"""
+
+For nesting blocks inside a block quote, See **Block Element Indentation 
+Rules**.
+
+
+
+
+
+
+=== Code Block ===
+
+"""
+CodeBlock
+ | CODE_FENCE
+   [~(CODE_FENCE)]+
+   (?<=NL | NL SPACES) CODE_FENCE
+ ;
+ 
+CODE_FENCE
+ | CODE (?=NL)
+ ;
+"""
+
+All white space and line breaks are preserved. No grammar rule interpretation 
+will occur inside the block, except for the closing """CODE_FENCE""" token. 
+
+Only a matching """CODE_FENCE""" token will be able to close a code block. 
+Failure to close the block results interpreting the rest of the document 
+as a CodeBlock. A matching CODE_FENCE token is one that...
+
+1. Has the same number of double quotes (") as the fence.
+2. Starts on the same column as the starting fence.
+3. The only token on its line.
+
+In case of an indented CodeBlock, all lines shall be trimmed N leading white 
+space characters defined by **WS**, where N is the number of space characters 
+preceding the line.
+
+
+
+=== Comment Block ===
+
+"""
+CommentBlock
+ | COMMENT_DELIM 
+   [~(COMMENT_DELIM)]+
+   (?<=NL | NL SPACES) COMMENT_DELIM
+ ;
+ 
+COMMENT_DELIM
+ | [/]{4,} (?=NL)
+ ;
+"""
+
+Same as CodeBlock, except it will not be rendered in the output by default.
+
+
+
+=== Horizontal Rule ===
+
+"""
+HorizontalRule
+ | HR
+ ;
+ 
+HR
+ | (?<=NL | NL SPACES) "-" {4, } (?=NL)
+ ;
+"""
+
+Starting a line with four or more consecutive hyphen-minus, followed by the 
+end of the line, is a horizontal rule.
+
+
+
+=== URL Anchor ===
+
+"""
+URLAnchor
+ | LINK_REF [~(NL | LINK_REF_END)]+ LINK_REF_END [~(NL)]+ NL
+ ;
+ 
+LINK_REF
+ | ":{"
+ ;
+	
+LINK_REF_END
+ | "}:"
+	;
+"""
+
+A reference link anchor (URLAnchor) has two components:
+
+1. The ID stored inside the braces, """:{ID}:""", 
+2. The URL on the rest of the line.
+
+////
+= Changed Requirements: =
+
+; URL Anchor Referencing Scope
+; Removed. Now directly modifies the root node's URL symbol table, and all 
+  URL lookup is to be done on that table. There is no more scoping context.
+  
+= TODO =
+
+- Describe the new rule: Root node symbol table modification.
+- Describe that they can be defined anywhere relative to the links.
+- No output. Produces no node.
+////
+
+
+
+=== Flat Lists ===
+
+"""
+OrderedList
+ | (OL_ListItem)+
+ ;
+ 
+UnorderedList
+ | (UL_ListItem)+
+ ;
+ 
+OL_ListItem
+ | OL_ITEM Block Blocks
+ ;
+ 
+UL_ListItem
+ | UL_ITEM Block Blocks
+ ;
+ 
+OL_ITEM
+ | [#] "." SPACE
+ | [0-9]+ "." SPACE
+ ;
+ 
+UL_ITEM
+ | [-+*\\u2022\\u2043] SPACE
+ ;
+"""
+
+See also **Block Element Indentation Rules** for nested lists, block quotes,
+and tables.
+
+
+
+=== Definition Lists ===
+
+"""
+DefList
+ | (DefTermGroup DefDescGroup)+
+ ;
+ 
+DefTermGroup
+ | DefTerm+ 
+ ;
+ 
+DefTerm
+ | DT_MARKER Paragraph
+ ;
+ 
+DefDescGroup
+ | DefDesc+ 
+ ;
+ 
+DefDesc
+ | DD_MARKER Blocks
+ ;
+ 
+DT_MARKER
+ | ";" SPACE
+ ;
+ 
+DD_MARKER
+ | ":" SPACE
+ ;
+"""
+
+The Paragraph in the DefTerm node should contain the children of the 
+Paragraph node, not the paragraph node itself.
+
+A definition list continues so long as it keeps encountering definition terms 
+and definition descriptions (DD) blocks. Logical structures of the DefDesc 
+element is determined by **Block Element Indentation Rules**.
+
+////
+TODO:
+
+- Describe how leading DD and trailing DT nodes in a definition list are 
+  removed from the tree.
+////
+
+
+
+=== Table ===
+
+"""
+Table
+ | TableRowStart (TABLE_ROW_DELIM TableRow)+
+ ;
+ 
+TableRowStart
+ | (TableCell | TableHead)+ 
+ ;
+ 
+TableRow
+ | TableRowStart
+ | TABLE_ROW_DELIM
+ ;
+ 
+TableCell
+ | TABLE_CELL_DELIM TableCellContent
+ ;
+ 
+TableHead
+ | TABLE_HEAD_DELIM TableCellContent
+ ;
+ 
+TableCellContent
+ | (Blocks | SPACES? NL)
+ ;
+ 
+TABLE_HEAD_DELIM
+ | "!!"
+ ;
+
+TABLE_CELL_DELIM
+ | "||"
+ ;
+ 
+TABLE_ROW_DELIM
+ | "|" [=]+ (?=NL)
+ ;
+"""
+
+////
+TODO: Describe the row and column logic. That is, the first row of a table
+determines the number of columns the table will contain.
+
+TODO: Revise the grammar to allow leading TABLE_CELL_DELIM.
+////
+
+
+
+Character Classes
+-----------------
+
+"""
+SPACE
+ | WS
+ ;
+ 
+SPACES 
+ | WS+
+ ;
 
 WS
  | [ \t\u2000-\u200d\u205f\u1680\u237d\u2420\u2422\u2423\u3000]
@@ -14,3 +419,74 @@ NL
  | [\v\f\n]
  | \r\n?
  ;
+"""
+
+
+
+
+
+Block Element Indentation Rules
+-------------------------------
+
+BakaBakaMark is an indentation sensitive lightweight markup language. 
+That is, the document's logical structure depends on white space and 
+indentation. 
+
+Rules listing:
+
+0. All white spaces are treated equally for the purpose of determining 
+   indentation and nesting. For further details, refer to the """SPACE""" 
+   token definition.
+
+1. Every line of text in a **Paragraph** must be indented to the same column 
+   as the first line of the paragraph, or deeper. All spaces after that column 
+   are collapsed into a single white space, with the sole exception of hard 
+   line-wrapped URLs, which can preserve literal white space.
+   
+2. The the first non-whitespace token on the same line determines the 
+   minimum indentation level for selected block elements. These elements 
+   are:
+   
+   - **TableHead**
+   - **TableCell**
+   - **Blockquote**
+   - **OL_ListItem**
+   - **UL_ListItem**
+   - **DefTerm**
+   - **DefDesc**
+   
+   All block elements are counted as a child of the forementioned elements 
+   so long as they meet the minimum indentation requirement. Sample code:
+   
+   """
+   + + Item 1.1
+     + Item 1.2
+     
+     Item 1, paragraph 1 after the first bullet list.
+     
+     + Item 1.1
+     - Item 1.2
+     
+     Item 1, paragraph 2 after the second bullet list.
+     
+   + Item 2, paragraph 1, because it's not indented enough to be counted 
+     as part of Item 1.
+   """
+   
+3. For **Aside** and **CodeBlock**, the minimum indentation level is 
+   determined by the opening delimiter token's column number instead.
+   
+   """
+    ****
+    Part of the aside block
+    
+    Part of the aside block
+    
+   Aside block terminated due to insufficient indentation.
+    ****
+    Another aside block.
+    ****
+   """
+   
+4. **CommentBlock**, **CodeBlock** are exempt from rule 1 and rule 2.
+
