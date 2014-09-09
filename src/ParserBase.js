@@ -52,14 +52,19 @@
    this.shift();
   }
   
+  function slice(fromPos, toPos)
+  {
+   return this.tokens.slice(fromPos, toPos);
+  }
+  
   function sliceText(fromPos, toPos)
   {
-   return this.tokens.slice(fromPos, toPos).reduce(doSliceText, "");
+   return this.slice(fromPos, toPos).map(doSliceText).join("");
   }
 
-  function doSliceText(acc, token)
+  function doSliceText(token)
   {
-   return acc += token instanceof Object ? (token.lexeme || "") : "";
+   return token.lexeme;
   }
 
   return {
@@ -68,6 +73,7 @@
    shift : shift,
    shiftUntil : shiftUntil,
    shiftUntilPast : shiftPast,
+   slice : slice,
    sliceText : sliceText
   };
  }());

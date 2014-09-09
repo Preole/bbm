@@ -67,27 +67,34 @@
    ));
   }
   
-  addColsLines(tokens);
+  tokens.forEach(updateLinesCols);
+  tokens.forEach(updateEscape);
+
   return tokens;
  }
 
- function addColsLines(tokens)
+ function updateLinesCols(token, index, tokens)
  {
-  var col = 0,
-   line = 0;
-
-  tokens.forEach(function (token){
-   var nlCount = token.lexeme.split(reNL).length - 1;
-   token.col = col;
-   token.line = line;
+  if (index === 0)
+  {
+   token.line = 0;
+   token.col = 0;
+   return;
+  }
+  var prevTok = tokens[index - 1],
+   nlCount = prevTok.lexeme.split(reNL).length - 1);
    
-   line += nlCount;
-   col += nlCount > 0 ? -col : lexeme.length;
-  });
-  
-  return tokens;
+  token.line = prevTok.line + nlCount;
+  token.col = nlCount > 0 ? 0 : prevTok.col + prevTok.lexeme.length;
+ }
+
+ function updateEscape(token, index)
+ {
+  token.lexeme = token.lexeme.replace(/\\(.)/g, "$1");
  }
  
+ 
+
  Lexer.create = create;
  Lexer.prototype.parse = parse;
 

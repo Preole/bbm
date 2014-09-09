@@ -1,21 +1,20 @@
 
-//TODO: Handle escaped tokens in RefLink, Pre, Comment, and ATX contexts.
 //TODO: Implement nesting abuse protection
 (function (){
  "use strict";
  
  var Lexer = require("./Lexer.js"),
-  rulesBlock = require("./LexerEnumBlock.js"),
+  rulesLex = require("./LexEnum.js"),
   ParserInline = require("./ParserInline.js"),
   ParserBase = require("./ParserBase.js"),
   ASTNode = require("./ASTNode.js"),
   enumAST = require("./ASTNodeEnum.js"),
-  enumLex = rulesBlock.types; 
+  enumLex = rulesLex.types; 
 
  function ParserBlock(options)
  {
   this.inlineParser = ParserInline.create(options);
-  this.lexer = Lexer.create(rulesBlock.rules, rulesBlock.types.TEXT);
+  this.lexer = Lexer.create(rulesLex.rules, rulesLex.types.TEXT);
   this.reset(options);
  }
  
@@ -31,7 +30,7 @@
    {
     TH : parseList,
     TD : parseList,
-    BQ : parseList,
+    GT : parseList,
     DD : parseList,
     OL : parseList,
     UL : parseList,
@@ -50,7 +49,7 @@
    {
     TH : enumAST.TH,
     TD : enumAST.TD,
-    BQ : enumAST.BLOCKQUOTE,
+    GT : enumAST.BLOCKQUOTE,
     DD : enumAST.DD,
     DT : enumAST.DT,
     OL : enumAST.OL_LI,
@@ -76,9 +75,9 @@
     isLineStart.call(this);
   }
 
-  function untilBR(token)
+  function untilNL(token)
   {
-   return token.isType(enumLex.NL);
+   return token.type === enumLex.NL;
   }
 
   function untilLinkRefEnd(token)
@@ -106,8 +105,8 @@
     prev2 = this.lookAhead(-2),
     
    return !prev1 || 
-    prev1.isType(enumLex.NL) || 
-    prev1.isType(enumLex.WS) && (!prev2 || prev2.isType(enumLex.NL));
+    prev1.type === enumLex.NL || 
+    prev1.type === enumLex.WS && (!prev2 || prev2.type === enumLex.NL);
   }
 
   function isLineEnd()
@@ -116,17 +115,10 @@
     next = this.lookAhead(1);
     
    return !now || 
-    now.isType(enumLex.NL) ||
-    now.isType(enumLex.WS) && (!next || next.isType(enumLex.NL));
+    now.type === enumLex.NL ||
+    now.type === enumLex.WS && (!next || next.type === enumLex.NL);
   }
   
-  function removeBackslash(str)
-  {
-   return str.replace(/\\(.)/g, "$1");
-  }
-  
-
-
   function parseBlock(ignoreLine)
   {
    this.shiftUntil(untilNotWSNL);
@@ -154,7 +146,7 @@
    {
     return node;
    }
-   if (lexTok.isType(enumLex.DT))
+   if (lexTok.type === enumLex.DT)
    {
     node.nodes = parsePara.call(this).nodes;
     return node;
@@ -171,7 +163,7 @@
   
   function parseHRTR(lexTok)
   {
-   var nodeType = lexTok.isType(enumLex.HR) ? 
+   var nodeType = lexTok.type === enumLex.HR ? 
     enumAST.HR : 
     enumAST.TR;
     
@@ -188,7 +180,7 @@
    this.shift();
    while (tok = this.lookAhead() && tok.col >= col)
    {
-    if (tok.isType(enumLex.DIV) && tok.col === col && isLineStart.call(this))
+    if (tok.type === enumLex.DIV && tok.col === col && isLineStart.call(this))
     {
      break;
     }
@@ -201,7 +193,7 @@
 
   function parsePre(lexTok)
   {
-   var nodeType = lexTok.isType(enumLex.COMMENT) ? 
+   var nodeType = lexTok.type === enumLex.COMMENT ? 
      enumAST.COMMENT : 
      enumAST.CODE;
 
@@ -212,7 +204,7 @@
    TODO: Trim leading WS on each line, extract text, discard text 
    immediately before the closing block.
    */
-   this.shiftUntilPast(untilBR);
+   this.shiftUntilPast(untilNL);
    this.shiftUntil(untilPre, lexTok); //add text extraction here.
    this.shift();
    return node;
@@ -232,14 +224,14 @@
 
   function parseLabel(lexTok)
   {
-   var nodeType = lexTok.isType(enumLex.ID) ? 
+   var nodeType = lexTok.type === enumLex.ID ? 
     enumAST.ID :
     enumAST.CLASS;
     
    var startPos = this.currPos + 1;
     node = ASTNode.create(nodeType);
     
-   this.shiftUntilPast(untilBR);
+   this.shiftUntilPast(untilNL);
    node.nodes.push(this.sliceText(startPos, this.currPos - 1));
    return node;
   }
@@ -258,7 +250,7 @@
    id = this.sliceText(startPos, this.currPos);
    
    startPos = currPos + 1;
-   this.shiftUntil(untilBR);
+   this.shiftUntil(untilNL);
    url = this.sliceText(startPos, this.currPos);
    
    //TODO: URL and ID processing. Check the length after processing.

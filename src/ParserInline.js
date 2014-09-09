@@ -3,15 +3,14 @@
  "use strict";
 
  var Lexer = require("./Lexer.js"),
-  rulesInline = require("./LexEnumInline.js"),
+  enumLex = require("./LexEnum.js"),
   ParserBase = require("./ParserBase.js"),
-  ASTEnum = require("./ASTNodeEnum.js"),
+  enumAST = require("./ASTNodeEnum.js"),
   ASTNode = require("./ASTNode.js");
 
 
  function ParserInline(options)
  {
-  this.lexer = Lexer.create(rulesInline.rules, rulesInline.types.TEXT);
   this.reset(options);
  }
  
@@ -38,10 +37,10 @@
   }
 
 
-  function parse(bbmStr)
+  function parse(bbmTokens)
   {
    var rootNode = new ASTNode("TODO");
-   this.tokens = this.lexer.parse(bbmStr);
+   this.tokens = bbmTokens;
    while (this.lookAhead())
    {
     //TODO

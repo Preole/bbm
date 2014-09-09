@@ -16,20 +16,6 @@
  }
 
  LexToken.create = create;
- LexToken.prototype = (function (){
-  function isType(typeStr)
-  {
-   return this.type === type;
-  }
-  function isSameType(lexToken)
-  {
-   return lexToken instanceof LexToken && this.type === lexToken.type;
-  }
-  return {
-   isType : isType,
-   isSameType : isSameType
-  };
- }());
 
  if (typeof module === "object" && module.exports)
  {
