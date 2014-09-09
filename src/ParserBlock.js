@@ -40,8 +40,8 @@
     REF : parseRef,
     ATX : parseATX,
     COMMENT : parsePre,
-    CODE : parsePre,
-    ASIDE : parseDiv,
+    PRE : parsePre,
+    DIV : parseDiv,
     CLASS : parseLabel,
     ID : parseLabel
    },
@@ -119,6 +119,20 @@
     now.type === enumLex.WS && (!next || next.type === enumLex.NL);
   }
   
+  function accText(tok, index, tokens)
+  {
+   var minCol = this,
+    prev = tokens[index - 1] || tok;
+    
+   if (tok.type === enumLex.WS && prev.type === enumLex.NL))
+   {
+    return tok.lexeme.slice(minCol);
+   }
+   return tok.lexeme;
+  }
+
+
+  
   function parseBlock(ignoreLine)
   {
    this.shiftUntil(untilNotWSNL);
@@ -126,6 +140,10 @@
    var tok = this.lookAhead(),
     func = tok ? blockSwitch[tok.type] : null;
 
+   if (!tok)
+   {
+    return;
+   }
    if (func instanceof Function && (ignoreLine || isLineStart.call(this)))
    {
     return func.call(this, tok);
@@ -167,7 +185,7 @@
     enumAST.HR : 
     enumAST.TR;
     
-   this.shift();
+   this.shiftUntilPast(untilNL);
    return ASTNode.create(nodeType);
   }
 
@@ -182,31 +200,29 @@
    {
     if (tok.type === enumLex.DIV && tok.col === col && isLineStart.call(this))
     {
+     this.shiftUntilPast(untilNL);
      break;
     }
     node.nodes.push(parseBlock.call(this));
     this.shiftUntil(untilNotWSNL);
    }
-   this.shift();
    return node;
   }
 
   function parsePre(lexTok)
   {
    var nodeType = lexTok.type === enumLex.COMMENT ? 
-     enumAST.COMMENT : 
-     enumAST.CODE;
+    enumAST.COMMENT : 
+    enumAST.PRE;
 
-   var startPos = this.currPos + 1,
-    node = ASTNode.create(nodeType);
-
-   /*
-   TODO: Trim leading WS on each line, extract text, discard text 
-   immediately before the closing block.
-   */
-   this.shiftUntilPast(untilNL);
-   this.shiftUntil(untilPre, lexTok); //add text extraction here.
-   this.shift();
+   var startPos = this.shiftUntilPast(untilNL),
+    endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
+    node = ASTNode.create(nodeType),
+    text = this.slice(startPos, endPos)
+     .map(accText, lexTok.col)
+     .join("");
+    
+   node.nodes.push(text);
    return node;
   }
 
@@ -214,46 +230,31 @@
   {
    var hLen = lexTok.lexeme.length,
     node = ASTNode.create(enumAST.HEADER),
-    startPos = this.currPos + 1;
+    startPos = this.shift(),
+    endPos = this.shiftUntilPast(untilATXEnd) - 1;
 
-   this.shiftUntilPast(untilATXEnd);
    node.level = hLen;
-   node.nodes.push(this.sliceText(startPos, this.currPos - 1));
+   node.nodes.push(this.sliceText(startPos, endPos));
    return node;
   }
 
   function parseLabel(lexTok)
   {
-   var nodeType = lexTok.type === enumLex.ID ? 
-    enumAST.ID :
-    enumAST.CLASS;
-    
-   var startPos = this.currPos + 1;
+   var nodeType = lexTok.type === enumLex.ID ? enumAST.ID : enumAST.CLASS,
+    startPos = this.currPos + 1,
+    endPos = this.shiftUntilPast(untilNL) - 1,
     node = ASTNode.create(nodeType);
     
-   this.shiftUntilPast(untilNL);
-   node.nodes.push(this.sliceText(startPos, this.currPos - 1));
+   node.nodes.push(this.sliceText(startPos, endPos);
    return node;
   }
 
+  //TODO: Trim and sanitize ID/URL
   function parseRef(lexTok)
   {
-   var startPos = currPos + 1,
-    id = "",
-    url = "";
-    
-   this.shiftUntil(untilRefEnd);
-   if (isLineEnd.call(this))
-   {
-    return;
-   }
-   id = this.sliceText(startPos, this.currPos);
-   
-   startPos = currPos + 1;
-   this.shiftUntil(untilNL);
-   url = this.sliceText(startPos, this.currPos);
-   
-   //TODO: URL and ID processing. Check the length after processing.
+   var id = this.sliceText(this.shift(), this.shiftUntil(untilRefEnd)),
+    url = this.sliceText(this.shift(), this.sihftUntil(untilNL));
+
    if (url.length > 0 && id.length > 0)
    {
     
@@ -264,12 +265,10 @@
   {
    var node = ASTNode.create(enumAST.P),
     startPos = this.currPos,
-    paraText = "";
+    endPos = this.shiftUntilPast(untilParaEnd, lexTok.col),
+    paraToks = this.slice(startPos, endPos);
     
-   this.shiftUntilPast(untilParaEnd, lexTok.col);
-   
-   paraText = this.sliceText(startPos, this.currPos - 1);
-   node.nodes.concat(this.inlineParser.parse(paraText).nodes);
+   node.nodes.concat(this.inlineParser.parse(paraToks).nodes);
    return node;
   }
 

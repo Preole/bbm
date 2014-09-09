@@ -2,7 +2,6 @@
 //Baseline Parser class. Implements token list traversal methods.
 (function (){
  "use strict";
-
  function ParserBase()
  {
   throw new TypeError("Abstract class ParserBase cannot be instantiated.");
@@ -33,6 +32,7 @@
    {
     this.currPos += 1;
    }
+   return this.currPos;
   }
   
   function shiftUntil(callback)
@@ -45,11 +45,13 @@
     this.shift();
     token = this.lookAhead();
    }
+   return this.currPos;
   }
   function shiftUntilPast(callback)
   {
    this.shiftUntil.apply(this, arguments);
    this.shift();
+   return this.currPos;
   }
   
   function slice(fromPos, toPos)
