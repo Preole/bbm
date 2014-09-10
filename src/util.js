@@ -36,7 +36,7 @@ function extend(obj)
    }
   }
  });
- return obj;
+ return toObj;
 }
 
 function trim(str)
