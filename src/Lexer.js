@@ -226,8 +226,8 @@ function parse(strInput)
   ));
  }
  
- tokens.forEach(updateLinesCols);
  tokens.forEach(updateEscape);
+ tokens.forEach(updateLinesCols);
 
  return tokens;
 }
