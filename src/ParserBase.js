@@ -3,7 +3,8 @@
 (function (){
 "use strict";
 
-var ASTNode = require("./ASTNode.js"),
+var util = require("./util.js"),
+ ASTNode = require("./ASTNode.js"),
  enumAST = require("./ASTNodeEnum.js");
 
 function ParserBase()
@@ -21,11 +22,11 @@ ParserBase.prototype = (function (){
   this.refTable = Object.create(null); //Global ID table for reference links.
   this.idTable = Object.create(null); //Global ID table for CSS ID.
   
-  if (typeof this.options === "object" && this.options !== null)
+  if (!util.isObject(this.options))
   {
    this.options = {};
   }
-  this.options = util.extend(this.options, newOptions); //TODO: object extending.
+  this.options = util.extend(this.options, newOptions);
  }
 
  function lookAt(index)
@@ -41,7 +42,7 @@ ParserBase.prototype = (function (){
  function lookAheadType(type, offset)
  {
   var token = this.lookAhead(offset);
-  if (typeof token === "object" && token !== null)
+  if (util.isObject(token))
   {
    return type === token;
   }

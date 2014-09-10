@@ -2,8 +2,8 @@
 (function (){
 "use strict";
 
-var Lexer = require("./Lexer.js"),
- enumLex = require("./LexEnum.js").types,
+var util = require("./util.js"),
+ enumLex = require("./Lexer.js").types,
  ASTNode = require("./ASTNode.js"),
  enumAST = require("./ASTNodeEnum.js"),
  ParserBase = require("./ParserBase.js");
@@ -23,7 +23,7 @@ ParserInline.create = create;
 ParserInline.prototype = (function (){
  var base = ParserBase.prototype,
  linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
- inlineSwitch = //TODO: Format cases.
+ inlineSwitch =
  {
   LINK_INT : parseLink,
   LINK_WIKI : parseLink,
@@ -91,6 +91,7 @@ ParserInline.prototype = (function (){
  {
   var fmtStack = formatStack ? formatStack : [],
    node = ASTNode.create(typeAST || enumAST.P),
+   isNotAbuse = fmtStack.length < this.options.maxSpans;
    txtStart = this.currPos,
    token = null;
    
@@ -104,17 +105,17 @@ ParserInline.prototype = (function (){
     txtStart = this.currPos;
    }
    
-   //Case code, link, and image
-   if (inlineSwitch[token.type] instanceof Function)
+   //Case: code, link, and image
+   if (isNotAbuse && inlineSwitch[token.type] instanceof Function)
    {
     node.nodes.push(inlineSwitch[token.type](token));
    }
-   //Case end of a formatting tag: Terminate immediately.
+   //Case: end of a formatting tag: Terminate immediately.
    else if (fmtStack.indexOf(token.type) !== -1)
    {
     break;
    }
-   //Case start of a formatting tag: Recursion.
+   //Case: start of a formatting tag: Recursion.
    else
    {
     fmtStack.push(fmtStartEndMap[token.type]);
@@ -137,10 +138,10 @@ ParserInline.prototype = (function (){
    untilLinkSquareEnd : 
    untilLinkAngleEnd;
 
-  var node = ASTNode.create(TODOMapping),
+  var node = ASTNode.create(linkASTMap[lexTok.type]),
    startPos = this.currPos,
    endPos = this.shiftUntilPast(cb) - 1,
-   href = TODO.trim(this.sliceText(startPos, endPos));
+   href = util.trim(this.sliceText(startPos, endPos));
 
   if (href.length > 0)
   {
@@ -159,7 +160,7 @@ ParserInline.prototype = (function (){
   var node = ASTNode.create(enumAST.LINK_IMG),
    startPos = this.currPos,
    endPos = this.shiftUntilPast(untilLinkAngleEnd) - 1,
-   src = TODO.trim(this.sliceText(startPos, endPos));
+   src = util.trim(this.sliceText(startPos, endPos));
 
   if (src.length > 0)
   {
@@ -167,7 +168,7 @@ ParserInline.prototype = (function (){
    this.shiftUntil(untilLinkContNot);
    if (this.lookAheadType(enumLex.LINK_CONT))
    {
-    node.attr.alt = TODO.trim(parseLinkCont.call(this));
+    node.attr.alt = util.trim(parseLinkCont.call(this));
    }
    return node;
   }
@@ -203,7 +204,7 @@ ParserInline.prototype = (function (){
   this.root.errors = this.errors;
   rootNode = this.root;
   
-  this.reset();
+  this.reset(); //Code smell.
   return rootNode;
  }
 

@@ -1,11 +1,8 @@
 
-//TODO: Implement nesting abuse protection
 (function (){
 "use strict";
 
-var Lexer = require("./Lexer.js"),
- rulesLex = require("./LexEnum.js"),
- enumLex = rulesLex.types,
+var enumLex = require("./Lexer.js").types,
  ASTNode = require("./ASTNode.js"),
  enumAST = require("./ASTNodeEnum.js"),
  ParserInline = require("./ParserInline.js"),
@@ -15,7 +12,6 @@ var Lexer = require("./Lexer.js"),
 function ParserBlock(options)
 {
  this.inlineParser = ParserInline.create(options);
- this.lexer = Lexer.create(rulesLex.rules, rulesLex.types.TEXT);
  this.reset(options);
 }
 
@@ -258,8 +254,8 @@ ParserBlock.prototype = (function (){
   var id = this.sliceText(this.shift(), this.shiftUntil(untilRefEnd)),
    url = this.sliceText(this.shift(), this.sihftUntil(untilNL));
 
-  id = TODO.trim(id);
-  url = TODO.trim(url);
+  id = util.trim(id);
+  url = util.trim(url);
    
   if (url.length > 0 && id.length > 0)
   {
@@ -289,16 +285,16 @@ ParserBlock.prototype = (function (){
   return node;
  }
 
- function parse(bbmStr)
+ function parse(bbmTokens)
  {
   var rootNode = this.root;
-  this.tokens = this.lexer.parse(bbmStr);
-
+  this.tokens = bbmTokens;
   while (this.lookAhead())
   {
    rootNode.nodes.push(parseBlock.call(this));
   }
 
+  //TODO: remove boilerplate code in .parse.
   rootNode.idTable = this.idTable;
   rootNode.refTable = this.refTable;
   rootNode.errors = this.errors;

@@ -1,25 +1,29 @@
 (function (){
 "use strict";
 
-var defOptions =
-{
- removeEOL : false,
- maxBlocks : 8,
- maxSpans : 10,
- allowImg : true,
- allowLink : true,
- allowClass : true,
- allowID : true,
- cssPrefix : "bbm-",
- cssWiki : "w-bbm",
- headerOffset : 0,
- xhtml : 0
-};
+var util = require("./util.js"),
+ Lexer = require("./Lexer.js"),
+ Parser = require("./ParserBlock.js"),
+ defOptions =
+ {
+  removeEOL : false,
+  maxBlocks : 8,
+  maxSpans : 10,
+  allowImg : true,
+  allowLink : true,
+  allowClass : true,
+  allowID : true,
+  cssPrefix : "bbm-",
+  cssWiki : "w-bbm",
+  headerOffset : 0,
+  xhtml : 0
+ };
 
 function BBM(options)
 {
- this.options = TODO.extend({}, defOptions, options);
- this.parser = ParserBlock.create(this.options);
+ this.options = util.extend({}, defOptions, options);
+ this.lexer = Lexer.create();
+ this.parser = Parser.create(this.options);
 }
 
 function create(options)
@@ -31,13 +35,17 @@ BBM.create = create;
 BBM.prototype = (function (){
  function setOptions(newOption)
  {
-  //TODO: Initialize option object using .extend;
+  this.options = util.extend(this.options, newOption);
+  this.parser.reset(this.options);
  }
 
  function parse(bbmStr)
  {
+  var tokens = this.lexer.parse(bbmStr),
+   ast = this.parser.parse(tokens, this.options);
+   
+  
   //TODO: Establish Lex -> Parse -> Prune -> Render pipeline.
-  var ast = this.parser.parse(bbmStr);
   /*
   ast.filterThis()...
   ast.filterThat()...
