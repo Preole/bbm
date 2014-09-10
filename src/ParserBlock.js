@@ -131,24 +131,23 @@ ParserBlock.prototype = (function (){
  
  function parseBlock(ignoreLine)
  {
-  this.currlvl += 1;
-  this.shiftUntil(untilNotWSNL);
-  
-  var tok = this.lookAhead(),
+  var tok = this.lookAhead(this.shiftUntil(untilNotWSNL)),
    func = tok ? blockSwitch[tok.type] : null,
    isFunc = func instanceof Function,
-   isNotAbuse = this.currlvl >= this.options.maxBlocks;
+   isNotAbuse = this.currlvl >= this.options.maxBlocks,
+   node = void(0);
    
-  this.currlvl -= 1;
-  if (!tok)
-  {
-   return;
-  }
+  this.currlvl += 1;
   if (isFunc && isNotAbuse && (ignoreLine || isLineStart.call(this)))
   {
-   return func.call(this, tok);
+   node = func.call(this, tok);
   }
-  return parsePara.call(this);
+  else if (tok)
+  {
+   node = parsePara.call(this, tok);
+  }
+  this.currlvl -= 1;
+  return node;
  }
  
  function parseList(lexTok)
@@ -245,21 +244,21 @@ ParserBlock.prototype = (function (){
    endPos = this.shiftUntilPast(untilNL) - 1,
    node = ASTNode.create(nodeType);
    
-  node.nodes.push(this.sliceText(startPos, endPos);
+  node.nodes.push(util.trim(this.sliceText(startPos, endPos));
   return node;
  }
 
  function parseRef(lexTok)
  {
-  var id = this.sliceText(this.shift(), this.shiftUntil(untilRefEnd)),
-   url = this.sliceText(this.shift(), this.sihftUntil(untilNL));
-
+  var id = this.sliceText(this.shift(), this.shiftUntil(untilLinkRefEnd)),
+   url = this.sliceText(this.currPos + 1, this.shiftUntil(untilNL));
+    
   id = util.trim(id);
   url = util.trim(url);
    
   if (url.length > 0 && id.length > 0)
   {
-   this.refTable[id] = url;
+   this.root.refTable[id] = url;
   }
  }
  
@@ -269,11 +268,9 @@ ParserBlock.prototype = (function (){
    startPos = this.currPos,
    endPos = this.shiftUntilPast(untilParaEnd, lexTok.col) - 1,
    paraToks = this.slice(startPos, endPos),
-   endTok = this.lookAhead(-1) || {},
-   result = this.inlineParser.parse(paraToks);
-   
-  node.nodes.concat(result.nodes);
-  TODO.errors.concat(result.errors); //TODO: Inherit errors from inline contexts.
+   endTok = this.lookAhead(-1) || {};
+
+  node.nodes.concat(this.inlineParser.parse(paraToks));
   
   //Promote to a H1 or H2 node if ended on a Setext token.
   if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
@@ -288,16 +285,14 @@ ParserBlock.prototype = (function (){
  function parse(bbmTokens)
  {
   var rootNode = this.root;
+  
+  rootNode.refTable = {};
   this.tokens = bbmTokens;
+  
   while (this.lookAhead())
   {
    rootNode.nodes.push(parseBlock.call(this));
   }
-
-  //TODO: remove boilerplate code in .parse.
-  rootNode.idTable = this.idTable;
-  rootNode.refTable = this.refTable;
-  rootNode.errors = this.errors;
   this.reset();
   return rootNode;
  }

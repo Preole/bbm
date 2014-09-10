@@ -18,9 +18,7 @@ ParserBase.prototype = (function (){
   this.tokens = []; //Array of LexToken
   this.currPos = 0; //Current token index
   this.nestlvl = 0; //Current nesting level
-  this.errors = []; //Array of Strings. (Error Messages)
-  this.refTable = Object.create(null); //Global ID table for reference links.
-  this.idTable = Object.create(null); //Global ID table for CSS ID.
+  this.root = ASTNode.create(enumAST.ROOT);
   
   if (!util.isObject(this.options))
   {

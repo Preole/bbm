@@ -194,15 +194,12 @@ ParserInline.prototype = (function (){
  }
 
 
- //TODO: Consolidate ParserBase, ParserInline, and ParserBlock about root nodes.
  function parse(bbmTokens)
  {
-  var rootNode;
+  var rootNode = this.root;
   this.tokens = bbmTokens;
   
-  this.root = parsePara.call(this);
-  this.root.errors = this.errors;
-  rootNode = this.root;
+  rootNode.nodes.concat(parsePara.call(this).nodes);
   
   this.reset(); //Code smell.
   return rootNode;
