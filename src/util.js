@@ -5,7 +5,6 @@ var expose =
 {
  isObject : isObject,
  hasOwn : hasOwn,
- trim : trim,
  extend : extend
 };
 
