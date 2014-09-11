@@ -45,7 +45,7 @@ ParserBase.prototype = (function (){
   var token = this.lookAhead(offset);
   if (util.isObject(token))
   {
-   return type === token;
+   return type === token.type;
   }
  }
  
@@ -63,7 +63,7 @@ ParserBase.prototype = (function (){
   var params = Array.prototype.slice.call(arguments, 1),
    token = this.lookAhead();
    
-  while (callback.apply(this, [token].concat(params)))
+  while (token && callback.apply(this, [token].concat(params)))
   {
    this.shift();
    token = this.lookAhead();

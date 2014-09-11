@@ -91,35 +91,40 @@ ParserInline.prototype = (function (){
  {
   var fmtStack = formatStack ? formatStack : [],
    node = ASTNode.create(typeAST || enumAST.P),
-   isNotAbuse = fmtStack.length < this.options.maxSpans,
+   isNotAbuse = fmtStack.length < (this.options.maxSpans || 8),
+   hasFmtMatch = false,
    txtStart = this.currPos,
    token = null;
    
   while (token = this.lookAt(this.shiftUntil(untilInline)))
   {
-   //Collect text, skip past the offending token.
-   if (txtStart < this.currPos)
+   hasFmtMatch = fmtStack.indexOf(token.type) !== -1;
+
+   if (txtStart < this.currPos) //Collect text.
    {
     node.append(this.sliceText(txtStart, this.currPos));
+   }
+   
+   if (txtStart <= this.currPos) //Break Infinite Loop, Skip past token.
+   {
     txtStart = this.shift();
    }
    
-   //Case: code, link, and image
-   if (isNotAbuse && inlineSwitch[token.type] instanceof Function)
+   if (inlineSwitch[token.type] instanceof Function) //Case code, link, img.
    {
     node.append(inlineSwitch[token.type].call(this, token));
    }
-   //Case: end of a formatting tag: Terminate immediately.
-   else if (fmtStack.indexOf(token.type) !== -1)
-   {
-    break;
-   }
-   //Case: start of a formatting tag: Recursion.
-   else
+   else if (!hasFmtMatch && isNotAbuse) //Case Format tag start
    {
     fmtStack.push(fmtStartEndMap[token.type]);
     node.append(parsePara.call(this, fmtStack, fmtASTMap[token.type]));
     fmtStack.pop();
+   }
+
+   txtStart = !hasFmtMatch && isNotAbuse ? this.currPos : this.currPos - 1;
+   if (hasFmtMatch) //Case Format tag 
+   {
+    break;
    }
   }
 
