@@ -4,7 +4,7 @@
 
 var enumLex = require("./Lexer.js").types,
  ASTNode = require("./ASTNode.js"),
- enumAST = require("./ASTNodeEnum.js"),
+ enumAST = ASTNode.types,
  ParserInline = require("./ParserInline.js"),
  ParserBase = require("./ParserBase.js");
  
@@ -23,7 +23,7 @@ function create(options)
 ParserBlock.create = create;
 ParserBlock.prototype = (function (){
  var base = ParserBase.prototype,
- blockSwitch =
+ lexBlockSwitch =
  {
   TH : parseList,
   TD : parseList,
@@ -42,7 +42,7 @@ ParserBlock.prototype = (function (){
   CLASS : parseLabel,
   ID : parseLabel
  },
- blockListASTMap =
+ lexListASTMap =
  {
   TH : enumAST.TH,
   TD : enumAST.TD,
@@ -52,15 +52,15 @@ ParserBlock.prototype = (function (){
   OL : enumAST.OL_LI,
   UL : enumAST.UL_LI
  },
- listWSNL = [enumLex.WS, enumLex.NL],
- listParaDelim = [enumLex.HR, enumLex.ATX, enumLex.DIV],
- listRefEnd = [enumLex.NL, enumLex.REF_END],
- listATXEnd = [enumLex.NL, enumLex.ATX_END];
+ lexListWSNL = [enumLex.WS, enumLex.NL],
+ lexListParaDelim = [enumLex.HR, enumLex.ATX, enumLex.DIV],
+ lexListRefEnd = [enumLex.NL, enumLex.REF_END],
+ lexListATXEnd = [enumLex.NL, enumLex.ATX_END];
 
  
  function untilNotWSNL(token)
  {
-  return listWSNL.indexOf(token.type) === -1;
+  return lexListWSNL.indexOf(token.type) === -1;
  }
 
  function untilPre(token, tokStart)
@@ -76,22 +76,22 @@ ParserBlock.prototype = (function (){
   return token.type === enumLex.NL;
  }
 
- function untilLinkRefEnd(token)
+ function untilRefEnd(token)
  {
-  return listRefEnd.indexOf(token.type) !== -1;
+  return lexListRefEnd.indexOf(token.type) !== -1;
  }
 
  function untilATXEnd(token)
  {
-  return listATXEnd.indexOf(token.type) !== -1;
+  return lexListATXEnd.indexOf(token.type) !== -1;
  }
 
  function untilParaEnd(token, minCol)
  {
   return isLineStart.call(this) && (
    isLineEnd.call(this) ||
-   listParaDelim.indexOf(token.type) !== -1 ||
-   listWSNL.indexOf(token.type) === -1 && token.col < minCol
+   lexListParaDelim.indexOf(token.type) !== -1 ||
+   lexListWSNL.indexOf(token.type) === -1 && token.col < minCol
   );
  }
 
@@ -132,7 +132,7 @@ ParserBlock.prototype = (function (){
  function parseBlock(ignoreLine)
  {
   var tok = this.lookAhead(this.shiftUntil(untilNotWSNL)),
-   func = tok ? blockSwitch[tok.type] : null,
+   func = tok ? lexBlockSwitch[tok.type] : null,
    isFunc = func instanceof Function,
    isNotAbuse = this.currlvl >= this.options.maxBlocks,
    node = void(0);
@@ -152,7 +152,7 @@ ParserBlock.prototype = (function (){
  
  function parseList(lexTok)
  {
-  var nodeType = blockListASTMap[lexTok.type],
+  var nodeType = lexListASTMap[lexTok.type],
    ignoreLineStart = true;
    node = ASTNode.create(nodeType),
    col = lexTok.col,
@@ -171,7 +171,7 @@ ParserBlock.prototype = (function (){
   
   while (tok = this.lookAhead() && tok.col >= col)
   {
-   node.nodes.push(parseBlock.call(this, ignoreLineStart));
+   node.append(parseBlock.call(this, ignoreLineStart));
    this.shiftUntil(untilNotWSNL);
    ignoreLineStart = false;
   }
@@ -182,7 +182,7 @@ ParserBlock.prototype = (function (){
  {
   var nodeType = lexTok.type === enumLex.HR ? 
    enumAST.HR : 
-   enumAST.TR;
+   enumAST.TRSEP;
    
   this.shiftUntilPast(untilNL);
   return ASTNode.create(nodeType);
@@ -202,7 +202,7 @@ ParserBlock.prototype = (function (){
     this.shiftUntilPast(untilNL);
     break;
    }
-   node.nodes.push(parseBlock.call(this));
+   node.append(parseBlock.call(this));
    this.shiftUntil(untilNotWSNL);
   }
   return node;
@@ -221,7 +221,7 @@ ParserBlock.prototype = (function (){
     .map(accText, lexTok.col)
     .join("");
    
-  node.nodes.push(text);
+  node.append(text);
   return node;
  }
 
@@ -233,7 +233,7 @@ ParserBlock.prototype = (function (){
    endPos = this.shiftUntilPast(untilATXEnd) - 1;
 
   node.level = hLen;
-  node.nodes.push(this.sliceText(startPos, endPos));
+  node.append(this.sliceText(startPos, endPos));
   return node;
  }
 
@@ -244,18 +244,15 @@ ParserBlock.prototype = (function (){
    endPos = this.shiftUntilPast(untilNL) - 1,
    node = ASTNode.create(nodeType);
    
-  node.nodes.push(util.trim(this.sliceText(startPos, endPos));
+  node.append(this.sliceText(startPos, endPos).trim());
   return node;
  }
 
  function parseRef(lexTok)
  {
-  var id = this.sliceText(this.shift(), this.shiftUntil(untilLinkRefEnd)),
-   url = this.sliceText(this.currPos + 1, this.shiftUntil(untilNL));
-    
-  id = util.trim(id);
-  url = util.trim(url);
-   
+  var id = this.sliceText(this.shift(), this.shiftUntil(untilRefEnd)).trim(),
+   url = this.sliceText(this.currPos + 1, this.shiftUntil(untilNL)).trim();
+
   if (url.length > 0 && id.length > 0)
   {
    this.root.refTable[id] = url;
@@ -270,7 +267,7 @@ ParserBlock.prototype = (function (){
    paraToks = this.slice(startPos, endPos),
    endTok = this.lookAhead(-1) || {};
 
-  node.nodes.concat(this.inlineParser.parse(paraToks));
+  node.appendChildren(this.inlineParser.parse(paraToks));
   
   //Promote to a H1 or H2 node if ended on a Setext token.
   if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
@@ -281,20 +278,23 @@ ParserBlock.prototype = (function (){
   
   return node;
  }
+ 
+ 
+ 
+ /*
+ Public Methods
+ --------------
+ */
 
  function parse(bbmTokens)
  {
-  var rootNode = this.root;
-  
-  rootNode.refTable = {};
   this.tokens = bbmTokens;
-  
+  this.root.refTable = {};
   while (this.lookAhead())
   {
-   rootNode.nodes.push(parseBlock.call(this));
+   rootNode.append(parseBlock.call(this));
   }
-  this.reset();
-  return rootNode;
+  return this.reset();
  }
  
  base.parse = parse;

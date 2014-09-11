@@ -5,16 +5,17 @@
 
 var util = require("./util.js"),
  ASTNode = require("./ASTNode.js"),
- enumAST = require("./ASTNodeEnum.js");
+ enumAST = ASTNode.types;
 
 function ParserBase()
 {
- throw new TypeError("Abstract class ParserBase cannot be instantiated.");
+ throw TypeError("Abstract class ParserBase cannot be instantiated.");
 }
 
 ParserBase.prototype = (function (){
  function reset(newOptions)
  {
+  var prevRoot = this.root;
   this.tokens = []; //Array of LexToken
   this.currPos = 0; //Current token index
   this.nestlvl = 0; //Current nesting level
@@ -25,6 +26,8 @@ ParserBase.prototype = (function (){
    this.options = {};
   }
   this.options = util.extend(this.options, newOptions);
+  
+  return prevRoot;
  }
 
  function lookAt(index)

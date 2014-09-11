@@ -39,11 +39,6 @@ function extend(obj)
  return toObj;
 }
 
-function trim(str)
-{
- return str.replace(/(^\s+)|(\s+$)/g, "");
-}
-
 if (typeof module === "object" && module.exports)
 {
  module.exports = expose;
