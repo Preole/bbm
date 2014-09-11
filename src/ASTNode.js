@@ -106,14 +106,11 @@ ASTNode.prototype = (function (){
  
  function append(nodeText)
  {
-  var isNode = nodeText instanceof ASTNode,
-   isString = util.isString(nodeText);
-  
-  if (isString)
+  if (util.isString(nodeText))
   {
    appendText.call(this, nodeText);
   }
-  else if (isNode)
+  else if (nodeText instanceof ASTNode)
   {
    this.nodes.push(nodeText); //TODO: Delegate.
   }

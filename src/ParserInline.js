@@ -91,7 +91,7 @@ ParserInline.prototype = (function (){
  {
   var fmtStack = formatStack ? formatStack : [],
    node = ASTNode.create(typeAST || enumAST.P),
-   isNotAbuse = fmtStack.length < this.options.maxSpans;
+   isNotAbuse = fmtStack.length < this.options.maxSpans,
    txtStart = this.currPos,
    token = null;
    
@@ -101,8 +101,7 @@ ParserInline.prototype = (function (){
    if (txtStart < this.currPos)
    {
     node.append(this.sliceText(txtStart, this.currPos));
-    this.shift();
-    txtStart = this.currPos;
+    txtStart = this.shift();
    }
    
    //Case: code, link, and image
