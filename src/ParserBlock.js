@@ -242,9 +242,21 @@ ParserBlock.prototype = (function (){
   var nodeType = lexTok.type === enumLex.ID ? enumAST.ID : enumAST.CLASS,
    startPos = this.currPos + 1,
    endPos = this.shiftUntilPast(untilNL) - 1,
-   node = ASTNode.create(nodeType);
+   node = ASTNode.create(nodeType),
+   idClass = this.sliceText(startPos, endPos).replace(/\s+/g, "");
    
-  node.append(this.sliceText(startPos, endPos).trim());
+  if (idClass.length > 0)
+  {
+   node.attr = {};
+   if (nodeType === enumAST.ID)
+   {
+    node.attr.id = idClass;
+   }
+   else
+   {
+    node.attr.classes = idClass;
+   }
+  }
   return node;
  }
 
