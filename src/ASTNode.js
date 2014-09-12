@@ -118,10 +118,6 @@ ASTNode.prototype = (function (){
   {
    this.nodes.push(nodeText); //TODO: Delegate.
   }
-  else
-  {
-   throw TypeError("ASTNode.append() expects ASTNode or String. (Was: " + typeof nodeText + ")");
-  }
   return this;
  }
 
