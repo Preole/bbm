@@ -200,7 +200,7 @@ ASTNode.prototype = (function (){
  {
   if (!(node instanceof ASTNode))
   {
-   throw TypeError("ASTNode.appendChildren() expects ASTNode. (Was: " + typeof nodeText + ")");
+   throw TypeError("ASTNode.prototype.appendChildren() expects ASTNode. (Was: " + typeof nodeText + ")");
   }
   node.forEach(append, this);
   return this;
