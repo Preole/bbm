@@ -193,7 +193,7 @@ ParserInline.prototype = (function (){
   return node;
  }
 
- function parseLinkCont(lexTok)
+ function parseLinkCont()
  {
   var startPos = this.shift(),
    endPos = this.shiftUntilPast(untilLinkSquareEnd) - 1;
