@@ -4,7 +4,7 @@
 (function (){
 "use strict";
 
-var util = require("./util.js");
+var utils = require("./utils.js");
 var ENUM =
 {
  ROOT : "ROOT",
@@ -69,24 +69,39 @@ ASTNode.prototype = (function (){
   DD : appendDL,
   UL_LI : appendUL,
   OL_LI : appendOL
- };
+ },
+ inlineList = [enumAST.P, enumAST.HEADER, enumAST.DT];
+ blockList = (function (){
+  return [
+   enumAST.ID,
+   enumAST.CLASS,
+   enumAST.TD,
+   enumAST.TH,
+   enumAST.PRE,
+   enumAST.COMMENT
+  ];
+ }());
+ tableList = [enumAST.TD, enumAST.TH];
+
 
  /*
- Private Methods
- ---------------
+ Private Methods : Append
+ ------------------------
  */
 
  function appendTable(node)
  {
   var last = this.last(),
-   isCell = node.type === enumAST.TD || node.type === enumAST.TH;
+   isCell = node.type === enumAST.TD || node.type === enumAST.TH,
+   isRow = node.type === enumAST.TRSEP;
 
   if (!(last && last.type === enumAST.TABLE))
   {
+   if (isRow) {return;}
    last = ASTNode.create(enumAST.TABLE);
    appendNode.call(this, last);
   }
-  if (last.nodes.length <= 0 && isCell)
+  if (last.nodes.length <= 0)
   {
    appendNode.call(last, ASTNode.create(enumAST.TR));
   }
@@ -95,7 +110,7 @@ ASTNode.prototype = (function (){
   {
    appendNode.call(last.last(), node);
   }
-  else if (node.type === enumAST.TRSEP)
+  else if (isRow)
   {
    node.type = enumAST.TR;
    appendNode.call(last, node);
@@ -139,14 +154,83 @@ ASTNode.prototype = (function (){
   this.nodes.push(node);
  }
 
-
- //TODO: Table pruning... Use the old algorithm?
- function pruneTable(node, newNodes)
+ //TODO: Filter paragraphs with blank content/text; That is:
+ //<p>  <strong>   </strong>   <em>   </em>   </p>
+ 
+ //(p, dt)
+ /*
+ If a <p> or <dt> node contains only blanks, return true.
+ */
+ function isNotEmptyInline(node)
  {
-  
+  if (!(node instanceof ASTNode))
+  {
+   return false;
+  }
+  if (node.type === enumAST.LINK_IMG)
+  {
+   return true;
+  }
+  if (node.type === enumAST.TEXT)
+  {
+   return !utils.isBlankString(node.nodes[0]);
+  }
+  return node.nodes.length > 0 && node.nodes.every(isNotEmptyInline);
+ }
+ 
+ //Filter blockNode:empty... TODO: Use .filter instead?
+ function isNotEmptyBlock(node)
+ {
+  if (!(node instanceof ASTNode))
+  {
+   return false;
+  }
+  if (blockList.indexOf(node.type) !== -1)
+  {
+   if (tableList.indexOf(node.type) !== -1)
+   {
+    //TODO: Clean TD, TH subtree, but do not remove such empty elements.
+    node.nodes = node.nodes.filter(isNotEmptyBlock);
+   }
+   return true;
+  }
+  if (inlineList.indexOf(node.type) !== -1)
+  {
+   return node.nodes.every(isNotEmptyInline);
+  }
+  return node.nodes.length > 0 && node.nodes.every(isNotEmptyBlock);
+ }
+ 
+ function isNotLeafBlock(node)
+ {
+  return node instanceof ASTNode && node.nodes.length > 0;
+ }
+ 
+ function pruneTableRows(rowNode, index, siblings)
+ {
+  var gCol = siblings[0].nodes.length, //TODO: Type checking, guards.
+   rCol = rowNode.nodes.length;
+
+  if (rCol > gCol)
+  {
+   rowNode.nodes = rowNode.nodes.slice(0, gCol);
+  }
+  else if (rCol < gCol)
+  {
+   rowNode.nodes = rowNode.nodes.concat(TODO); //TODO: Add cells in this row.
+  }
  }
 
- function pruneDL(node, newNodes)
+ function pruneTable(node)
+ {
+  var first = node.first(),
+   cols = first instanceof ASTNode ? first.nodes.length : 0;
+   
+  node.nodes = node.nodes.filter(isNotLeafBlock); //Kill empty rows
+  node.nodes.forEach(pruneTableRows); //Uniform row columns.
+ }
+
+ function pruneDL(node)
  {
   var first = node.first();
   while (first && first.type === enumAST.DD)
@@ -161,12 +245,22 @@ ASTNode.prototype = (function (){
   }
  }
 
+ //(li, th, td, bq, dd) > p:only-child -> take its descendants.
+ function pruneLonePara(node)
+ {
+  var first = node.first(),
+   nodeCount = node.nodes.length;
+
+  if (nodeCount === 1 && first.type === enumAST.P)
+  {
+   node.nodes = first.nodes;
+  }
+ }
 
  /*
  TODO: AST Manipulation API.
  */
  
-
  /*
  Public Methods
  --------------
@@ -183,7 +277,7 @@ ASTNode.prototype = (function (){
   var isNode = nodeText instanceof ASTNode,
    nodeFunc = isNode ? switchAppend[nodeText.type] : null;
  
-  if (util.isString(nodeText))
+  if (utils.isString(nodeText))
   {
    appendText.call(this, nodeText);
   }
@@ -195,16 +289,6 @@ ASTNode.prototype = (function (){
   {
    appendNode.call(this, nodeText);
   }
-  return this;
- }
-
- function appendChildren(node)
- {
-  if (!(node instanceof ASTNode))
-  {
-   throw TypeError("ASTNode.prototype.appendChildren() expects ASTNode. (Was: " + typeof nodeText + ")");
-  }
-  node.forEach(append, this);
   return this;
  }
  
@@ -224,7 +308,6 @@ ASTNode.prototype = (function (){
  return {
   prune : prune,
   append : append,
-  appendChildren : appendChildren,
   first : first,
   last : last
  };

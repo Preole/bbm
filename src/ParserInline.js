@@ -2,7 +2,7 @@
 (function (){
 "use strict";
 
-var util = require("./util.js"),
+var utils = require("./utils.js"),
  enumLex = require("./Lexer.js").types,
  ASTNode = require("./ASTNode.js"),
  enumAST = ASTNode.types,
@@ -22,7 +22,6 @@ function create(tokens)
 ParserInline.create = create;
 ParserInline.prototype = (function (){
  var base = ParserBase.prototype,
- reBlank = /^\s*$/,
  linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
  inlineSwitch =
  {
@@ -149,7 +148,7 @@ ParserInline.prototype = (function (){
    href = this.sliceText(startPos, endPos).trim(),
    text = "";
 
-  if (reBlank.test(href))
+  if (utils.isBlankString(href))
   {
    return;
   }
@@ -160,7 +159,11 @@ ParserInline.prototype = (function (){
   text = this.lookAheadType(enumLex.LINK_CONT) ? 
    parseLinkCont.call(this) : text;
 
-  if (!reBlank.test(text))
+  if (utils.isBlankString(text))
+  {
+   node.append(href);
+  }
+  else
   {
    node.append(text);
   }
@@ -175,7 +178,7 @@ ParserInline.prototype = (function (){
    src = this.sliceText(startPos, endPos).trim(),
    alt = "";
 
-  if (reBlank.test(src))
+  if (utils.isBlankString(src))
   {
    return;
   }
@@ -186,9 +189,9 @@ ParserInline.prototype = (function (){
   alt = this.lookAheadType(enumLex.LINK_CONT) ?
    parseLinkCont.call(this) : alt;
    
-  if (!reBlank.test(alt))
+  if (!utils.isBlankString(alt))
   {
-   node.attr.alt = alt;
+   node.attr.alt = alt.trim();
   }
   return node;
  }

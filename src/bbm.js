@@ -7,9 +7,9 @@
 (function (){
 "use strict";
 
-var util = require("./util.js"),
+var utils = require("./utils.js"),
  Lexer = require("./Lexer.js"),
- Parser = require("./ParserBlock.js"),
+ Parser = require("./ParserBlock.js");
 
 //Options before blank line: Parse time options; After: Renderer options.
 var defOptions =
@@ -31,7 +31,7 @@ var defOptions =
 
 function BBM(options)
 {
- this.options = util.extend({}, defOptions, options);
+ this.options = utils.extend({}, defOptions, options);
  this.lexer = Lexer.create();
  this.parser = Parser.create(this.options);
 }
@@ -45,7 +45,7 @@ BBM.create = create;
 BBM.prototype = (function (){
  function setOptions(newOption)
  {
-  this.options = util.extend(this.options, newOption);
+  this.options = utils.extend(this.options, newOption);
   this.parser.reset(this.options);
  }
 

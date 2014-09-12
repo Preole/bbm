@@ -4,13 +4,32 @@
 var expose =
 {
  isObject : isObject,
+ isString : isString,
+ isBlankString : isBlankString,
+ removeWS : removeWS,
  hasOwn : hasOwn,
  extend : extend
-};
+},
+reBlank = /^\s*$/;
 
 function isObject(obj)
 {
  return typeof obj === "object" && obj !== null;
+}
+
+function isString(obj)
+{
+ return typeof obj === "string" || obj instanceof String;
+}
+
+function isBlankString(str)
+{
+ return reBlank.test(str);
+}
+
+function removeWS(str)
+{
+ return str.replace(/\s+/g, "");
 }
 
 function hasOwn(obj, key)
@@ -20,11 +39,11 @@ function hasOwn(obj, key)
 
 function extend(obj)
 {
- var otherObjs = Array.prototype.slice.call(arguments, 1),
-  toObj = isObject(obj) ? obj : {};
+ var otherObjs = Array.prototype.slice.call(arguments).filter(isObject),
+  toObj = isObject(otherObjs[0]) ? otherObjs[0] : {};
   
  otherObjs.forEach(function (fromObj, index){
-  if (isObject(fromObj))
+  if (isObject(fromObj) && index > 0)
   {
    for (var key in fromObj)
    {

@@ -2,7 +2,8 @@
 (function (){
 "use strict";
 
-var enumLex = require("./Lexer.js").types,
+var utils = require("./utils.js"),
+ enumLex = require("./Lexer.js").types,
  ASTNode = require("./ASTNode.js"),
  enumAST = ASTNode.types,
  ParserInline = require("./ParserInline.js"),
@@ -230,11 +231,15 @@ ParserBlock.prototype = (function (){
   var hLen = lexTok.lexeme.length,
    node = ASTNode.create(enumAST.HEADER),
    startPos = this.shift(),
-   endPos = this.shiftUntilPast(untilATXEnd) - 1;
+   endPos = this.shiftUntilPast(untilATXEnd) - 1,
+   text = this.sliceText(startPos, endPos).trim();
 
-  node.level = hLen;
-  node.append(this.sliceText(startPos, endPos));
-  return node;
+  if (!utils.isBlankString(text))
+  {
+   node.level = hLen;
+   node.append(text);
+   return node;
+  }
  }
 
  function parseLabel(lexTok)
@@ -243,7 +248,7 @@ ParserBlock.prototype = (function (){
    startPos = this.currPos + 1,
    endPos = this.shiftUntilPast(untilNL) - 1,
    node = ASTNode.create(nodeType),
-   idClass = this.sliceText(startPos, endPos).replace(/\s+/g, "");
+   idClass = utils.removeWS(this.sliceText(startPos, endPos));
    
   if (idClass.length > 0)
   {
@@ -273,13 +278,11 @@ ParserBlock.prototype = (function (){
  
  function parsePara(lexTok)
  {
-  var node = ASTNode.create(enumAST.P),
-   startPos = this.currPos,
+  var startPos = this.currPos,
    endPos = this.shiftUntilPast(untilParaEnd, lexTok.col) - 1,
    paraToks = this.slice(startPos, endPos),
-   endTok = this.lookAhead(-1) || {};
-
-  node.appendChildren(this.inlineParser.parse(paraToks));
+   endTok = this.lookAhead(-1) || {},
+   node = this.inlineParser.parse(paraToks);
   
   //Promote to a H1 or H2 node if ended on a Setext token.
   if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
