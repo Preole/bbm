@@ -22,6 +22,7 @@ function create(tokens)
 ParserInline.create = create;
 ParserInline.prototype = (function (){
  var base = ParserBase.prototype,
+ reBlank = /^\s*$/,
  linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
  inlineSwitch =
  {
@@ -145,19 +146,25 @@ ParserInline.prototype = (function (){
   var node = ASTNode.create(linkASTMap[lexTok.type]),
    startPos = this.currPos,
    endPos = this.shiftUntilPast(cb) - 1,
-   href = this.sliceText(startPos, endPos).trim();
+   href = this.sliceText(startPos, endPos).trim(),
+   text = "";
 
-  if (href.length > 0)
+  if (reBlank.test(href))
   {
-   node.attr = {};
-   node.attr.href = this.sliceText(startPos, endPos);
-   this.shiftUntil(untilLinkContNot);
-   if (this.lookAheadType(enumLex.LINK_CONT))
-   {
-    node.append(parseLinkCont.call(this));
-   }
-   return node;
+   return;
   }
+  
+  node.attr = {};
+  node.attr.href = this.sliceText(startPos, endPos);
+  this.shiftUntil(untilLinkContNot);
+  text = this.lookAheadType(enumLex.LINK_CONT) ? 
+   parseLinkCont.call(this) : text;
+
+  if (!reBlank.test(text))
+  {
+   node.append(text);
+  }
+  return node;
  }
 
  function parseLinkImg(lexTok)
@@ -165,23 +172,25 @@ ParserInline.prototype = (function (){
   var node = ASTNode.create(enumAST.LINK_IMG),
    startPos = this.currPos,
    endPos = this.shiftUntilPast(untilLinkAngleEnd) - 1,
-   src = this.sliceText(startPos, endPos).trim();
+   src = this.sliceText(startPos, endPos).trim(),
+   alt = "";
 
-  if (src.length > 0)
+  if (reBlank.test(src))
   {
-   node.attr = {};
-   node.attr.src = src;
-   this.shiftUntil(untilLinkContNot);
-   if (this.lookAheadType(enumLex.LINK_CONT))
-   {
-    node.attr.alt = parseLinkCont.call(this);
-    if (node.attr.alt.length === 0)
-    {
-     delete node.attr.alt;
-    }
-   }
-   return node;
+   return;
   }
+  
+  node.attr = {};
+  node.attr.src = src;
+  this.shiftUntil(untilLinkContNot);
+  alt = this.lookAheadType(enumLex.LINK_CONT) ?
+   parseLinkCont.call(this) : alt;
+   
+  if (!reBlank.test(alt))
+  {
+   node.attr.alt = alt;
+  }
+  return node;
  }
 
  function parseLinkCont(lexTok)
@@ -189,7 +198,7 @@ ParserInline.prototype = (function (){
   var startPos = this.shift(),
    endPos = this.shiftUntilPast(untilLinkSquareEnd) - 1;
    
-  return this.sliceText(startPos, endPos).trim();
+  return this.sliceText(startPos, endPos);
  }
 
  function parseCode(lexTok)
