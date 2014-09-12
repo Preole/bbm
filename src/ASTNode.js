@@ -17,6 +17,7 @@ var ENUM =
  CLASS : "CLASS",
  UL_LI : "UL_LI",
  OL_LI : "OL_LI",
+ LI : "LI", //After Transform
  UL : "UL", //After Transform
  OL : "OL", //After Transform
  HEADER : "HEADER",
@@ -59,12 +60,73 @@ ASTNode.create = create;
 ASTNode.types = ENUM;
 ASTNode.prototype = (function (){
 
+ var switchAppend =
+ {
+  TRSEP : appendTable,
+  TH : appendTable,
+  TD : appendTable,
+  DT : appendDL,
+  DD : appendDL,
+  UL_LI : appendUL,
+  OL_LI : appendOL
+ };
 
  /*
  Private Methods
  ---------------
  */
 
+ function appendTable(node)
+ {
+  var last = this.last(),
+   isCell = node.type === enumAST.TD || node.type === enumAST.TH;
+
+  if (!(last && last.type === enumAST.TABLE))
+  {
+   last = ASTNode.create(enumAST.TABLE);
+   appendNode.call(this, last);
+  }
+  if (last.nodes.length <= 0 && isCell)
+  {
+   appendNode.call(last, ASTNode.create(enumAST.TR));
+  }
+
+  if (isCell)
+  {
+   appendNode.call(last.last(), node);
+  }
+  else if (node.type === enumAST.TRSEP)
+  {
+   node.type = enumAST.TR;
+   appendNode.call(last, node);
+  }
+ }
+ 
+ function appendDL(node)
+ {
+  var last = this.last();
+  if (!(last && last.type === enumAST.DL))
+  {
+   last = ASTNode.create(enumAST.DL);
+   appendNode.call(this, last);
+  }
+  appendNode.call(last, node);
+ }
+ 
+ function appendULOL(node)
+ {
+  var listType = node.type === enumAST.UL_LI ? enumAST.UL : enumAST.OL,
+   last = this.last();
+
+  if (!(last && last.type === listType))
+  {
+   last = ASTEnum.create(listType);
+   appendNode.call(this, last);
+  }
+  appendNode.call(last, node);
+  node.type = enumAST.LI;
+ }
+ 
  function appendText(text)
  {
   var textNode = ASTNode.create(ENUM.TEXT);
@@ -72,101 +134,34 @@ ASTNode.prototype = (function (){
   this.nodes.push(textNode);
  }
  
- function newTable(cellNode)
+ function appendNode(node)
  {
-  return ASTNode.create(enumAST.TABLE).append(
-   ASTNode.create(enumAST.TR).append(cellNode)
-  );
+  this.nodes.push(node);
  }
 
- //TODO: prev and next consolidation
- function pruneTable(node, prev, newNodes)
+
+ //TODO: Table pruning... Use the old algorithm?
+ function pruneTable(node, newNodes)
  {
-  var isCell = node.type === enumAST.TD || node.type === enumAST.TH;
   
-  if (prev.type === enumAST.TABLE)
+ }
+
+ function pruneDL(node, newNodes)
+ {
+  var first = node.first();
+  while (first && first.type === enumAST.DD)
   {
-   if (isCell)
-   {
-    prev.last().append(node);
-   }
-   else if (node.type === enumAST.TRSEP)
-   {
-    prev.append(node);
-    node.type = enumAST.TR;
-   }
+   node.nodes.shift();
   }
-  else if (isCell)
+  
+  var last = node.last();
+  while (last && last.type === enumAST.DT)
   {
-   newNodes.push(newTable(node));
+   node.nodes.pop();
   }
  }
 
- function pruneDL(node, prev, newNodes)
- {
-  if (prev.type === enumAST.DL)
-  {
-   prev.append(node);
-  }
-  else
-  {
-   newNodes.push(ASTNode.create(enumAST.DL).append(node));
-  }
- }
- 
- function pruneOL(node, prev, newNodes)
- {
-  if (prev.type === enumAST.OL)
-  {
-   prev.append(node);
-  }
-  else
-  {
-   newNodes.push(ASTNode.create(enumAST.OL).append(node));
-  }
- }
- 
- function pruneUL(node, prev, newNodes)
- {
-  if (prev.type === enumAST.UL)
-  {
-   prev.append(node);
-  }
-  else
-  {
-   newNodes.push(ASTNode.create(enumAST.UL).append(node));
-  }
- }
- 
- function pruneDeeper(node)
- {
-  node.nodes = node.nodes.reduce(pruneReduce, []);
- }
- 
- //Left-associative Breadth-first-search;
- function pruneReduce(newNodes, node, index, oldNodes)
- {
-  var prev = "TODO",
-   next = "TODO";
 
-  if (node instanceof ASTNode && TODOMap[node.type])
-  {
-   TODOMap[node.type].call(null, node, newNodes);
-  }
-  else
-  {
-   newNodes.push(node);
-  }
-
-  //TODO: Recurse deeper into the tree.
-  if (index === oldNodes.length - 1)
-  {
-   newNodes.forEach(pruneDeeper);
-  }
-  return newNodes;
- }
-
- 
  /*
  TODO: AST Manipulation API.
  */
@@ -179,19 +174,26 @@ ASTNode.prototype = (function (){
 
  function prune()
  {
-  this.nodes = this.nodes.reduce(pruneReduce, []);
+  //TODO: Start the tree traversal method.
   return this;
  }
  
  function append(nodeText)
  {
+  var isNode = nodeText instanceof ASTNode,
+   nodeFunc = isNode ? switchAppend[nodeText.type] : null;
+ 
   if (util.isString(nodeText))
   {
    appendText.call(this, nodeText);
   }
-  else if (nodeText instanceof ASTNode)
+  else if (nodeFunc instanceof Function)
   {
-   this.nodes.push(nodeText);
+   nodeFunc.call(this, nodeText);
+  }
+  else if (isNode)
+  {
+   appendNode.call(this, nodeText);
   }
   return this;
  }
@@ -220,7 +222,9 @@ ASTNode.prototype = (function (){
 
 
  return {
+  prune : prune,
   append : append,
+  appendChildren : appendChildren,
   first : first,
   last : last
  };
