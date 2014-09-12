@@ -135,7 +135,7 @@ ParserBlock.prototype = (function (){
    func = tok ? lexBlockSwitch[tok.type] : null,
    isFunc = func instanceof Function,
    isNotAbuse = this.currlvl >= this.options.maxBlocks,
-   node = void(0);
+   node = null;
    
   this.currlvl += 1;
   if (isFunc && isNotAbuse && (ignoreLine || isLineStart.call(this)))

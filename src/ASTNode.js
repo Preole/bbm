@@ -59,28 +59,12 @@ ASTNode.create = create;
 ASTNode.types = ENUM;
 ASTNode.prototype = (function (){
 
+
  /*
  Private Methods
  ---------------
  */
- 
- //TODO: Special append case for DL, UL, OL, and Table.
- function appendDL()
- {
- }
 
- function appendUL()
- {
- }
- 
- function appendOL()
- {
- }
- 
- function appendTable()
- {
- }
- 
  function appendText(text)
  {
   var textNode = ASTNode.create(ENUM.TEXT);
@@ -116,7 +100,7 @@ ASTNode.prototype = (function (){
   }
   else if (nodeText instanceof ASTNode)
   {
-   this.nodes.push(nodeText); //TODO: Delegate.
+   this.nodes.push(nodeText);
   }
   return this;
  }
@@ -127,8 +111,7 @@ ASTNode.prototype = (function (){
   {
    throw TypeError("ASTNode.appendChildren() expects ASTNode. (Was: " + typeof nodeText + ")");
   }
-  node.forEach(append, this); //Delegate to ASTNode.append;
-  delete node.nodes;
+  node.forEach(append, this);
   return this;
  }
  
