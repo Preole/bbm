@@ -1,23 +1,33 @@
+/**!
+ * @desc BakaBakaMark: An Extensible LML-HTML Compiler
+ * @version 2.0.0
+ * @license BSD-2-Clause; Copyright (c) 2014 Preole, All rights reserved.
+ */
+
 (function (){
 "use strict";
 
 var util = require("./util.js"),
  Lexer = require("./Lexer.js"),
  Parser = require("./ParserBlock.js"),
- defOptions =
- {
-  removeEOL : false,
-  maxBlocks : 8,
-  maxSpans : 10,
-  allowImg : true,
-  allowLink : true,
-  allowClass : true,
-  allowID : true,
-  cssPrefix : "bbm-",
-  cssWiki : "w-bbm",
-  headerOffset : 0,
-  xhtml : 0
- };
+
+//Options before blank line: Parse time options; After: Renderer options.
+var defOptions =
+{
+ maxBlocks : 8,
+ maxSpans : 10,
+ 
+ rmEOL : false,
+ maxAttrChars : 2048,
+ allowImg : true,
+ allowLink : true,
+ allowClass : true,
+ allowID : true,
+ cssPrefix : "bbm-",
+ cssWiki : "w-bbm",
+ target : "html",
+ headerOffset : 0
+};
 
 function BBM(options)
 {

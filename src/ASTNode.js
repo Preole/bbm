@@ -93,6 +93,10 @@ ASTNode.prototype = (function (){
   return this; //TODO: Actual filtering/pruning work.
  }
  
+ /*
+ TODO: AST Manipulation API.
+ */
+ 
 
  /*
  Public Methods
@@ -146,7 +150,9 @@ ASTNode.prototype = (function (){
 
 
  return {
-  append : append
+  append : append,
+  first : first,
+  last : last
  };
 
 }());
