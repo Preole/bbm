@@ -165,7 +165,7 @@ ParserInline.prototype = (function (){
   var node = ASTNode.create(enumAST.LINK_IMG),
    startPos = this.currPos,
    endPos = this.shiftUntilPast(untilLinkAngleEnd) - 1,
-   src = this.sliceText(startPos, endPos).trim;
+   src = this.sliceText(startPos, endPos).trim();
 
   if (src.length > 0)
   {
@@ -174,7 +174,11 @@ ParserInline.prototype = (function (){
    this.shiftUntil(untilLinkContNot);
    if (this.lookAheadType(enumLex.LINK_CONT))
    {
-    node.attr.alt = parseLinkCont.call(this).trim();
+    node.attr.alt = parseLinkCont.call(this);
+    if (node.attr.alt.length === 0)
+    {
+     delete node.attr.alt;
+    }
    }
    return node;
   }
@@ -185,7 +189,7 @@ ParserInline.prototype = (function (){
   var startPos = this.shift(),
    endPos = this.shiftUntilPast(untilLinkSquareEnd) - 1;
    
-  return this.sliceText(startPos, endPos);
+  return this.sliceText(startPos, endPos).trim();
  }
 
  function parseCode(lexTok)
