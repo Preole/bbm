@@ -64,14 +64,20 @@ ParserBlock.prototype = (function (){
   enumAST.LINK_WIKI,
   enumAST.LINK_IMG
  ],
+ astListInline = astListLink.concat([
+  enumAST.TEXT, enumAST.STRONG, enumAST.EM, enumAST.DEL, enumAST.INS,
+  enumAST.UNDER, enumAST.SUP, enumAST.SUB, enumAST.CODE,
+ ]),
  astListAlone = [enumAST.PRE, enumAST.TD, enumAST.TH],
- astListInline = [enumAST.P, enumAST.HEADER, enumAST.DT],
  astListBlock =
  [
   enumAST.TD, enumAST.TH, enumAST.TR, enumAST.TABLE, 
-  enumAST.DL, enumAST.DD, enumAST.DT,
-  enumAST.UL, enumAST.OL, enumAST.LI,
+  enumAST.DL, enumAST.DD, enumAST.UL, enumAST.OL, enumAST.LI,
   enumAST.BLOCKQUOTE, enumAST.DIV, enumAST.ROOT
+ ],
+ astListLonePara =
+ [
+  enumAST.DD, enumAST.LI, enumAST.TH, enumAST.TR, enumAST.BLOCKQUOTE
  ];
 
  
@@ -326,7 +332,7 @@ ParserBlock.prototype = (function (){
   return cells;
  }
  
- //Remove empty paragraphs. 
+ //Remove empty inline elements, pre-order traversal.
  function reduceInline(acc, node, index, sibs)
  {
   if (!(node instanceof ASTNode))
@@ -335,61 +341,61 @@ ParserBlock.prototype = (function (){
   }
  
   var prev = acc[index - 1],
-   text = node.nodes[0] || "",
    isLink = astListLink.indexOf(node.type) !== -1,
-   isLast = index === sibs.length - 1,
-   isBlank = utils.isString(text) && utils.isBlankString(text);
-  
-  if (isLink || (!isBlank && isLast) || !isBlank || prev)
+   isBlank = utils.isBlankString(node.nodes[0] || "");
+   
+  if (isLink || !isBlank || prev)
   {
    acc.push(node); //Base Case: Keep links/images, keep non-blank text.
   }
-  else
+  else if (node.type !== enumAST.TEXT)
   {
    node.nodes = node.nodes.reduce(reduceInline, []);
-   if (node.nodes.length > 0)
+   if (node.nodes.length > 0) //Recursive case: Formatting.
    {
-    acc.push(node); //Recursive case: Formatting.
+    acc.push(node); 
    }
   }
   return acc;
  }
  
- //Remove empty li, p, ul, and other block elements.
- function reduceRightBlock(acc, node, index, sibs)
+ //Remove empty block elements, post-order traversal.
+ function reduceBlock(acc, node, index, sibs)
  {
-  if (!(node instanceof ASTNode))
+  if (!(node instanceof ASTNode)) //Guard case
   {
-   return acc; //Guard case: Not a node.
-  }
-  
-  var prev = acc[acc.length - 1];
-  if (node.type === enumAST.TABLE)
-  {
-   node.nodes = node.nodes.reduce(reduceTR, []);
-  }
-  else if (/*DL*/)
-  {
-   pruneDL(node);
-  }
-  else if (/*ID*/ && prev) //Tricky.
-  {
-   prev.attr = utils.extend(prev.attr, node.attr);
-  }
-  else if (/*Class*/ && prev)
-  {
-   //TODO: very tricky here.
+   return acc;
   }
 
-  if (astListInline.indexOf(node.type) !== -1)
+  var next = sibs[index + 1],
+   first = node.nodes[0];
+
+  if (first && astListInline.indexOf(first.type) !== -1)
   {
    node.nodes = node.nodes.reduce(reduceInline, []);
   }
   else if (astListBlock.indexOf(node.type) !== -1)
   {
-   node.nodes = node.nodes.reduceRight(reduceBlockRight, []).reverse();
+   node.nodes = node.nodes.reduce(reduceBlock, []);
   }
 
+  if (node.type === enumAST.TABLE)
+  {
+   node.nodes = node.nodes.reduce(reduceTR, []);
+  }
+  else if (node.type === enumAST.DL)
+  {
+   pruneDL(node);
+  }
+  else if ((node.type === enumAST.ID || node.type === enumAST.CLASS) && next)
+  {
+   pruneIDClass(node, next);
+  }
+  else if (astListLonePara.indexOf(node.type) !== -1)
+  {
+   pruneLonePara(node);
+  }
+  
   if (astListAlone.indexOf(node.type) !== -1 || node.nodes.length > 0)
   {
    acc.push(node);
@@ -433,13 +439,32 @@ ParserBlock.prototype = (function (){
   }
  }
 
- //(li, th, td, bq, dd) > p:only-child -> take its descendants.
+ function pruneIDClass(node, next)
+ {
+  if (!utils.isObject(next.attr))
+  {
+   next.attr = utils.extend(next.attr, node.attr);
+  }
+  if (node.attr.classes)
+  {
+   if (!utils.isString(next.attr.classes))
+   {
+    next.attr.classes = "";
+   }
+   next.attr.classes += node.attr.classes + " ";
+  }
+  else if (node.attr.id)
+  {
+   next.attr.id = node.attr.id;
+  }
+ }
+ 
  function pruneLonePara(node)
  {
   var first = node.first(),
    nodeCount = node.nodes.length;
 
-  if (nodeCount === 1 && first.type === enumAST.P)
+  if (nodeCount === 1 && first && first.type === enumAST.P)
   {
    node.nodes = first.nodes;
   }
@@ -458,7 +483,7 @@ ParserBlock.prototype = (function (){
   {
    rootNode.append(parseBlock.call(this));
   }
-  rootNode = rootNode.nodes.reduceRight(reduceRightBlock, []).reverse();
+  rootNode.nodes = rootNode.nodes.reduce(reduceBlock, []);
   return this.reset();
  }
  

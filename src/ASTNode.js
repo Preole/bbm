@@ -1,6 +1,5 @@
 
-//TODO: Implement prototype methods for manipulating and walking the tree.
-//TODO: Where to put the CSS ID List? Root Node again?
+//TODO: AST Manipulation API.
 (function (){
 "use strict";
 
@@ -138,13 +137,13 @@ ASTNode.prototype = (function (){
  
  function appendNode(node)
  {
+  if (!utils.hasOwn(ENUM, node.type))
+  {
+   throw TypeError(node.type + " is not member of ASTNode.types.");
+  }
   this.nodes.push(node);
  }
 
- /*
- TODO: AST Manipulation API.
- */
- 
  /*
  Public Methods
  --------------
