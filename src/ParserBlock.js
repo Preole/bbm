@@ -362,15 +362,15 @@ ParserBlock.prototype = (function (){
   {
    return acc; //Guard case: Not a node.
   }
+  
   var prev = acc[acc.length - 1];
-
-  if (/*Table*/)
+  if (node.type === enumAST.TABLE)
   {
-   //doTable Processing
+   node.nodes = node.nodes.reduce(reduceTR, []);
   }
   else if (/*DL*/)
   {
-   //doDL Processing
+   pruneDL(node);
   }
   else if (/*ID*/ && prev) //Tricky.
   {
@@ -380,7 +380,8 @@ ParserBlock.prototype = (function (){
   {
    //TODO: very tricky here.
   }
-  else if (astListInline.indexOf(node.type) !== -1)
+
+  if (astListInline.indexOf(node.type) !== -1)
   {
    node.nodes = node.nodes.reduce(reduceInline, []);
   }
@@ -396,33 +397,27 @@ ParserBlock.prototype = (function (){
   return acc;
  }
 
- 
- function pruneTableRows(rowNode, index, siblings)
+ function reduceTR(acc, rowNode)
  {
-  var gCol = siblings[0] ? siblings[0].nodes.length : 0,
+  var gCol = acc[0] ? acc[0].nodes.length : rowNode.nodes.length;
    rCol = rowNode.nodes.length;
-
-  if (rCol > 0 && rCol > gCol)
+   
+  if (rCol <= 0)
+  {
+   return acc;
+  }
+  else if (rCol > gCol)
   {
    rowNode.nodes = rowNode.nodes.slice(0, gCol);
   }
-  else if (rCol > 0 && rCol < gCol)
+  else if (rCol < gCol)
   {
    rowNode.nodes = rowNode.nodes.concat(createCells(gCol - rCol));
   }
-  rowNode.nodes = rowNode.nodes.reduceRight(reduceRightBlock, []).reverse();
+  acc.push(rowNode);
+  return acc;
  }
  
- //TODO: Fit Table, DL, and lone paragraph processors into block pruning.
- function pruneTable(node)
- {
-  var first = node.first(),
-   cols = first instanceof ASTNode ? first.nodes.length : 0;
-   
-  node.nodes = node.nodes.filter(isNotLeafBlock); //Kill empty rows
-  node.nodes.forEach(pruneTableRows); //Uniform row columns.
- }
-
  function pruneDL(node)
  {
   var first = node.first();
@@ -436,7 +431,6 @@ ParserBlock.prototype = (function (){
   {
    node.nodes.pop();
   }
-  node.nodes = node.nodes.reduceRight(reduceRightBlock, []).reverse();
  }
 
  //(li, th, td, bq, dd) > p:only-child -> take its descendants.
@@ -464,7 +458,7 @@ ParserBlock.prototype = (function (){
   {
    rootNode.append(parseBlock.call(this));
   }
-  rootNode = rootNode.nodes.reduceRight(reduceRightBlock, []);
+  rootNode = rootNode.nodes.reduceRight(reduceRightBlock, []).reverse();
   return this.reset();
  }
  
