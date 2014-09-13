@@ -56,7 +56,23 @@ ParserBlock.prototype = (function (){
  lexListWSNL = [enumLex.WS, enumLex.NL],
  lexListParaDelim = [enumLex.HR, enumLex.ATX, enumLex.DIV],
  lexListRefEnd = [enumLex.NL, enumLex.REF_END],
- lexListATXEnd = [enumLex.NL, enumLex.ATX_END];
+ lexListATXEnd = [enumLex.NL, enumLex.ATX_END],
+ astListLink =
+ [
+  enumAST.LINK_EXT,
+  enumAST.LINK_INT,
+  enumAST.LINK_WIKI,
+  enumAST.LINK_IMG
+ ],
+ astListAlone = [enumAST.PRE, enumAST.TD, enumAST.TH],
+ astListInline = [enumAST.P, enumAST.HEADER, enumAST.DT],
+ astListBlock =
+ [
+  enumAST.TD, enumAST.TH, enumAST.TR, enumAST.TABLE, 
+  enumAST.DL, enumAST.DD, enumAST.DT,
+  enumAST.UL, enumAST.OL, enumAST.LI,
+  enumAST.BLOCKQUOTE, enumAST.DIV, enumAST.ROOT
+ ];
 
  
  function untilNotWSNL(token)
@@ -166,8 +182,7 @@ ParserBlock.prototype = (function (){
   }
   if (lexTok.type === enumLex.DT)
   {
-   node.nodes = parsePara.call(this).nodes;
-   return node;
+   return parsePara.call(this, lexTok);
   }
   
   while (tok = this.lookAhead() && tok.col >= col)
@@ -218,12 +233,12 @@ ParserBlock.prototype = (function (){
   var startPos = this.shiftUntilPast(untilNL),
    endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
    node = ASTNode.create(nodeType),
-   text = this.slice(startPos, endPos)
-    .map(accText, lexTok.col)
-    .join("");
+   text = this.slice(startPos, endPos).map(accText, lexTok.col).join("");
    
-  node.append(text);
-  return node;
+  if (text.length > 0)
+  {
+   return node.append(text);
+  }
  }
 
  function parseATX(lexTok)
@@ -284,23 +299,163 @@ ParserBlock.prototype = (function (){
    endTok = this.lookAhead(-1) || {},
    node = this.inlineParser.parse(paraToks);
   
-  //Promote to a H1 or H2 node if ended on a Setext token.
-  if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
+  if (lexTok.type === enumLex.DT)
+  {
+   node.type = enumAST.DT;
+  }
+  else if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
   {
    node.type = enumAST.HEADER;
    node.level = endTok.type === enumLex.HR ? 2 : 1;
   }
-  
   return node;
  }
+
+
+
+ /*
+ Private: Tree Pruning
+ ---------------------
+ */
+ function createCells(cellCount)
+ {
+  var cells = Array(cellCount);
+  cells.forEach(function (val, index, array){
+   array[index] = ASTNode.create(enumAST.TD);
+  });
+  return cells;
+ }
  
+ //Remove empty paragraphs. 
+ function reduceInline(acc, node, index, sibs)
+ {
+  if (!(node instanceof ASTNode))
+  {
+   return acc; //Guard case: Not a node.
+  }
  
+  var prev = acc[index - 1],
+   text = node.nodes[0] || "",
+   isLink = astListLink.indexOf(node.type) !== -1,
+   isLast = index === sibs.length - 1,
+   isBlank = utils.isString(text) && utils.isBlankString(text);
+  
+  if (isLink || (!isBlank && isLast) || !isBlank || prev)
+  {
+   acc.push(node); //Base Case: Keep links/images, keep non-blank text.
+  }
+  else
+  {
+   node.nodes = node.nodes.reduce(reduceInline, []);
+   if (node.nodes.length > 0)
+   {
+    acc.push(node); //Recursive case: Formatting.
+   }
+  }
+  return acc;
+ }
+ 
+ //Remove empty li, p, ul, and other block elements.
+ function reduceRightBlock(acc, node, index, sibs)
+ {
+  if (!(node instanceof ASTNode))
+  {
+   return acc; //Guard case: Not a node.
+  }
+  var prev = acc[acc.length - 1];
+
+  if (/*Table*/)
+  {
+   //doTable Processing
+  }
+  else if (/*DL*/)
+  {
+   //doDL Processing
+  }
+  else if (/*ID*/ && prev) //Tricky.
+  {
+   prev.attr = utils.extend(prev.attr, node.attr);
+  }
+  else if (/*Class*/ && prev)
+  {
+   //TODO: very tricky here.
+  }
+  else if (astListInline.indexOf(node.type) !== -1)
+  {
+   node.nodes = node.nodes.reduce(reduceInline, []);
+  }
+  else if (astListBlock.indexOf(node.type) !== -1)
+  {
+   node.nodes = node.nodes.reduceRight(reduceBlockRight, []).reverse();
+  }
+
+  if (astListAlone.indexOf(node.type) !== -1 || node.nodes.length > 0)
+  {
+   acc.push(node);
+  }
+  return acc;
+ }
+
+ 
+ function pruneTableRows(rowNode, index, siblings)
+ {
+  var gCol = siblings[0] ? siblings[0].nodes.length : 0,
+   rCol = rowNode.nodes.length;
+
+  if (rCol > 0 && rCol > gCol)
+  {
+   rowNode.nodes = rowNode.nodes.slice(0, gCol);
+  }
+  else if (rCol > 0 && rCol < gCol)
+  {
+   rowNode.nodes = rowNode.nodes.concat(createCells(gCol - rCol));
+  }
+  rowNode.nodes = rowNode.nodes.reduceRight(reduceRightBlock, []).reverse();
+ }
+ 
+ //TODO: Fit Table, DL, and lone paragraph processors into block pruning.
+ function pruneTable(node)
+ {
+  var first = node.first(),
+   cols = first instanceof ASTNode ? first.nodes.length : 0;
+   
+  node.nodes = node.nodes.filter(isNotLeafBlock); //Kill empty rows
+  node.nodes.forEach(pruneTableRows); //Uniform row columns.
+ }
+
+ function pruneDL(node)
+ {
+  var first = node.first();
+  while (first && first.type === enumAST.DD)
+  {
+   node.nodes.shift();
+  }
+  
+  var last = node.last();
+  while (last && last.type === enumAST.DT)
+  {
+   node.nodes.pop();
+  }
+  node.nodes = node.nodes.reduceRight(reduceRightBlock, []).reverse();
+ }
+
+ //(li, th, td, bq, dd) > p:only-child -> take its descendants.
+ function pruneLonePara(node)
+ {
+  var first = node.first(),
+   nodeCount = node.nodes.length;
+
+  if (nodeCount === 1 && first.type === enumAST.P)
+  {
+   node.nodes = first.nodes;
+  }
+ }
+
  
  /*
  Public Methods
  --------------
  */
-
  function parse(bbmTokens)
  {
   this.tokens = bbmTokens;
@@ -309,6 +464,7 @@ ParserBlock.prototype = (function (){
   {
    rootNode.append(parseBlock.call(this));
   }
+  rootNode = rootNode.nodes.reduceRight(reduceRightBlock, []);
   return this.reset();
  }
  

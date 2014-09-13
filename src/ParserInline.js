@@ -14,15 +14,17 @@ function ParserInline(options)
  this.reset(options);
 }
 
-function create(tokens)
+function create(options)
 {
- return new ParserInline(tokens);
+ return new ParserInline(options);
 }
 
 ParserInline.create = create;
 ParserInline.prototype = (function (){
  var base = ParserBase.prototype,
  linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
+ 
+ //Maps Links and Code token types to functions
  inlineSwitch =
  {
   LINK_INT : parseLink,
@@ -31,15 +33,19 @@ ParserInline.prototype = (function (){
   LINK_IMG : parseImg,
   CODE : parseCode,
  },
+ 
+ //Maps link tokens types to ASTNode types.
  linkASTMap =
- { //Maps link tokens types to ASTNode types.
+ { 
   LINK_INT : enumAST.LINK_INT,
   LINK_EXT : enumAST.LINK_EXT,
   LINK_IMG : enumAST.LINK_IMG,
   LINK_WIKI : enumAST.LINK_WIKI
  },
+ 
+ //Maps text-formatting lexical tokens to ASTNode types.
  fmtASTMap =
- { //Maps text-formatting lexical tokens to ASTNode types.
+ { 
   INS : enumAST.INS,
   DEL : enumAST.DEL,
   INS_END : enumAST.INS,
@@ -50,6 +56,7 @@ ParserInline.prototype = (function (){
   SUB : enumAST.SUB,
   UNDER : enumAST.UNDER
  },
+ 
  fmtStartEndMap =
  {
   INS : enumLex.INS_END,
@@ -156,7 +163,7 @@ ParserInline.prototype = (function (){
   node.attr = {};
   node.attr.href = this.sliceText(startPos, endPos);
   this.shiftUntil(untilLinkContNot);
-  text = this.lookAheadType(enumLex.LINK_CONT) ? 
+  text = this.lookAheadType(enumLex.LINK_CONT, -1) ? 
    parseLinkCont.call(this) : text;
 
   if (utils.isBlankString(text))
@@ -186,7 +193,7 @@ ParserInline.prototype = (function (){
   node.attr = {};
   node.attr.src = src;
   this.shiftUntil(untilLinkContNot);
-  alt = this.lookAheadType(enumLex.LINK_CONT) ?
+  alt = this.lookAheadType(enumLex.LINK_CONT, -1) ?
    parseLinkCont.call(this) : alt;
    
   if (!utils.isBlankString(alt))

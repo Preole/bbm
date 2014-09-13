@@ -3,7 +3,7 @@
 (function (){
 "use strict";
 
-var util = require("./util.js"),
+var utils = require("./utils.js"),
  ASTNode = require("./ASTNode.js"),
  enumAST = ASTNode.types;
 
@@ -21,11 +21,11 @@ ParserBase.prototype = (function (){
   this.nestlvl = 0; //Current nesting level
   this.root = ASTNode.create(enumAST.ROOT);
   
-  if (!util.isObject(this.options))
+  if (!utils.isObject(this.options))
   {
    this.options = {};
   }
-  this.options = util.extend(this.options, newOptions);
+  this.options = utils.extend(this.options, newOptions);
   
   return prevRoot;
  }
@@ -43,7 +43,7 @@ ParserBase.prototype = (function (){
  function lookAheadType(type, offset)
  {
   var token = this.lookAhead(offset);
-  if (util.isObject(token))
+  if (utils.isObject(token))
   {
    return type === token.type;
   }
