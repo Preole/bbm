@@ -66,7 +66,7 @@ ASTNode.prototype = (function (){
   TD : appendTable,
   DT : appendDL,
   DD : appendDL,
-  UL_LI : appendUL,
+  UL_LI : appendULOL,
   OL_LI : appendULOL,
   LI : appendULOL,
  },
@@ -118,7 +118,7 @@ ASTNode.prototype = (function (){
  {
   var listType = node.type === enumAST.OL_LI ? enumAST.OL : enumAST.UL,
    last = this.last();
-
+   
   if (!(last && last.type === listType))
   {
    last = ASTEnum.create(listType);
@@ -139,7 +139,7 @@ ASTNode.prototype = (function (){
  {
   if (!utils.hasOwn(ENUM, node.type))
   {
-   throw TypeError(node.type + " is not member of ASTNode.types.");
+   throw TypeError(node.type + " is not member of ASTNode.types");
   }
   this.nodes.push(node);
  }
