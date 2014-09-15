@@ -69,7 +69,7 @@ ASTNode.prototype = (function (){
   UL_LI : appendULOL,
   OL_LI : appendULOL,
   LI : appendULOL,
- },
+ };
 
  /*
  Private Methods : Append
@@ -78,18 +78,18 @@ ASTNode.prototype = (function (){
  function appendTable(node)
  {
   var last = this.last(),
-   isCell = node.type === enumAST.TD || node.type === enumAST.TH,
-   isRow = node.type === enumAST.TRSEP;
+   isCell = node.type === ENUM.TD || node.type === ENUM.TH,
+   isRow = node.type === ENUM.TRSEP;
 
-  if (!(last && last.type === enumAST.TABLE))
+  if (!(last && last.type === ENUM.TABLE))
   {
    if (isRow) {return;}
-   last = ASTNode.create(enumAST.TABLE);
+   last = ASTNode.create(ENUM.TABLE);
    appendNode.call(this, last);
   }
   if (last.nodes.length <= 0)
   {
-   appendNode.call(last, ASTNode.create(enumAST.TR));
+   appendNode.call(last, ASTNode.create(ENUM.TR));
   }
 
   if (isCell)
@@ -98,7 +98,7 @@ ASTNode.prototype = (function (){
   }
   else if (isRow)
   {
-   node.type = enumAST.TR;
+   node.type = ENUM.TR;
    appendNode.call(last, node);
   }
  }
@@ -106,9 +106,9 @@ ASTNode.prototype = (function (){
  function appendDL(node)
  {
   var last = this.last();
-  if (!(last && last.type === enumAST.DL))
+  if (!(last && last.type === ENUM.DL))
   {
-   last = ASTNode.create(enumAST.DL);
+   last = ASTNode.create(ENUM.DL);
    appendNode.call(this, last);
   }
   appendNode.call(last, node);
@@ -116,7 +116,7 @@ ASTNode.prototype = (function (){
  
  function appendULOL(node)
  {
-  var listType = node.type === enumAST.OL_LI ? enumAST.OL : enumAST.UL,
+  var listType = node.type === ENUM.OL_LI ? ENUM.OL : ENUM.UL,
    last = this.last();
    
   if (!(last && last.type === listType))
@@ -125,7 +125,7 @@ ASTNode.prototype = (function (){
    appendNode.call(this, last);
   }
   appendNode.call(last, node);
-  node.type = enumAST.LI;
+  node.type = ENUM.LI;
  }
  
  function appendText(text)

@@ -30,7 +30,7 @@ ParserInline.prototype = (function (){
   LINK_INT : parseLink,
   LINK_WIKI : parseLink,
   LINK_EXT : parseLink,
-  LINK_IMG : parseImg,
+  LINK_IMG : parseLinkImg,
   CODE : parseCode,
  },
  

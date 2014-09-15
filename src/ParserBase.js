@@ -51,10 +51,7 @@ ParserBase.prototype = (function (){
  
  function shift()
  {
-  if (this.currPos < this.tokens.length)
-  {
-   this.currPos += 1;
-  }
+  this.currPos += 1;
   return this.currPos;
  }
  
@@ -100,7 +97,7 @@ ParserBase.prototype = (function (){
   lookAheadType : lookAheadType,
   shift : shift,
   shiftUntil : shiftUntil,
-  shiftUntilPast : shiftPast,
+  shiftUntilPast : shiftUntilPast,
   slice : slice,
   sliceText : sliceText
  };

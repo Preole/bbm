@@ -149,7 +149,7 @@ return [
  {
   pattern : "\\]",
   name : "BRACKET_R"
- }
+ },
  {
   pattern : "[\\v\\f\\n]|\\r\\n?",
   name : "NL"
@@ -242,7 +242,7 @@ function updateLinesCols(token, index, tokens)
  }
  var prevTok = tokens[index - 1],
   reNL = /[\v\f\n]|\r\n?/,
-  nlCount = prevTok.lexeme.split(reNL).length - 1);
+  nlCount = prevTok.lexeme.split(reNL).length - 1;
   
  token.line = prevTok.line + nlCount;
  token.col = nlCount > 0 ? 0 : prevTok.col + prevTok.lexeme.length;
