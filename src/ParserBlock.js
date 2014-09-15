@@ -18,7 +18,7 @@ function ParserBlock(options)
 
 function create(options)
 {
- return new ParserBlock(tokens);
+ return new ParserBlock(options);
 }
 
 ParserBlock.create = create;
@@ -121,7 +121,7 @@ ParserBlock.prototype = (function (){
  function isLineStart()
  {
   var prev1 = this.lookAhead(-1),
-   prev2 = this.lookAhead(-2),
+   prev2 = this.lookAhead(-2);
    
   return !prev1 || 
    prev1.type === enumLex.NL || 
@@ -143,7 +143,7 @@ ParserBlock.prototype = (function (){
   var minCol = this,
    prev = tokens[index - 1] || tok;
    
-  if (tok.type === enumLex.WS && prev.type === enumLex.NL))
+  if (tok.type === enumLex.WS && prev.type === enumLex.NL)
   {
    return tok.lexeme.slice(minCol);
   }
@@ -481,9 +481,9 @@ ParserBlock.prototype = (function (){
   this.root.refTable = {};
   while (this.lookAhead())
   {
-   rootNode.append(parseBlock.call(this));
+   this.root.append(parseBlock.call(this));
   }
-  rootNode.nodes = rootNode.nodes.reduce(reduceBlock, []);
+  //this.root.nodes = this.root.nodes.reduce(reduceBlock, []);
   return this.reset();
  }
  

@@ -29,16 +29,33 @@ var defOptions =
  headerOffset : 0
 };
 
-function BBM(options)
+var bbmStatic = (function (){ 
+ var bbm;
+ 
+ function staticCompile(bbmStr, options)
+ {
+  bbm = bbm || BBM.create(options);
+  return bbm.compile(bbmStr, options);
+ }
+ 
+ return staticCompile;
+}());
+
+
+function BBM(bbmStr, options)
 {
+ if (!(this instanceof BBM))
+ {
+  return bbmStatic(bbmStr, options);
+ }
  this.options = utils.extend({}, defOptions, options);
  this.lexer = Lexer.create();
- this.parser = Parser.create(this.options);
+ this.parser = Parser.create();
 }
 
 function create(options)
 {
- return new BBM(options);
+ return new BBM(null, options);
 }
 
 BBM.create = create;
@@ -46,28 +63,20 @@ BBM.prototype = (function (){
  function setOptions(newOption)
  {
   this.options = utils.extend(this.options, newOption);
-  this.parser.reset(this.options);
  }
 
- function parse(bbmStr)
+ function compile(bbmStr)
  {
   var tokens = this.lexer.parse(bbmStr),
    ast = this.parser.parse(tokens, this.options);
-   
-  
-  
-  //TODO: Establish Lex -> Parse -> Prune -> Render pipeline.
-  /*
-  ast.filterThis()...
-  ast.filterThat()...
-  ast.setTarget...
-  ast.toString();
-  */
+
+  return ast;
+  //TODO: ast.toHTML();
  }
  
 
  return {
-  parse : parse,
+  compile : compile,
   setOptions : setOptions
  };
 }());
