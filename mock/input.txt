@@ -44,31 +44,6 @@ Format: @@@": " Definition Phrase "(" Default-Parameter ")"@@@
   : Defines the expected input document character set, as well as the output. By
     default, UTF-8, because it's the de-facto standard for the web. (Don't think
     this is doable for Javascript.)
-  
-; CSS-Class-Prefix ("XXX")
-
-  : Defines the CSS prefix for the class attribute, which acts as the hook for
-    CSS selectors.
-  
-; CSS-ID-Prefix ("XXX")
-  
-  : As above, except this is for the ID attribute, which are used for internal
-    links within the same document. This should be a sufficiently random
-    integer that wouldn't collide with an existing ID in the same document.
-    
-    (Suggestion: At least 8 digits. Cryptographically strong random numbers
-    are not necessary. If invoked from a web browser, the browser should
-    first check if the generated ID prefix already exists.)
-  
-; "javascript:" Directive (Off)
-
-  : Allow "javascript:" directive inside hyperlink and image element. If
-    disabled, the "javascript:" directive will be subtituted with something
-    harmless.
-  
-; "data:" Directive (Off)
-
-  : As above, except this one is for Data URI.
 
 
 ////
