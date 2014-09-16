@@ -191,7 +191,7 @@ ParserBlock.prototype = (function (){
    return parsePara.call(this, lexTok);
   }
   
-  while (tok = this.lookAhead() && tok.col >= col)
+  while ((tok = this.lookAhead()) && tok.col >= col)
   {
    node.append(parseBlock.call(this, ignoreLineStart));
    this.shiftUntil(untilNotWSNL);

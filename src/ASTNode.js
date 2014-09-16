@@ -121,7 +121,7 @@ ASTNode.prototype = (function (){
    
   if (!(last && last.type === listType))
   {
-   last = ASTEnum.create(listType);
+   last = ASTNode.create(listType);
    appendNode.call(this, last);
   }
   appendNode.call(last, node);
