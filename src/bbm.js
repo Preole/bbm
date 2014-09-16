@@ -15,7 +15,7 @@ var utils = require("./utils.js"),
 var defOptions =
 {
  maxBlocks : 8,
- maxSpans : 10,
+ maxSpans : 8,
  
  rmEOL : false,
  maxAttrChars : 2048,
@@ -50,7 +50,7 @@ function BBM(bbmStr, options)
  }
  this.options = utils.extend({}, defOptions, options);
  this.lexer = Lexer.create();
- this.parser = Parser.create();
+ this.parser = Parser.create(this.options);
 }
 
 function create(options)
@@ -63,6 +63,7 @@ BBM.prototype = (function (){
  function setOptions(newOption)
  {
   this.options = utils.extend(this.options, newOption);
+  this.parser.options = this.options;
  }
 
  function compile(bbmStr)

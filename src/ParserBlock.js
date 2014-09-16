@@ -154,10 +154,10 @@ ParserBlock.prototype = (function (){
  
  function parseBlock(ignoreLine)
  {
-  var tok = this.lookAhead(this.shiftUntil(untilNotWSNL)),
+  var tok = this.lookAt(this.shiftUntil(untilNotWSNL)),
    func = tok ? lexBlockSwitch[tok.type] : null,
    isFunc = func instanceof Function,
-   isNotAbuse = this.currlvl >= this.options.maxBlocks,
+   isNotAbuse = this.currlvl < (this.options.maxBlocks || 8),
    node = null;
    
   this.currlvl += 1;
@@ -301,10 +301,13 @@ ParserBlock.prototype = (function (){
  {
   var startPos = this.currPos,
    endPos = this.shiftUntilPast(untilParaEnd, lexTok.col) - 1,
-   paraToks = this.slice(startPos, endPos),
    endTok = this.lookAhead(-1) || {},
-   node = this.inlineParser.parse(paraToks);
-  
+   
+   //paraToks = this.slice(startPos, endPos),
+   node = ASTNode.create(enumAST.P);
+   
+  node.append(this.sliceText(startPos, endPos));
+
   if (lexTok.type === enumLex.DT)
   {
    node.type = enumAST.DT;

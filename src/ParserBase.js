@@ -18,7 +18,7 @@ ParserBase.prototype = (function (){
   var prevRoot = this.root;
   this.tokens = []; //Array of LexToken
   this.currPos = 0; //Current token index
-  this.nestlvl = 0; //Current nesting level
+  this.currlvl = 0; //Current nesting level
   this.root = ASTNode.create(enumAST.ROOT);
   
   if (!utils.isObject(this.options))
@@ -60,7 +60,7 @@ ParserBase.prototype = (function (){
   var params = Array.prototype.slice.call(arguments, 1),
    token = this.lookAhead();
    
-  while (token && callback.apply(this, [token].concat(params)))
+  while (token && !callback.apply(this, [token].concat(params)))
   {
    this.shift();
    token = this.lookAhead();

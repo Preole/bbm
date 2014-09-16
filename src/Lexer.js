@@ -216,6 +216,7 @@ function parse(strInput)
   {
    regex.lastIndex += 1;
   }
+  lastPos = regex.lastIndex;
  }
 
  if (lastPos < strInput.length)
