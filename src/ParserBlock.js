@@ -176,7 +176,7 @@ ParserBlock.prototype = (function (){
  function parseList(lexTok)
  {
   var nodeType = lexListASTMap[lexTok.type],
-   ignoreLineStart = true;
+   ignoreLineStart = true,
    node = ASTNode.create(nodeType),
    col = lexTok.col,
    tok = null;
