@@ -54,6 +54,7 @@ ParserBlock.prototype = (function (){
  },
  lexListWSNL = [enumLex.WS, enumLex.NL],
  lexListParaDelim = [enumLex.HR, enumLex.ATX_END, enumLex.DIV],
+ lexListSetext = [enumLex.HR, enumLex.ATX_END],
  lexListRefEnd = [enumLex.NL, enumLex.REF_END],
  lexListATXEnd = [enumLex.NL, enumLex.ATX_END],
  astListLink =
@@ -320,15 +321,25 @@ ParserBlock.prototype = (function (){
  
   var startPos = this.currPos,
    endPos = this.shiftUntil(untilParaEnd, lexTok.col),
-   endTok = this.lookAhead() || EOF,
-   node = ASTNode.create(enumAST.P);
+   endTok = this.lookAhead() || EOF;
    
+  if (startPos >= endPos || lexListWSNL.indexOf(endTok.type) !== -1)
+  {
+   this.shift();
+  }
+  if (startPos >= endPos)
+  {
+   return;
+  }
+  
+  
+
+  var node = ASTNode.create(enumAST.P);
   node.append(this.sliceText(startPos, endPos));
-  if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
+  if (lexListSetext.indexOf(endTok.type) !== -1)
   {
    node.type = enumAST.HEADER;
    node.level = endTok.type === enumLex.HR ? 2 : 1;
-   this.shift();
   }
   
   return node;
