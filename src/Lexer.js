@@ -5,7 +5,7 @@ var LexToken = require("./LexToken.js");
 
 var STREX = {
  WS : "[ \\t\\u2000-\\u200d\\u205f\\u1680\\u237d\\u2420\\u2422\\u2423\\u3000]",
- NL : "[\\v\\f\\n]|$|\\r\\n?"
+ EOL : "(?=[\\v\\f\\n]|\\r\\n?|$)"
 };
 
 var RULES = (function (){
@@ -23,11 +23,11 @@ return [
   name : "TD"
  },
  {
-  pattern : "\\|[=]+" + "(?=" + STREX.NL + ")",
+  pattern : "\\|[=]+" + STREX.EOL,
   name : "TRSEP"
  },
  {
-  pattern : "=+" + "(?=" + STREX.NL + ")",
+  pattern : "=+" + STREX.EOL,
   name : "ATX_END" //Also used as Setext H1
  },
  {
@@ -35,11 +35,11 @@ return [
   name : "ATX"
  },
  {
-  pattern : "---[\\-]+" + "(?=" + STREX.NL + ")",
+  pattern : "---[\\-]+" + STREX.EOL,
   name : "HR" //Also used as Setext H2
  },
  {
-  pattern : "///[/]+" + "(?=" + STREX.NL + ")",
+  pattern : "///[/]+" + STREX.EOL,
   name : "COMMENT"
  },
  {
@@ -75,7 +75,7 @@ return [
   name : "OL"
  },
  {
-  pattern : "\\*\\*\\*[*]+" + "(?=" + STREX.NL + ")",
+  pattern : "\\*\\*\\*[*]+" + STREX.EOL,
   name : "DIV"
  },
  {
@@ -83,7 +83,7 @@ return [
   name : "UL"
  },
  {
-  pattern : "\\\"\\\"[\\\"]+" + "(?=" + STREX.NL + ")",
+  pattern : "\\\"\\\"[\\\"]+" + STREX.EOL,
   name : "PRE"
  },
  {
