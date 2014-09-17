@@ -167,7 +167,7 @@ ASTNode.prototype = (function (){
   var isNode = nodeText instanceof ASTNode,
    nodeFunc = isNode ? switchAppend[nodeText.type] : null;
  
-  if (utils.isString(nodeText))
+  if (utils.isString(nodeText) && nodeText.length > 0)
   {
    appendText.call(this, nodeText);
   }
