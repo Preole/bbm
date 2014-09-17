@@ -54,7 +54,7 @@ ParserBlock.prototype = (function (){
   UL : enumAST.UL_LI
  },
  lexListWSNL = [enumLex.WS, enumLex.NL],
- lexListParaDelim = [enumLex.HR, enumLex.ATX, enumLex.DIV],
+ lexListParaDelim = [enumLex.HR, enumLex.ATX_END, enumLex.DIV],
  lexListRefEnd = [enumLex.NL, enumLex.REF_END],
  lexListATXEnd = [enumLex.NL, enumLex.ATX_END],
  astListLink =
@@ -142,10 +142,14 @@ ParserBlock.prototype = (function (){
  {
   var minCol = this,
    prev = tokens[index - 1] || tok;
-   
+
   if (tok.type === enumLex.WS && prev.type === enumLex.NL)
   {
    return tok.lexeme.slice(minCol);
+  }
+  if (tok.type === enumLex.NL && index === tokens.length - 1)
+  {
+   return "";
   }
   return tok.lexeme;
  }
@@ -175,13 +179,14 @@ ParserBlock.prototype = (function (){
  
  function parseList(lexTok)
  {
+  this.shift();
+
   var nodeType = lexListASTMap[lexTok.type],
-   ignoreLineStart = true,
    node = ASTNode.create(nodeType),
-   col = lexTok.col,
+   col = lexTok.col + lexTok.lexeme.length,
    tok = null;
    
-  this.shift();
+  
   if (isLineEnd.call(this))
   {
    return node;
@@ -193,9 +198,8 @@ ParserBlock.prototype = (function (){
   
   while ((tok = this.lookAhead()) && tok.col >= col)
   {
-   node.append(parseBlock.call(this, ignoreLineStart));
+   node.append(parseBlock.call(this, true));
    this.shiftUntil(untilNotWSNL);
-   ignoreLineStart = false;
   }
   return node;
  }
@@ -300,14 +304,13 @@ ParserBlock.prototype = (function (){
  function parsePara(lexTok)
  {
   var startPos = this.currPos,
-   endPos = this.shiftUntilPast(untilParaEnd, lexTok.col) - 1,
-   endTok = this.lookAhead(-1) || {},
+   endPos = this.shiftUntil(untilParaEnd, lexTok.col),
+   endTok = this.lookAhead() || {},
    
    //paraToks = this.slice(startPos, endPos),
    node = ASTNode.create(enumAST.P);
    
   node.append(this.sliceText(startPos, endPos));
-
   if (lexTok.type === enumLex.DT)
   {
    node.type = enumAST.DT;
@@ -317,6 +320,8 @@ ParserBlock.prototype = (function (){
    node.type = enumAST.HEADER;
    node.level = endTok.type === enumLex.HR ? 2 : 1;
   }
+  
+  this.shift();
   return node;
  }
 

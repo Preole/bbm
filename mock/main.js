@@ -5,4 +5,4 @@ var fs = require("fs"),
  fsOptR = {encoding : "utf-8"};
 
 var input = fs.readFileSync("./input.txt", fsOptR);
-console.log(BBM(input));
+console.log(JSON.stringify(BBM(input), null, " "));

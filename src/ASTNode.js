@@ -158,10 +158,12 @@ ASTNode.prototype = (function (){
   {
    appendText.call(this, nodeText);
   }
+  /*
   else if (nodeFunc instanceof Function)
   {
    nodeFunc.call(this, nodeText);
   }
+  */
   else if (isNode)
   {
    appendNode.call(this, nodeText);
