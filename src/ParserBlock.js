@@ -12,7 +12,6 @@ var utils = require("./utils.js"),
 
 function ParserBlock(options)
 {
- this.inlineParser = ParserInline.create(options);
  this.reset(options);
 }
 
@@ -24,6 +23,7 @@ function create(options)
 ParserBlock.create = create;
 ParserBlock.prototype = (function (){
  var base = ParserBase.prototype,
+ EOF = {},
  lexBlockSwitch =
  {
   TH : parseList,
@@ -32,7 +32,7 @@ ParserBlock.prototype = (function (){
   DD : parseList,
   OL : parseList,
   UL : parseList,
-  DT : parseList,
+  DT : parseDT,
   HR : parseHRTR,
   TRSEP : parseHRTR,
   REF : parseRef,
@@ -49,7 +49,6 @@ ParserBlock.prototype = (function (){
   TD : enumAST.TD,
   GT : enumAST.BLOCKQUOTE,
   DD : enumAST.DD,
-  DT : enumAST.DT,
   OL : enumAST.OL_LI,
   UL : enumAST.UL_LI
  },
@@ -180,22 +179,15 @@ ParserBlock.prototype = (function (){
  function parseList(lexTok)
  {
   this.shift();
-
-  var nodeType = lexListASTMap[lexTok.type],
-   node = ASTNode.create(nodeType),
+  if (isLineEnd.call(this))
+  {
+   return;
+  }
+  
+  var node = ASTNode.create(lexListASTMap[lexTok.type]),
    col = lexTok.col + lexTok.lexeme.length,
    tok = null;
    
-  
-  if (isLineEnd.call(this))
-  {
-   return node;
-  }
-  if (lexTok.type === enumLex.DT)
-  {
-   return parsePara.call(this, lexTok);
-  }
-  
   while ((tok = this.lookAhead()) && tok.col >= col)
   {
    node.append(parseBlock.call(this, true));
@@ -203,6 +195,24 @@ ParserBlock.prototype = (function (){
   }
   return node;
  }
+
+ function parseDT(lexTok)
+ {
+  this.shift();
+  if (isLineEnd.call(this))
+  {
+   return;
+  }
+  this.shiftUntil(untilNotWSNL);
+
+  var node = parsePara.call(this, this.lookAhead());
+  if (node instanceof ASTNode)
+  {
+   node.type = enumAST.DT;
+  }
+  return node;
+ }
+ 
  
  function parseHRTR(lexTok)
  {
@@ -303,25 +313,23 @@ ParserBlock.prototype = (function (){
  
  function parsePara(lexTok)
  {
+  if (!lexTok)
+  {
+   return;
+  }
+ 
   var startPos = this.currPos,
    endPos = this.shiftUntil(untilParaEnd, lexTok.col),
-   endTok = this.lookAhead() || {},
-   
-   //paraToks = this.slice(startPos, endPos),
+   endTok = this.lookAhead() || EOF,
    node = ASTNode.create(enumAST.P);
    
   node.append(this.sliceText(startPos, endPos));
-  if (lexTok.type === enumLex.DT)
-  {
-   node.type = enumAST.DT;
-  }
-  else if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
+  if (endTok.type === enumLex.HR || endTok.type === enumLex.ATX_END)
   {
    node.type = enumAST.HEADER;
    node.level = endTok.type === enumLex.HR ? 2 : 1;
   }
   
-  //this.shift();
   return node;
  }
 
