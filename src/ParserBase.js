@@ -40,7 +40,7 @@ ParserBase.prototype = (function (){
   return this.tokens[this.currPos + (offset || 0)];
  }
  
- function lookAheadType(type, offset)
+ function lookAheadT(type, offset)
  {
   var token = this.lookAhead(offset);
   if (utils.isObject(token))
@@ -94,7 +94,7 @@ ParserBase.prototype = (function (){
   reset : reset,
   lookAt : lookAt,
   lookAhead : lookAhead,
-  lookAheadType : lookAheadType,
+  lookAheadT : lookAheadT,
   shift : shift,
   shiftUntil : shiftUntil,
   shiftUntilPast : shiftUntilPast,

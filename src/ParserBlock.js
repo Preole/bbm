@@ -242,25 +242,24 @@ ParserBlock.prototype = (function (){
 
   var startPos = this.shiftUntilPast(untilNL),
    endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-   node = ASTNode.create(nodeType),
    text = this.slice(startPos, endPos).map(accText, lexTok.col).join("");
    
   if (text.length > 0)
   {
-   return node.append(text);
+   return ASTNode.create(nodeType).append(text);
   }
  }
 
  function parseATX(lexTok)
  {
   var hLen = lexTok.lexeme.length,
-   node = ASTNode.create(enumAST.HEADER),
    startPos = this.shift(),
    endPos = this.shiftUntilPast(untilATXEnd) - 1,
    text = this.sliceText(startPos, endPos).trim();
 
   if (!utils.isBlankString(text))
   {
+   var node = ASTNode.create(enumAST.HEADER);
    node.level = hLen;
    node.append(text);
    return node;
@@ -272,20 +271,21 @@ ParserBlock.prototype = (function (){
   var nodeType = lexTok.type === enumLex.ID ? enumAST.ID : enumAST.CLASS,
    startPos = this.currPos + 1,
    endPos = this.shiftUntilPast(untilNL) - 1,
-   node = ASTNode.create(nodeType),
    idClass = utils.removeWS(this.sliceText(startPos, endPos));
    
-  if (idClass.length > 0)
+  if (idClass.length <= 0)
   {
-   node.attr = {};
-   if (nodeType === enumAST.ID)
-   {
-    node.attr.id = idClass;
-   }
-   else
-   {
-    node.attr.classes = idClass;
-   }
+   return;
+  }
+  
+  var node = ASTNode.create(nodeType);
+  if (nodeType === enumAST.ID)
+  {
+   node.attr.id = idClass;
+  }
+  else
+  {
+   node.attr["class"] = idClass;
   }
   return node;
  }
@@ -345,7 +345,7 @@ ParserBlock.prototype = (function (){
  {
   if (!(node instanceof ASTNode))
   {
-   return acc; //Guard case: Not a node.
+   return acc; //Guard case
   }
  
   var prev = acc[index - 1],
@@ -449,17 +449,13 @@ ParserBlock.prototype = (function (){
 
  function pruneIDClass(node, next)
  {
-  if (!utils.isObject(next.attr))
+  if (node.attr["class"])
   {
-   next.attr = utils.extend(next.attr, node.attr);
-  }
-  if (node.attr.classes)
-  {
-   if (!utils.isString(next.attr.classes))
+   if (!utils.isString(next.attr["class"]))
    {
-    next.attr.classes = "";
+    next.attr["class"] = "";
    }
-   next.attr.classes += node.attr.classes + " ";
+   next.attr["class"] += node.attr["class"] + " ";
   }
   else if (node.attr.id)
   {

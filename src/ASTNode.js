@@ -49,7 +49,12 @@ function ASTNode(type, attr)
 {
  this.type = type || "";
  this.nodes = [];
+ if (type !== ENUM.TEXT)
+ {
+  this.attr = utils.isObject(attr) ? attr : {};
+ }
 }
+
 function create(type, attr)
 {
  return new ASTNode(type, attr);
@@ -130,9 +135,17 @@ ASTNode.prototype = (function (){
  
  function appendText(text)
  {
-  var textNode = ASTNode.create(ENUM.TEXT);
-  textNode.nodes.push(text);
-  this.nodes.push(textNode);
+  var last = this.last();
+  if (last && last.type === ENUM.TEXT)
+  {
+   last.nodes[0] += text;
+  }
+  else
+  {
+   last = ASTNode.create(ENUM.TEXT);
+   last.nodes.push(text);
+   this.nodes.push(last);
+  }
  }
  
  function appendNode(node)
@@ -158,12 +171,10 @@ ASTNode.prototype = (function (){
   {
    appendText.call(this, nodeText);
   }
-  /*
   else if (nodeFunc instanceof Function)
   {
    nodeFunc.call(this, nodeText);
   }
-  */
   else if (isNode)
   {
    appendNode.call(this, nodeText);

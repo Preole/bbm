@@ -147,24 +147,20 @@ ParserInline.prototype = (function (){
  {
   var callback = lexTok.type === enumLex.LINK_INT ? 
    untilLinkSquareEnd : 
-   untilLinkAngleEnd;
-
-  var node = ASTNode.create(linkASTMap[lexTok.type]),
+   untilLinkAngleEnd,
    startPos = this.currPos,
-   endPos = this.shiftUntilPast(cb) - 1,
-   href = this.sliceText(startPos, endPos).trim(),
-   text = "";
+   endPos = this.shiftUntilPast(callback) - 1,
+   href = this.sliceText(startPos, endPos).trim();
 
   if (utils.isBlankString(href))
   {
    return;
   }
-  
-  node.attr = {};
-  node.attr.href = this.sliceText(startPos, endPos);
   this.shiftUntil(untilLinkContNot);
-  text = this.lookAheadType(enumLex.LINK_CONT, -1) ? 
-   parseLinkCont.call(this) : text;
+
+
+  var node = ASTNode.create(linkASTMap[lexTok.type], {href : href}),
+   text = this.lookAheadT(enumLex.LINK_CONT, -1) ? parseCont.call(this) : "";
 
   if (utils.isBlankString(text))
   {
@@ -179,31 +175,25 @@ ParserInline.prototype = (function (){
 
  function parseLinkImg(lexTok)
  {
-  var node = ASTNode.create(enumAST.LINK_IMG),
-   startPos = this.currPos,
+  var startPos = this.currPos,
    endPos = this.shiftUntilPast(untilLinkAngleEnd) - 1,
-   src = this.sliceText(startPos, endPos).trim(),
-   alt = "";
+   src = this.sliceText(startPos, endPos).trim();
 
   if (utils.isBlankString(src))
   {
    return;
   }
-  
-  node.attr = {};
-  node.attr.src = src;
   this.shiftUntil(untilLinkContNot);
-  alt = this.lookAheadType(enumLex.LINK_CONT, -1) ?
-   parseLinkCont.call(this) : alt;
-   
+  
+  var alt = this.lookAheadT(enumLex.LINK_CONT, -1) ? parseCont.call(this) : "";
   if (!utils.isBlankString(alt))
   {
-   node.attr.alt = alt.trim();
+   alt = alt.trim();
   }
-  return node;
+  return ASTNode.create(enumAST.LINK_IMG, {src : src, alt : alt});
  }
 
- function parseLinkCont()
+ function parseCont()
  {
   var startPos = this.shift(),
    endPos = this.shiftUntilPast(untilLinkSquareEnd) - 1;
