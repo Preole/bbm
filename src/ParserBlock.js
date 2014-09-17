@@ -321,7 +321,7 @@ ParserBlock.prototype = (function (){
    node.level = endTok.type === enumLex.HR ? 2 : 1;
   }
   
-  this.shift();
+  //this.shift();
   return node;
  }
 

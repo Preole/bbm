@@ -48,11 +48,11 @@ var ENUM =
 function ASTNode(type, attr)
 {
  this.type = type || "";
- this.nodes = [];
  if (type !== ENUM.TEXT)
  {
   this.attr = utils.isObject(attr) ? attr : {};
  }
+ this.nodes = [];
 }
 
 function create(type, attr)
