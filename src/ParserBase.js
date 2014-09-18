@@ -9,7 +9,7 @@ var utils = require("./utils.js"),
 
 function ParserBase()
 {
- throw TypeError("Abstract class ParserBase cannot be instantiated.");
+
 }
 
 ParserBase.prototype = (function (){

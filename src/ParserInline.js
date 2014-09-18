@@ -21,7 +21,7 @@ function create(options)
 
 ParserInline.create = create;
 ParserInline.prototype = (function (){
- var base = ParserBase.prototype,
+ var base = new ParserBase(),
  linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
  
  //Maps Links and Code token types to functions
@@ -140,7 +140,7 @@ ParserInline.prototype = (function (){
    node.append(this.sliceText(txtStart, this.currPos));
   }
   
-  return node;
+  return node.nodes.length > 0 ? node : null;
  }
 
  function parseLink(lexTok)
@@ -219,10 +219,10 @@ ParserInline.prototype = (function (){
  --------------
  */
 
- function parse(bbmTokens)
+ function parse(bbmTokens, forceType)
  {
   this.tokens = bbmTokens;
-  this.root = parsePara.call(this);
+  this.root = parsePara.call(this, forceType);
   return this.reset();
  }
 

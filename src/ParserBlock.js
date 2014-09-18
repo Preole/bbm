@@ -12,6 +12,7 @@ var utils = require("./utils.js"),
 
 function ParserBlock(options)
 {
+ this.inlineParser = ParserInline.create(options);
  this.reset(options);
 }
 
@@ -22,7 +23,7 @@ function create(options)
 
 ParserBlock.create = create;
 ParserBlock.prototype = (function (){
- var base = ParserBase.prototype,
+ var base = new ParserBase(),
  EOF = {},
  reTailWSNL = /\s$/,
  lexBlockSwitch =
@@ -237,11 +238,10 @@ ParserBlock.prototype = (function (){
   var startPos = this.shiftUntilPast(untilNL),
    endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
    nodeType = lexTok.type === enumLex.PRE ? enumAST.PRE : enumAST.COMMENT,
-   text = nodeType === enumAST.PRE ? 
-    this.slice(startPos, endPos)
-     .map(accText, lexTok.col)
-     .join("")
-     .replace(reTailWSNL, "") : "";
+   text = nodeType === enumAST.PRE ? this.slice(startPos, endPos)
+    .map(accText, lexTok.col)
+    .join("")
+    .replace(reTailWSNL, "") : "";
 
   if (text.length > 0)
   {
@@ -319,12 +319,9 @@ ParserBlock.prototype = (function (){
   {
    return;
   }
-  
-  
 
-  var node = ASTNode.create(forceType || enumAST.P);
-  node.append(this.sliceText(startPos, endPos));
-  if (!forceType && lexListSetext.indexOf(endTok.type) !== -1)
+  var node = this.inlineParser.parse(this.slice(startPos, endPos), forceType);
+  if (node && !forceType && lexListSetext.indexOf(endTok.type) !== -1)
   {
    node.type = enumAST.HEADER;
    node.level = endTok.type === enumLex.HR ? 2 : 1;
@@ -384,9 +381,10 @@ ParserBlock.prototype = (function (){
   }
 
   var next = sibs[index + 1],
-   first = node.nodes[0];
-
-  if (first && astListInline.indexOf(first.type) !== -1)
+   first = node.nodes[0],
+   isPre = node.type === enumAST.PRE;
+   
+  if (!isPre && first && astListInline.indexOf(first.type) !== -1)
   {
    node.nodes = node.nodes.reduce(reduceInline, []);
   }
@@ -496,8 +494,17 @@ ParserBlock.prototype = (function (){
    this.root.append(parseBlock.call(this));
   }
   //this.root.nodes = this.root.nodes.reduce(reduceBlock, []);
+  this.inlineParser.reset();
   return this.reset();
  }
+ 
+ /*
+ function reset(newOptions)
+ {
+  ParserBase.prototype.reset.call(this.inlineParser, newOptions);
+  return ParserBase.prototype.reset.call(this, newOptions);
+ }
+ */
  
  base.parse = parse;
  return base;

@@ -69,7 +69,7 @@ BBM.prototype = (function (){
  function compile(bbmStr)
  {
   var tokens = this.lexer.parse(bbmStr),
-   ast = this.parser.parse(tokens, this.options);
+   ast = this.parser.parse(tokens);
 
   return ast;
   //TODO: ast.toHTML();
