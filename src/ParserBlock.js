@@ -24,6 +24,7 @@ ParserBlock.create = create;
 ParserBlock.prototype = (function (){
  var base = ParserBase.prototype,
  EOF = {},
+ reTailWSNL = /\s$/,
  lexBlockSwitch =
  {
   TH : parseList,
@@ -141,15 +142,11 @@ ParserBlock.prototype = (function (){
  function accText(tok, index, tokens)
  {
   var minCol = this,
-   prev = tokens[index - 1] || tok;
+   prev = tokens[index - 1];
 
-  if (tok.type === enumLex.WS && prev.type === enumLex.NL)
+  if (tok.type === enumLex.WS && (!prev || prev.type === enumLex.NL))
   {
    return tok.lexeme.slice(minCol);
-  }
-  if (tok.type === enumLex.NL && index === tokens.length - 1)
-  {
-   return "";
   }
   return tok.lexeme;
  }
@@ -253,7 +250,10 @@ ParserBlock.prototype = (function (){
 
   var startPos = this.shiftUntilPast(untilNL),
    endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-   text = this.slice(startPos, endPos).map(accText, lexTok.col).join("");
+   text = this.slice(startPos, endPos)
+    .map(accText, lexTok.col)
+    .join("")
+    .replace(reTailWSNL, "");
    
   if (text.length > 0)
   {
