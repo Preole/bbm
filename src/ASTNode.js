@@ -39,7 +39,7 @@ var ENUM =
  SUB : "SUB",
  SUP : "SUP",
  EM : "EM",
- STRONG : "STRONG",
+ BOLD : "BOLD",
  CODE : "CODE",
  TEXT : "TEXT" //After Transform
 };

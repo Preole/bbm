@@ -91,7 +91,7 @@ ParserInline.prototype = (function (){
  
  function untilInline(token)
  {
-  return !!inlineSwitch[token.type] || !!fmtASTMap[token.type]; 
+  return inlineSwitch[token.type] || fmtASTMap[token.type]; 
  }
 
  function parsePara(formatStack, typeAST)
@@ -195,7 +195,7 @@ ParserInline.prototype = (function (){
 
  function parseCont()
  {
-  var startPos = this.shift(),
+  var startPos = this.currPos,
    endPos = this.shiftUntilPast(untilLinkSquareEnd) - 1;
    
   return this.sliceText(startPos, endPos);
