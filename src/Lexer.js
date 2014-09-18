@@ -11,7 +11,7 @@ var STREX = {
 var RULES = (function (){
 return [
  {
-  pattern : "\\\\.",
+  pattern : "\\\\[\s\S]",
   name : "ESCAPE"
  },
  {

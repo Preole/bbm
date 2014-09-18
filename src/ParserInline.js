@@ -23,29 +23,15 @@ ParserInline.create = create;
 ParserInline.prototype = (function (){
  var base = new ParserBase(),
  linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
- 
- //Maps Links and Code token types to functions
- inlineSwitch =
- {
-  LINK_INT : parseLink,
-  LINK_WIKI : parseLink,
-  LINK_EXT : parseLink,
-  LINK_IMG : parseLinkImg,
-  CODE : parseCode,
- },
- 
- //Maps link tokens types to ASTNode types.
- linkASTMap =
- { 
-  LINK_INT : enumAST.LINK_INT,
-  LINK_EXT : enumAST.LINK_EXT,
-  LINK_IMG : enumAST.LINK_IMG,
-  LINK_WIKI : enumAST.LINK_WIKI
- },
+ linkAnchors = [enumLex.LINK_INT, enumLex.LINK_WIKI, enumLex.LINK_EXT],
  
  //Maps text-formatting lexical tokens to ASTNode types.
  fmtASTMap =
- { 
+ {
+  LINK_INT : enumAST.LINK_INT,
+  LINK_EXT : enumAST.LINK_EXT,
+  LINK_IMG : enumAST.LINK_IMG,
+  LINK_WIKI : enumAST.LINK_WIKI,
   INS : enumAST.INS,
   DEL : enumAST.DEL,
   INS_END : enumAST.INS,
@@ -54,7 +40,8 @@ ParserInline.prototype = (function (){
   EM : enumAST.EM,
   SUP : enumAST.SUP,
   SUB : enumAST.SUB,
-  UNDER : enumAST.UNDER
+  UNDER : enumAST.UNDER,
+  CODE : enumAST.CODE
  },
  
  fmtStartEndMap =
@@ -69,21 +56,23 @@ ParserInline.prototype = (function (){
  };
 
  
- function untilCodeEnd(token, tokStart)
+ function untilCode(token, tokStart)
  {
-  return token.type === tokStart.type && token.lexeme === tokStart.lexeme;
+  return token.type === tokStart.type &&
+   token.lexeme === tokStart.lexeme &&
+   token.type === enumLex.CODE;
  }
 
- function untilLinkSquareEnd(token)
+ function untilBracket(token)
  {
   return token.type === enumLex.BRACKET_R;
  }
 
- function untilLinkAngleEnd(token)
+ function untilAngle(token)
  {
   return token.type === enumLex.GT;
  }
-
+ 
  function untilLinkCont(token)
  {
   return token.type === enumLex.LINK_CONT || 
@@ -93,22 +82,25 @@ ParserInline.prototype = (function (){
  
  function untilInline(token)
  {
-  return inlineSwitch[token.type] || fmtASTMap[token.type]; 
+  return token.type === enumLex.BRACKET_R || fmtASTMap[token.type]; 
  }
 
- function parsePara(formatStack, typeAST)
+ function parsePara(fmtStack, premade)
  {
-  var fmtStack = formatStack ? formatStack : [],
-   node = ASTNode.create(typeAST || enumAST.P),
-   isNotAbuse = fmtStack.length < (this.options.maxSpans || 8),
-   hasFmtMatch = false,
+  var fStack = fmtStack ? fmtStack : [],
+   node = premade || ASTNode.create(enumAST.P),
+   isNotAbuse = fStack.length < (this.options.maxSpans || 8),
    txtStart = this.currPos,
+   hasBracket = fStack.indexOf(enumLex.BRACKET_R) !== -1,
+   hasNode = 0,
+   fIndex = -1,
+   endOffset = 0,
    token = null;
    
   while (token = this.lookAt(this.shiftUntil(untilInline)))
   {
-   hasFmtMatch = fmtStack.indexOf(token.type) !== -1;
-
+   fIndex = fStack.indexOf(token.type);
+   hasNode = true;
    if (txtStart < this.currPos) //Collect text.
    {
     node.append(this.sliceText(txtStart, this.currPos));
@@ -118,37 +110,49 @@ ParserInline.prototype = (function (){
     txtStart = this.shift();
    }
    
-   if (inlineSwitch[token.type] instanceof Function) //Case code, link, img.
-   {
-    node.append(inlineSwitch[token.type].call(this, token));
-   }
-   else if (!hasFmtMatch && isNotAbuse) //Case Format tag start
-   {
-    fmtStack.push(fmtStartEndMap[token.type]);
-    node.append(parsePara.call(this, fmtStack, fmtASTMap[token.type]));
-    fmtStack.pop();
-   }
 
-   txtStart = !hasFmtMatch && isNotAbuse ? this.currPos : this.currPos - 1;
-   if (hasFmtMatch) //Case Format tag 
+   if (token.type === enumLex.CODE)
    {
+    node.append(parseCode.call(this, token));
+   }
+   else if (token.type === enumLex.LINK_IMG)
+   {
+    node.append(parseImg.call(this, token));
+   }
+   else if (!hasBracket && linkAnchors.indexOf(token.type) !== -1)
+   {
+    node.append(parseLink.call(this, token, fStack));
+   }
+   else if (fIndex === -1 && isNotAbuse && fmtStartEndMap[token.type])
+   {
+    fStack.push(fmtStartEndMap[token.type]);
+    node.append(parsePara.call(this, fStack, ASTNode.create(fmtASTMap[token.type])));
+    fStack.pop();
+   }
+   else
+   {
+    hasNode = false;
+   }
+   
+   txtStart = hasNode ? this.currPos : this.currPos - 1;    
+   if (fIndex > -1) //Case Format tag end
+   {
+    endOffset = -1;
     break;
    }
   }
-
+  
   if (txtStart < this.currPos)
   {
-   node.append(this.sliceText(txtStart, this.currPos));
+   node.append(this.sliceText(txtStart, this.currPos + endOffset));
   }
   
   return node.nodes.length > 0 ? node : null;
  }
 
- function parseLink(lexTok)
+ function parseLink(lexTok, fStack)
  {
-  var callback = lexTok.type === enumLex.LINK_INT ? 
-   untilLinkSquareEnd : 
-   untilLinkAngleEnd,
+  var callback = lexTok.type === enumLex.LINK_INT ? untilBracket : untilAngle,
    startPos = this.currPos,
    endPos = this.shiftUntilPast(callback) - 1,
    href = this.sliceText(startPos, endPos).trim();
@@ -159,25 +163,24 @@ ParserInline.prototype = (function (){
   }
   this.shiftUntil(untilLinkCont);
 
-  var node = ASTNode.create(linkASTMap[lexTok.type], {href : href}),
-   text = this.lookAheadT(enumLex.LINK_CONT) ? parseCont.call(this) : "";
-
-  if (utils.isBlankString(text))
+  var node = ASTNode.create(fmtASTMap[lexTok.type], {href : href});
+  if (this.lookAheadT(enumLex.LINK_CONT))
   {
-   node.append(href);
-  }
-  else
-  {
-   node.append(text);
+   this.shift();
+   fStack.push(enumLex.LINK_CONT);
+   parsePara.call(this, fStack, node);
+   fStack.pop();
+   this.shiftUntilPast(untilBracket);
   }
   return node;
  }
 
- function parseLinkImg(lexTok)
+ function parseImg(lexTok)
  {
   var startPos = this.currPos,
-   endPos = this.shiftUntilPast(untilLinkAngleEnd) - 1,
-   src = this.sliceText(startPos, endPos).trim();
+   endPos = this.shiftUntilPast(untilAngle) - 1,
+   src = this.sliceText(startPos, endPos).trim(),
+   alt = "";
 
   if (utils.isBlankString(src))
   {
@@ -185,28 +188,19 @@ ParserInline.prototype = (function (){
   }
   this.shiftUntil(untilLinkCont);
   
-  var alt = this.lookAheadT(enumLex.LINK_CONT) ? parseCont.call(this) : "";
-  if (!utils.isBlankString(alt))
+  if (this.lookAheadT(enumLex.LINK_CONT))
   {
-   alt = alt.trim();
+   alt = this.sliceText(this.shift(), this.shiftUntilPast(untilBracket) - 1);
   }
+  alt = utils.isBlankString(alt) ? src : alt.trim();
   return ASTNode.create(enumAST.LINK_IMG, {src : src, alt : alt});
- }
-
- //TODO: Implement Single Hyperlinked Image, at the very least.
- function parseCont()
- {
-  var startPos = this.shift(),
-   endPos = this.shiftUntilPast(untilLinkSquareEnd) - 1;
-   
-  return this.sliceText(startPos, endPos);
  }
 
  function parseCode(lexTok)
  {
   var node = ASTNode.create(enumAST.CODE),
    startPos = this.currPos,
-   endPos = this.shiftUntilPast(untilCodeEnd) - 1,
+   endPos = this.shiftUntilPast(untilCode, lexTok) - 1,
    text = this.sliceText(startPos, endPos);
    
   node.append(text);
@@ -223,7 +217,11 @@ ParserInline.prototype = (function (){
  function parse(bbmTokens, forceType)
  {
   this.tokens = bbmTokens;
-  this.root = parsePara.call(this, forceType);
+  this.root = parsePara.call(this);
+  if (this.root && forceType)
+  {
+   this.root.type = forceType;
+  }
   return this.reset();
  }
 
