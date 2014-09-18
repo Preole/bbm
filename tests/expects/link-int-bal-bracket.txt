@@ -1,3 +1,0 @@
-<p>
-<a href="#bbm-#[Section][Bracket]">Go to #[#[]] Section Bracket</a>
-</p>

@@ -113,7 +113,6 @@ ParserInline.prototype = (function (){
    {
     node.append(this.sliceText(txtStart, this.currPos));
    }
-   
    if (txtStart <= this.currPos) //Break Infinite Loop, Skip past token.
    {
     txtStart = this.shift();
@@ -194,6 +193,7 @@ ParserInline.prototype = (function (){
   return ASTNode.create(enumAST.LINK_IMG, {src : src, alt : alt});
  }
 
+ //TODO: Implement Single Hyperlinked Image, at the very least.
  function parseCont()
  {
   var startPos = this.shift(),

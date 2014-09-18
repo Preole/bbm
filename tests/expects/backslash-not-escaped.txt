@@ -1,8 +1,0 @@
-<p>
-<code>"""</code>
-</p>
-<p>
-A backslash character always turns the next character into a literal text 
-character, except space and newlines. The backslash character is always 
-discarded regardless of context.
-</p>

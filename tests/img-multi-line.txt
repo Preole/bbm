@@ -8,4 +8,6 @@ Text]
 New line characters are not preserved in the image alt text attribute, 
 due to security concerns. One must explicitly insert space between each 
 word to have the alt text display white space.
+
+Alternatively, replace line break characters with ASCII white space.
 ////

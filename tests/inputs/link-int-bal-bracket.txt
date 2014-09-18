@@ -1,9 +1,0 @@
-#[#[Section][Bracket]]-[Go to #[#[]] Section Bracket]
-
-
-////
-The Internal Link starting token """#[""", as well as the literal opening 
-square brackets """[""", are both effective in terms of determining bracket 
-balancing in contexts where bracket balancing matters. In such contexts, 
-they do not need to be backslash escaped so long as they're balanced.
-////

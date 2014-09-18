@@ -1,7 +1,0 @@
-<p>
-<a href="X">X</a>
--[<img src="Y" alt="Empty">
-</p>
-<p>
-<a href="X"><img src="Y" alt="Empty"></a>
-</p>
