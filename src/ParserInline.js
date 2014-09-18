@@ -84,9 +84,11 @@ ParserInline.prototype = (function (){
   return token.type === enumLex.GT;
  }
 
- function untilLinkContNot(token)
+ function untilLinkCont(token)
  {
-  return linkCont.indexOf(token.type) === -1;
+  return token.type === enumLex.LINK_CONT || 
+   token.type !== enumLex.WS ||
+   token.type !== enumLex.NL;
  }
  
  function untilInline(token)
@@ -156,11 +158,10 @@ ParserInline.prototype = (function (){
   {
    return;
   }
-  this.shiftUntil(untilLinkContNot);
-
+  this.shiftUntil(untilLinkCont);
 
   var node = ASTNode.create(linkASTMap[lexTok.type], {href : href}),
-   text = this.lookAheadT(enumLex.LINK_CONT, -1) ? parseCont.call(this) : "";
+   text = this.lookAheadT(enumLex.LINK_CONT) ? parseCont.call(this) : "";
 
   if (utils.isBlankString(text))
   {
@@ -183,9 +184,9 @@ ParserInline.prototype = (function (){
   {
    return;
   }
-  this.shiftUntil(untilLinkContNot);
+  this.shiftUntil(untilLinkCont);
   
-  var alt = this.lookAheadT(enumLex.LINK_CONT, -1) ? parseCont.call(this) : "";
+  var alt = this.lookAheadT(enumLex.LINK_CONT) ? parseCont.call(this) : "";
   if (!utils.isBlankString(alt))
   {
    alt = alt.trim();
@@ -195,7 +196,7 @@ ParserInline.prototype = (function (){
 
  function parseCont()
  {
-  var startPos = this.currPos,
+  var startPos = this.shift(),
    endPos = this.shiftUntilPast(untilLinkSquareEnd) - 1;
    
   return this.sliceText(startPos, endPos);

@@ -152,6 +152,18 @@ ParserBlock.prototype = (function (){
   return tok.lexeme;
  }
 
+ function accTokens(tok, index, tokens)
+ {
+  var minCol = this,
+   prev = tokens[index - 1];
+
+  if (tok.type === enumLex.WS && (!prev || prev.type === enumLex.NL))
+  {
+   tok.lexeme = tok.lexeme.slice(minCol);
+  }
+  return tok.lexeme.length > 0;
+ }
+
 
  
  function parseBlock(ignoreLine)
@@ -319,8 +331,10 @@ ParserBlock.prototype = (function (){
   {
    return;
   }
-
-  var node = this.inlineParser.parse(this.slice(startPos, endPos), forceType);
+  
+  var paraToks = this.slice(startPos, endPos).filter(accTokens, lexTok.col),
+   node = this.inlineParser.parse(paraToks);
+   
   if (node && !forceType && lexListSetext.indexOf(endTok.type) !== -1)
   {
    node.type = enumAST.HEADER;
