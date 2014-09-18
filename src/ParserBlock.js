@@ -234,17 +234,15 @@ ParserBlock.prototype = (function (){
 
  function parsePre(lexTok)
  {
-  var nodeType = lexTok.type === enumLex.COMMENT ? 
-   enumAST.COMMENT : 
-   enumAST.PRE;
-
   var startPos = this.shiftUntilPast(untilNL),
    endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-   text = this.slice(startPos, endPos)
-    .map(accText, lexTok.col)
-    .join("")
-    .replace(reTailWSNL, "");
-   
+   nodeType = lexTok.type === enumLex.PRE ? enumAST.PRE : enumAST.COMMENT,
+   text = nodeType === enumAST.PRE ? 
+    this.slice(startPos, endPos)
+     .map(accText, lexTok.col)
+     .join("")
+     .replace(reTailWSNL, "") : "";
+
   if (text.length > 0)
   {
    return ASTNode.create(nodeType).append(text);
