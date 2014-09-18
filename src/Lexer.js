@@ -11,7 +11,7 @@ var STREX = {
 var RULES = (function (){
 return [
  {
-  pattern : "\\\\[\s\S]",
+  pattern : "\\\\[\\S\\s]",
   name : "ESCAPE"
  },
  {
@@ -251,7 +251,10 @@ function updateLinesCols(token, index, tokens)
 
 function updateEscape(token, index)
 {
- token.lexeme = token.lexeme.replace(/\\(.)/g, "$1");
+ if (token.type === TYPES.ESCAPE)
+ {
+  token.lexeme = token.lexeme.slice(1);
+ }
 }
 
 
