@@ -9,7 +9,6 @@ var ENUM =
  ROOT : "ROOT",
  P : "P",
  BLOCKQUOTE : "BLOCKQUOTE",
- COMMENT : "COMMENT",
  PRE : "PRE",
  DIV : "DIV",
  ID : "ID",
