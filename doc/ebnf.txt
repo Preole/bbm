@@ -320,17 +320,15 @@ removed from the parse tree.
 
 """
 Paragraph
- | ParaContent NL SPACE? ParaEnd
+ | ParaContent ParaEnd
  ;
  
 ParaContent
- | ~(NL | SPACE) ~(NL SPACE? ParaEnd)+
+ | ~(ParaEnd)
  ;
  
 ParaEnd
- | ParaEndNormal
- | ParaEndSetextH1
- | ParaEndSetextH2
+ | NL SPACE? (ParaEndNormal | ParaEndSetextH1 | ParaEndSetextH2)
  ;
  
 ParaEndNormal
@@ -356,8 +354,8 @@ it doesn't encounter one of the four following conditions:
 - If the paragraph starts on column X > 0, and a non-white space character 
   appears in column N < X.
 - A blank line.
-- A Setext delimiter (HorizontalRule or ATX_END)
-- A Div delimiter (DIV_DELIM)
+- A line started by a Setext delimiter (HorizontalRule or ATX_END)
+- A line started by a Div delimiter (DIV_DELIM)
 
 After determining the boundary of the paragraph, its contents (ParaContent) 
 are subject to the rules described in the section **Inline-Level Grammar**.
@@ -437,7 +435,7 @@ Inline-Level Grammar
 The context involved at this level is strictly inline; Block-level grammar 
 rules, such as indentation, nesting, and bullet lists do not apply. This 
 grammar is effective for the lexical tokens extracted from the rule 
-ParaContent in the section **Block-Level Grammar**.
+**ParaContent** in the section **Block-Level Grammar**.
 
 
 """
@@ -454,9 +452,22 @@ TextFrag
  | TextFrag_Insert
  | TextFrag_Code
  | Link
- | Text
+ | ~[
+    BOLD
+    SUB
+    SUP
+    ITAL
+    DEL_START
+    UNDERLINE
+    INS_START
+    CODE
+    LINK_INT
+    LINK_WIKI
+    LINK_EXT
+    LINK_IMG
+    ]+
  ;
- 
+
 TextFrag_Bold
  | BOLD TextFrag BOLD
  ;
@@ -484,22 +495,81 @@ TextFrag_Delete
 TextFrag_Insert
  | INS_START TextFrag INS_END
  ;
- 
+
 TextFrag_Code
  | CODE ~(CODE)+ CODE
  ;
  The starting and ending CODE need to match in the number of double quote 
  characters.
 
-Link
- | (LinkExt | LinkInt | LinkWiki | LinkImage) (LinkContinue LinkDisplay)?
+
+
+TextFragLink
+ | TextFragLink_Bold
+ | TextFragLink_Subscript
+ | TextFragLink_Superscript
+ | TextFragLink_Italic
+ | TextFragLink_Delete
+ | TextFragLink_Underline
+ | TextFragLink_Insert
+ | TextFrag_Code
+ | ~[
+    BOLD
+    SUB
+    SUP
+    ITAL
+    DEL_START
+    UNDERLINE
+    INS_START
+    CODE
+    ]+
+ ;
+
+TextFragLink_Bold
+ | BOLD TextFragLink BOLD
  ;
  
-LinkDisplay (AltText in case of LinkImage)
- | LINK_CONT ~(BRACKET_R)+ BRACKET_R
+TextFragLink_Subscript
+ | SUB TextFragLink SUB
  ;
- Changes the default display text of hyperlinks (URL) or default alt text 
- for images. (Static Non-empty placeholder)
+
+TextFragLink_Superscript
+ | SUB TextFragLink SUB
+ ;
+ 
+TextFragLink_Italic
+ | ITAL TextFragLink ITAL
+ ;
+ 
+TextFragLink_Underline
+ | UNDERLINE TextFragLink UNDERLINE
+ ;
+ 
+TextFragLink_Delete
+ | DEL_START TextFragLink DEL_END
+ ;
+ 
+TextFragLink_Insert
+ | INS_START TextFragLink INS_END
+ ;
+
+
+
+
+Link
+ | (LinkExt | LinkInt | LinkWiki) (LinkContinue LinkDisplay)?
+ | LinkImage (LinkContinue LinkAlt)
+ ;
+ 
+LinkDisplay
+ | LINK_CONT TextFragLink BRACKET_R
+ ;
+ Changes the default display text of hyperlinks (URL).
+ 
+LinkAlt
+ | LINK_CONT URLSquare BRACKET_R
+ ;
+ Changes the default alt text for images.
 
 LinkContinue
  | SPACES? NL? SPACES?
@@ -518,7 +588,7 @@ LinkImage
  ;
  
 LinkInt
- | LINK_INT ~(BRACKET_R)+ BRACKET_R
+ | LINK_INT URLSquare BRACKET_R
  ;
 
 URLAngle
@@ -531,28 +601,6 @@ URLSquare
  | ~(BRACKET_R)+
  ;
  This is the """href""" attribute for LinkInt.
- 
-Text
- | ESCAPE
- | ~[
-    NL
-    SPACE
-    UNDER
-    SUB
-    SUP
-    CODE
-    ITAL
-    BOLD
-    INS
-    INS_END
-    DEL
-    DEL_END
-    LINK_INT
-    LINK_WIKI
-    LINK_EXT
-    LINK_IMG
-    ]+
- ;
 """
 
 
@@ -756,7 +804,7 @@ EOF
 End of input stream. When encountered, terminate all parsing immediately.
  
 ESCAPE
- | (?<=\\\\).
+ | (?<=\\\\)[\S\s]
  ;
 Turns **any** character immediately after the single backslash into the 
 default TEXT token, discarding the preceding backslash.
