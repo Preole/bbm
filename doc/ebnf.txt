@@ -500,7 +500,20 @@ TextFrag_Code
  | CODE ~(CODE)+ CODE
  ;
  The starting and ending CODE need to match in the number of double quote 
- characters.
+ characters. Moreover, in TextFragLink context, this operator has a higher 
+ precedence than the closing square bracket. That is:
+ 
+ """
+ #<Wiki Link>-["""?<URL>-[Sample Code]"""]
+ """
+ 
+ """
+ <a href="Wiki Link">
+  <code>
+   ?&lt;URL&gt;-[Sample Code]
+  </code>
+ </a>
+ """
 
 
 

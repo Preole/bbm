@@ -91,7 +91,7 @@ ParserInline.prototype = (function (){
    node = premade || ASTNode.create(enumAST.P),
    isNotAbuse = fStack.length < (this.options.maxSpans || 8),
    txtStart = this.currPos,
-   hasBracket = fStack.indexOf(enumLex.BRACKET_R) !== -1,
+   hasBracket = fStack.indexOf(enumLex.BRACKET_R) > -1,
    hasNode = 0,
    fIndex = -1,
    endOffset = 0,
@@ -161,16 +161,16 @@ ParserInline.prototype = (function (){
   {
    return;
   }
-  this.shiftUntil(untilLinkCont);
-
   var node = ASTNode.create(fmtASTMap[lexTok.type], {href : href});
+  
+  this.shiftUntil(untilLinkCont);
   if (this.lookAheadT(enumLex.LINK_CONT))
   {
    this.shift();
-   fStack.push(enumLex.LINK_CONT);
+   fStack.push(enumLex.BRACKET_R);
    parsePara.call(this, fStack, node);
    fStack.pop();
-   this.shiftUntilPast(untilBracket);
+   //this.shiftUntilPast(untilBracket);
   }
   return node;
  }

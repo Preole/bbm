@@ -62,10 +62,10 @@ break, in addition to being the only visible element on the line.
   display text contains a closing square bracket, that bracket must be 
   escaped with preceding backslash.
   
-- Internal, external, and wiki link display text (Link continuation) no 
+- <del>Internal, external, and wiki link display text (Link continuation) no 
   longer interprets inline formatting constructs. Namely, formatting elements 
   such as `**` and `''` now are interpreted literally, rather than adding 
-  style and semantic values to the text.
+  style and semantic values to the text.</del>
 
 
 
