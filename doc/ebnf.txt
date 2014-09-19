@@ -497,7 +497,7 @@ TextFrag_Insert
  ;
 
 TextFrag_Code
- | CODE ~(CODE)+ CODE
+ | (CODE | CODE_FENCE) ~(CODE | CODE_FENCE)+ (CODE | CODE_FENCE)
  ;
  The starting and ending CODE need to match in the number of double quote 
  characters. Moreover, in TextFragLink context, this operator has a higher 

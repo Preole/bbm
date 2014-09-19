@@ -41,7 +41,8 @@ ParserInline.prototype = (function (){
   SUP : enumAST.SUP,
   SUB : enumAST.SUB,
   UNDER : enumAST.UNDER,
-  CODE : enumAST.CODE
+  CODE : enumAST.CODE,
+  PRE : enumAST.CODE
  },
  
  fmtStartEndMap =
@@ -58,9 +59,9 @@ ParserInline.prototype = (function (){
  
  function untilCode(token, tokStart)
  {
-  return token.type === tokStart.type &&
-   token.lexeme === tokStart.lexeme &&
-   token.type === enumLex.CODE;
+  return (token.type === enumLex.CODE || token.type === enumLex.PRE) &&
+   (tokStart.type === enumLex.CODE || tokStart.type === enumLex.PRE) &&
+   token.lexeme === tokStart.lexeme;
  }
 
  function untilBracket(token)
@@ -110,8 +111,7 @@ ParserInline.prototype = (function (){
     txtStart = this.shift();
    }
    
-
-   if (token.type === enumLex.CODE)
+   if (token.type === enumLex.CODE || token.type === enumLex.PRE)
    {
     node.append(parseCode.call(this, token));
    }
@@ -170,7 +170,6 @@ ParserInline.prototype = (function (){
    fStack.push(enumLex.BRACKET_R);
    parsePara.call(this, fStack, node);
    fStack.pop();
-   //this.shiftUntilPast(untilBracket);
   }
   return node;
  }

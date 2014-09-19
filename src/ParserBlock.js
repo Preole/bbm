@@ -332,8 +332,12 @@ ParserBlock.prototype = (function (){
    return;
   }
   
-  var paraToks = this.slice(startPos, endPos).filter(accTokens, lexTok.col),
-   node = this.inlineParser.parse(paraToks);
+  var paraToks = this.slice(startPos, endPos);
+  if (lexTok.col > 0)
+  {
+   paraToks = paraToks.filter(accTokens, lexTok.col);
+  }
+  var node = this.inlineParser.parse(paraToks);
    
   if (node && !forceType && lexListSetext.indexOf(endTok.type) !== -1)
   {
