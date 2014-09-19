@@ -140,6 +140,13 @@ ParserBlock.prototype = (function (){
    now.type === enumLex.WS && (!next || next.type === enumLex.NL);
  }
  
+ function isDivMatch(start, now)
+ {
+  return start.type === now.type && 
+   start.lexeme.length === now.lexeme.length &&
+   start.col === now.col && isLineStart.call(this);
+ }
+ 
  function accText(tok, index, tokens)
  {
   var minCol = this,
@@ -170,12 +177,11 @@ ParserBlock.prototype = (function (){
  {
   var tok = this.lookAt(this.shiftUntil(untilNotWSNL)),
    func = tok ? lexBlockSwitch[tok.type] : null,
-   isFunc = func instanceof Function,
    isNotAbuse = this.currlvl < (this.options.maxBlocks || 8),
    node = null;
    
   this.currlvl += 1;
-  if (isFunc && isNotAbuse && (ignoreLine || isLineStart.call(this)))
+  if (func && isNotAbuse && (ignoreLine || isLineStart.call(this)))
   {
    node = func.call(this, tok);
   }
@@ -217,12 +223,8 @@ ParserBlock.prototype = (function (){
  
  function parseHRTR(lexTok)
  {
-  var nodeType = lexTok.type === enumLex.HR ? 
-   enumAST.HR : 
-   enumAST.TRSEP;
-   
   this.shiftUntilPast(untilNL);
-  return ASTNode.create(nodeType);
+  return ASTNode.create(lexTok.type === enumLex.HR ? enumAST.HR : enumAST.TRSEP);
  }
 
  function parseDiv(lexTok)
@@ -232,9 +234,9 @@ ParserBlock.prototype = (function (){
    tok = null;
 
   this.shift();
-  while (tok = this.lookAhead() && tok.col >= col)
+  while ((tok = this.lookAhead()) && tok.col >= col)
   {
-   if (tok.type === enumLex.DIV && tok.col === col && isLineStart.call(this))
+   if (isDivMatch.call(this, lexTok, tok))
    {
     this.shiftUntilPast(untilNL);
     break;
@@ -511,19 +513,17 @@ ParserBlock.prototype = (function (){
    this.root.append(parseBlock.call(this));
   }
   //this.root.nodes = this.root.nodes.reduce(reduceBlock, []);
-  this.inlineParser.reset();
   return this.reset();
  }
  
- /*
  function reset(newOptions)
  {
-  ParserBase.prototype.reset.call(this.inlineParser, newOptions);
+  this.inlineParser.reset(newOptions);
   return ParserBase.prototype.reset.call(this, newOptions);
  }
- */
  
  base.parse = parse;
+ base.reset = reset;
  return base;
 }());
 
