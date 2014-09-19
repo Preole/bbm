@@ -1,7 +1,6 @@
 
 (function (){
 "use strict";
-var LexToken = require("./LexToken.js");
 
 var STREX = {
  WS : "[ \\t\\u2000-\\u200d\\u205f\\u1680\\u237d\\u2420\\u2422\\u2423\\u3000]",
@@ -176,6 +175,16 @@ function makeRegex()
  return new RegExp(regexStrList.join("|"), "g");
 }
 
+function LexToken(lexeme, type, col, line)
+{
+ return {
+  lexeme : lexeme || "",
+  type : type || "",
+  col : col || -1,
+  line : line || -1
+ };
+}
+
 function Lexer()
 {
  this.regex = makeRegex();
@@ -201,16 +210,10 @@ function parse(strInput)
 
   if (lastPos < res.index)
   {
-   tokens.push(LexToken.create(
-    strInput.slice(lastPos, res.index),
-    TYPES.TEXT
-   ));
+   tokens.push(LexToken(strInput.slice(lastPos, res.index), TYPES.TEXT));
   }
 
-  tokens.push(LexToken.create(
-   res[0],
-   ruleObj ? ruleObj.name : TYPES.TEXT
-  ));
+  tokens.push(LexToken(res[0],ruleObj ? ruleObj.name : TYPES.TEXT));
 
   if (lastPos > regex.lastIndex)
   {
@@ -221,10 +224,7 @@ function parse(strInput)
 
  if (lastPos < strInput.length)
  {
-  tokens.push(LexToken.create(
-   strInput.slice(lastPos),
-   TYPES.TEXT
-  ));
+  tokens.push(LexToken(strInput.slice(lastPos), TYPES.TEXT));
  }
  
  tokens.forEach(updateEscape);
