@@ -86,22 +86,18 @@ ParserInline.prototype = (function (){
   return token.type === enumLex.BRACKET_R || fmtASTMap[token.type]; 
  }
 
- function parsePara(fmtStack, premade)
+ function parsePara(fStack, premade)
  {
-  var fStack = fmtStack ? fmtStack : [],
-   node = premade || ASTNode.create(enumAST.P),
+  var node = premade || ASTNode.create(enumAST.P),
    isNotAbuse = fStack.length < (this.options.maxSpans || 8),
    txtStart = this.currPos,
    hasBracket = fStack.indexOf(enumLex.BRACKET_R) > -1,
-   hasNode = 0,
    fIndex = -1,
-   endOffset = 0,
    token = null;
    
   while (token = this.lookAt(this.shiftUntil(untilInline)))
   {
    fIndex = fStack.indexOf(token.type);
-   hasNode = true;
    if (txtStart < this.currPos) //Collect text.
    {
     node.append(this.sliceText(txtStart, this.currPos));
@@ -129,22 +125,17 @@ ParserInline.prototype = (function (){
     node.append(parsePara.call(this, fStack, ASTNode.create(fmtASTMap[token.type])));
     fStack.pop();
    }
-   else
-   {
-    hasNode = false;
-   }
    
-   txtStart = hasNode ? this.currPos : this.currPos - 1;    
+   txtStart = txtStart === this.currPos ? this.currPos - 1 : this.currPos;
    if (fIndex > -1) //Case Format tag end
    {
-    endOffset = -1;
     break;
    }
   }
   
   if (txtStart < this.currPos)
   {
-   node.append(this.sliceText(txtStart, this.currPos + endOffset));
+   node.append(this.sliceText(txtStart, this.currPos + (fIndex > -1 ? -1 : 0)));
   }
   
   return node.nodes.length > 0 ? node : null;
@@ -216,7 +207,7 @@ ParserInline.prototype = (function (){
  function parse(bbmTokens, forceType)
  {
   this.tokens = bbmTokens;
-  this.root = parsePara.call(this);
+  this.root = parsePara.call(this, []);
   if (this.root && forceType)
   {
    this.root.type = forceType;
