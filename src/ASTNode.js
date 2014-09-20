@@ -43,6 +43,8 @@ var ENUM =
  TEXT : "TEXT" //After Transform
 };
 
+//Nodes that should have no descendants.
+var NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG];
 
 function ASTNode(type, attr)
 {
@@ -51,7 +53,10 @@ function ASTNode(type, attr)
  {
   this.attr = utils.isObject(attr) ? attr : {};
  }
- this.nodes = [];
+ if (NODESC.indexOf(type) === -1)
+ {
+  this.nodes = [];
+ }
 }
 
 function create(type, attr)
@@ -191,13 +196,21 @@ ASTNode.prototype = (function (){
   return this.nodes[this.nodes.length - 1];
  }
  
-
+ function empty()
+ {
+  if (this.nodes instanceof Array)
+  {
+   this.nodes = [];
+  }
+  return this;
+ }
 
 
  return {
   append : append,
   first : first,
-  last : last
+  last : last,
+  empty : empty
  };
 
 }());

@@ -59,17 +59,6 @@ Parser.prototype = (function (){
  lexListSetext = [enumLex.HR, enumLex.ATX_END],
  lexListRefEnd = [enumLex.NL, enumLex.REF_END],
  lexListATXEnd = [enumLex.NL, enumLex.ATX_END],
- astListLink =
- [
-  enumAST.LINK_EXT,
-  enumAST.LINK_INT,
-  enumAST.LINK_WIKI,
-  enumAST.LINK_IMG
- ],
- astListInline = astListLink.concat([
-  enumAST.TEXT, enumAST.STRONG, enumAST.EM, enumAST.DEL, enumAST.INS,
-  enumAST.UNDER, enumAST.SUP, enumAST.SUB, enumAST.CODE,
- ]),
  astListAlone = [enumAST.PRE, enumAST.TD, enumAST.TH],
  astListBlock =
  [
@@ -338,8 +327,8 @@ Parser.prototype = (function (){
   {
    paraToks = paraToks.filter(accTokens, lexTok.col);
   }
+
   var node = this.inlineParser.parse(paraToks);
-   
   if (node && !forceType && lexListSetext.indexOf(endTok.type) !== -1)
   {
    node.type = enumAST.HEADER;
@@ -362,33 +351,6 @@ Parser.prototype = (function (){
    array[index] = ASTNode.create(enumAST.TD);
   });
   return cells;
- }
- 
- //Remove empty inline elements, pre-order traversal.
- function reduceInline(acc, node, index, sibs)
- {
-  if (!(node instanceof ASTNode))
-  {
-   return acc; //Guard case
-  }
- 
-  var prev = acc[index - 1],
-   isLink = astListLink.indexOf(node.type) !== -1,
-   isBlank = utils.isBlankString(node.nodes[0] || "");
-   
-  if (isLink || !isBlank || prev)
-  {
-   acc.push(node); //Base Case: Keep links/images, keep non-blank text.
-  }
-  else if (node.type !== enumAST.TEXT)
-  {
-   node.nodes = node.nodes.reduce(reduceInline, []);
-   if (node.nodes.length > 0) //Recursive case: Formatting.
-   {
-    acc.push(node); 
-   }
-  }
-  return acc;
  }
  
  //Remove empty block elements, post-order traversal.

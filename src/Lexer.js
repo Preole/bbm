@@ -165,6 +165,8 @@ var TYPES = RULES.reduce(function (acc, rule){
  return acc;
 }, {TEXT : "TEXT"});
 
+var RENL = /[\v\f\n]|\r\n?/;
+
 
 function makeRegex()
 {
@@ -241,8 +243,7 @@ function updateLinesCols(token, index, tokens)
   return;
  }
  var prevTok = tokens[index - 1],
-  reNL = /[\v\f\n]|\r\n?/,
-  nlCount = prevTok.lexeme.split(reNL).length - 1;
+  nlCount = prevTok.lexeme.split(RENL).length - 1;
   
  token.line = prevTok.line + nlCount;
  token.col = nlCount > 0 ? 0 : prevTok.col + prevTok.lexeme.length;

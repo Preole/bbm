@@ -23,7 +23,11 @@ ParserInline.create = create;
 ParserInline.prototype = (function (){
  var base = new ParserBase(),
  linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
- linkAnchors = [enumLex.LINK_INT, enumLex.LINK_WIKI, enumLex.LINK_EXT],
+ linksLex = [enumLex.LINK_INT, enumLex.LINK_WIKI, enumLex.LINK_EXT],
+ linksAST =
+ [
+  enumAST.LINK_EXT, enumAST.LINK_INT, enumAST.LINK_WIKI, enumAST.LINK_IMG
+ ],
  
  //Maps text-formatting lexical tokens to ASTNode types.
  fmtASTMap =
@@ -115,7 +119,7 @@ ParserInline.prototype = (function (){
    {
     node.append(parseImg.call(this, token));
    }
-   else if (!hasBracket && linkAnchors.indexOf(token.type) !== -1)
+   else if (!hasBracket && linksLex.indexOf(token.type) !== -1)
    {
     node.append(parseLink.call(this, token, fStack));
    }
@@ -138,7 +142,7 @@ ParserInline.prototype = (function (){
    node.append(this.sliceText(txtStart, this.currPos + (fIndex > -1 ? -1 : 0)));
   }
   
-  return node.nodes.length > 0 ? node : null;
+  return node;
  }
 
  function parseLink(lexTok, fStack)
@@ -161,6 +165,10 @@ ParserInline.prototype = (function (){
    fStack.push(enumLex.BRACKET_R);
    parsePara.call(this, fStack, node);
    fStack.pop();
+  }
+  if (!node.nodes.some(someNotWS, this))
+  {
+   node.empty().append(href);
   }
   return node;
  }
@@ -197,6 +205,14 @@ ParserInline.prototype = (function (){
   return node;
  }
 
+ function someNotWS(node)
+ {
+  if (node.type === enumAST.TEXT)
+  {
+   return !utils.isBlankString(node.nodes.join(""));
+  }
+  return linksAST.indexOf(node.type) > -1 || node.nodes.some(someNotWS, this);
+ }
 
 
  /*
@@ -208,11 +224,15 @@ ParserInline.prototype = (function (){
  {
   this.tokens = bbmTokens;
   this.root = parsePara.call(this, []);
-  if (this.root && forceType)
+  if (forceType)
   {
    this.root.type = forceType;
   }
-  return this.reset();
+  if (this.root.nodes.some(someNotWS, this))
+  {
+   return this.reset(); //Non-empty paragraph.
+  }
+  this.reset(); //Empty paragraph: Don't return anything.
  }
 
  base.parse = parse;
