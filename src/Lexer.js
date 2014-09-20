@@ -212,8 +212,7 @@ function parse(strInput)
   {
    tokens.push(LexToken(strInput.slice(lastPos, res.index), TYPES.TEXT));
   }
-
-  tokens.push(LexToken(res[0],ruleObj ? ruleObj.name : TYPES.TEXT));
+  tokens.push(LexToken(res[0], ruleObj ? ruleObj.name : TYPES.TEXT));
 
   if (lastPos > regex.lastIndex)
   {

@@ -11,10 +11,10 @@ var ENUM =
  BLOCKQUOTE : "BLOCKQUOTE",
  PRE : "PRE",
  DIV : "DIV",
- ID : "ID",
- CLASS : "CLASS",
- UL_LI : "UL_LI",
- OL_LI : "OL_LI",
+ ID : "ID", //Private
+ CLASS : "CLASS", //Private
+ UL_LI : "UL_LI", //Private
+ OL_LI : "OL_LI", //Private
  LI : "LI", //After Transform
  UL : "UL", //After Transform
  OL : "OL", //After Transform
@@ -26,7 +26,7 @@ var ENUM =
  TD : "TD",
  HR : "HR",
  TR : "TR", //After Transform
- TRSEP : "TRSEP",
+ TRSEP : "TRSEP", //Private
  TABLE : "TABLE", //After Transform
  LINK_INT : "LINK_INT",
  LINK_EXT : "LINK_EXT",

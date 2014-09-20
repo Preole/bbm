@@ -95,7 +95,7 @@ ParserInline.prototype = (function (){
    fIndex = -1,
    token = null;
    
-  while (token = this.lookAt(this.shiftUntil(untilInline)))
+  while ((token = this.lookAt(this.shiftUntil(untilInline))))
   {
    fIndex = fStack.indexOf(token.type);
    if (txtStart < this.currPos) //Collect text.
