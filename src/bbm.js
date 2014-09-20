@@ -9,7 +9,7 @@
 
 var utils = require("./utils.js"),
  Lexer = require("./Lexer.js"),
- Parser = require("./ParserBlock.js");
+ Parser = require("./Parser.js");
 
 //Options before blank line: Parse time options; After: Renderer options.
 var defOptions =

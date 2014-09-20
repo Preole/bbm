@@ -1,17 +1,6 @@
 (function (){
 "use strict";
 
-var expose =
-{
- isObject : isObject,
- isString : isString,
- isBlankString : isBlankString,
- removeWS : removeWS,
- hasOwn : hasOwn,
- extend : extend
-},
-reBlank = /^\s*$/;
-
 function isObject(obj)
 {
  return typeof obj === "object" && obj !== null;
@@ -24,12 +13,7 @@ function isString(obj)
 
 function isBlankString(str)
 {
- return reBlank.test(str);
-}
-
-function removeWS(str)
-{
- return str.replace(/\s+/g, "");
+ return /^\s*$/.test(str);
 }
 
 function hasOwn(obj, key)
@@ -59,7 +43,13 @@ function extend(obj)
 
 if (typeof module === "object" && module.exports)
 {
- module.exports = expose;
+ module.exports = {
+  isObject : isObject,
+  isString : isString,
+  isBlankString : isBlankString,
+  hasOwn : hasOwn,
+  extend : extend
+ };
 }
 
 }());

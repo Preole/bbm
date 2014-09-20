@@ -10,7 +10,7 @@ var utils = require("./utils.js"),
  ParserBase = require("./ParserBase.js");
  
 
-function ParserBlock(options)
+function Parser(options)
 {
  this.inlineParser = ParserInline.create(options);
  this.reset(options);
@@ -18,11 +18,11 @@ function ParserBlock(options)
 
 function create(options)
 {
- return new ParserBlock(options);
+ return new Parser(options);
 }
 
-ParserBlock.create = create;
-ParserBlock.prototype = (function (){
+Parser.create = create;
+Parser.prototype = (function (){
  var base = new ParserBase(),
  EOF = {},
  reTailWSNL = /\s$/,
@@ -79,7 +79,7 @@ ParserBlock.prototype = (function (){
  ],
  astListLonePara =
  [
-  enumAST.DD, enumAST.LI, enumAST.TH, enumAST.TR, enumAST.BLOCKQUOTE
+  enumAST.DD, enumAST.LI, enumAST.TH, enumAST.TD, enumAST.BLOCKQUOTE
  ];
 
  
@@ -283,7 +283,7 @@ ParserBlock.prototype = (function (){
   var nodeType = lexTok.type === enumLex.ID ? enumAST.ID : enumAST.CLASS,
    startPos = this.currPos + 1,
    endPos = this.shiftUntilPast(untilNL) - 1,
-   idClass = utils.removeWS(this.sliceText(startPos, endPos));
+   idClass = this.sliceText(startPos, endPos).trim();
    
   if (idClass.length <= 0)
   {
@@ -532,6 +532,6 @@ ParserBlock.prototype = (function (){
 
 if (typeof module === "object" && module.exports)
 {
- module.exports = ParserBlock;
+ module.exports = Parser;
 }
 }());
