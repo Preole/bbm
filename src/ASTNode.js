@@ -53,6 +53,7 @@ var NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG];
 function ASTNode(type, attr)
 {
  this.type = type || "";
+ this.parent = null;
  if (type !== ENUM.TEXT)
  {
   this.attr = utils.isObject(attr) ? attr : {};
@@ -72,17 +73,6 @@ ASTNode.create = create;
 ASTNode.types = ENUM;
 ASTNode.prototype = (function (){
 
- var switchAppend =
- {
-  TRSEP : appendTable,
-  TH : appendTable,
-  TD : appendTable,
-  DT : appendDL,
-  DD : appendDL,
-  UL_LI : appendULOL,
-  OL_LI : appendULOL,
-  LI : appendULOL,
- };
 
  /*
  Private Methods : Text
@@ -106,59 +96,6 @@ ASTNode.prototype = (function (){
  Private Methods : Append
  ------------------------
  */
- function appendTable(node)
- {
-  var last = this.last(),
-   isCell = node.type === ENUM.TD || node.type === ENUM.TH,
-   isRow = node.type === ENUM.TRSEP;
-
-  if (!(last && last.type === ENUM.TABLE))
-  {
-   if (isRow) {return;}
-   last = ASTNode.create(ENUM.TABLE);
-   appendNode.call(this, last);
-  }
-  if (last.nodes.length <= 0)
-  {
-   appendNode.call(last, ASTNode.create(ENUM.TR));
-  }
-
-  if (isCell)
-  {
-   appendNode.call(last.last(), node);
-  }
-  else if (isRow)
-  {
-   node.type = ENUM.TR;
-   appendNode.call(last, node);
-  }
- }
- 
- function appendDL(node)
- {
-  var last = this.last();
-  if (!(last && last.type === ENUM.DL))
-  {
-   last = ASTNode.create(ENUM.DL);
-   appendNode.call(this, last);
-  }
-  appendNode.call(last, node);
- }
- 
- function appendULOL(node)
- {
-  var listType = node.type === ENUM.OL_LI ? ENUM.OL : ENUM.UL,
-   last = this.last();
-   
-  if (!(last && last.type === listType))
-  {
-   last = ASTNode.create(listType);
-   appendNode.call(this, last);
-  }
-  appendNode.call(last, node);
-  node.type = ENUM.LI;
- }
- 
  function appendText(text)
  {
   var last = this.last();
@@ -171,6 +108,7 @@ ASTNode.prototype = (function (){
    last = ASTNode.create(ENUM.TEXT);
    last.nodes.push(text);
    this.nodes.push(last);
+   last.parent = this;
   }
  }
  
@@ -181,6 +119,7 @@ ASTNode.prototype = (function (){
    throw TypeError(node.type + " is not member of ASTNode.types");
   }
   this.nodes.push(node);
+  node.parent = this;
  }
 
 
@@ -191,18 +130,11 @@ ASTNode.prototype = (function (){
  */
  function append(nodeText)
  {
-  var isNode = nodeText instanceof ASTNode,
-   nodeFunc = isNode ? switchAppend[nodeText.type] : null;
- 
   if (utils.isString(nodeText) && nodeText.length > 0)
   {
    appendText.call(this, nodeText);
   }
-  else if (nodeFunc instanceof Function)
-  {
-   nodeFunc.call(this, nodeText);
-  }
-  else if (isNode)
+  else if (nodeText instanceof ASTNode)
   {
    appendNode.call(this, nodeText);
   }
@@ -242,6 +174,13 @@ ASTNode.prototype = (function (){
   return node.nodes.reduce(textReduce, "");
  }
  
+ function toJSON()
+ {
+  var obj = utils.extend({}, this);
+  delete obj.parent;
+  return obj;
+ }
+ 
 
  return {
   append : append,
@@ -249,7 +188,8 @@ ASTNode.prototype = (function (){
   last : last,
   empty : empty,
   some : some,
-  text : text
+  text : text,
+  toJSON : toJSON
  };
 
 }());

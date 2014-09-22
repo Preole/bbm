@@ -60,18 +60,7 @@ Parser.prototype = (function (){
  lexListParaDelim = [enumLEX.HR, enumLEX.ATX_END, enumLEX.DIV],
  lexListSetext = [enumLEX.HR, enumLEX.ATX_END],
  lexListRefEnd = [enumLEX.NL, enumLEX.REF_END],
- lexListATXEnd = [enumLEX.NL, enumLEX.ATX_END],
- astListAlone = [enumAST.PRE, enumAST.TD, enumAST.TH],
- astListBlock =
- [
-  enumAST.TD, enumAST.TH, enumAST.TR, enumAST.TABLE, 
-  enumAST.DL, enumAST.DD, enumAST.UL, enumAST.OL, enumAST.LI,
-  enumAST.BLOCKQUOTE, enumAST.DIV, enumAST.ROOT
- ],
- astListLonePara =
- [
-  enumAST.DD, enumAST.LI, enumAST.TH, enumAST.TD, enumAST.BLOCKQUOTE
- ];
+ lexListATXEnd = [enumLEX.NL, enumLEX.ATX_END];
 
  
  function untilNotWSNL(token)
@@ -324,13 +313,9 @@ Parser.prototype = (function (){
    return;
   }
   
-  var paraToks = this.slice(startPos, endPos);
-  if (lexTok.col > 0)
-  {
-   paraToks = paraToks.filter(accTokens, lexTok.col);
-  }
-
-  var node = this.inlineParser.parse(paraToks);
+  var paraToks = this.slice(startPos, endPos).filter(accTokens, lexTok.col),
+   node = this.inlineParser.parse(paraToks);
+   
   if (node && !forceType && lexListSetext.indexOf(endTok.type) !== -1)
   {
    node.type = enumAST.HEADER;

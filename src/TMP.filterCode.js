@@ -1,7 +1,95 @@
 /*
+TODO: Private ASTNode methods: Append... Use a tree walkter reduce for privacy 
+instead.
+------------------------------------------------------------------------
+*/
+
+var switchAppend =
+{
+ TRSEP : appendTable,
+ TH : appendTable,
+ TD : appendTable,
+ DT : appendDL,
+ DD : appendDL,
+ UL_LI : appendULOL,
+ OL_LI : appendULOL,
+ LI : appendULOL,
+};
+
+function appendTable(node)
+{
+ var last = this.last(),
+  isCell = node.type === ENUM.TD || node.type === ENUM.TH,
+  isRow = node.type === ENUM.TRSEP;
+
+ if (!(last && last.type === ENUM.TABLE))
+ {
+  if (isRow) {return;}
+  last = ASTNode.create(ENUM.TABLE);
+  appendNode.call(this, last);
+ }
+ if (last.nodes.length <= 0)
+ {
+  appendNode.call(last, ASTNode.create(ENUM.TR));
+ }
+
+ if (isCell)
+ {
+  appendNode.call(last.last(), node);
+ }
+ else if (isRow)
+ {
+  node.type = ENUM.TR;
+  appendNode.call(last, node);
+ }
+}
+
+function appendDL(node)
+{
+ var last = this.last();
+ if (!(last && last.type === ENUM.DL))
+ {
+  last = ASTNode.create(ENUM.DL);
+  appendNode.call(this, last);
+ }
+ appendNode.call(last, node);
+}
+
+function appendULOL(node)
+{
+ var listType = node.type === ENUM.OL_LI ? ENUM.OL : ENUM.UL,
+  last = this.last();
+  
+ if (!(last && last.type === listType))
+ {
+  last = ASTNode.create(listType);
+  appendNode.call(this, last);
+ }
+ appendNode.call(last, node);
+ node.type = ENUM.LI;
+}
+ 
+
+
+
+/*
 TODO: Block-Level Tree Pruning
 ------------------------------
 */
+
+
+var astListBlock =
+[
+ enumAST.TD, enumAST.TH, enumAST.TR, enumAST.TABLE, 
+ enumAST.DL, enumAST.DD, enumAST.UL, enumAST.OL, enumAST.LI,
+ enumAST.BLOCKQUOTE, enumAST.DIV, enumAST.ROOT
+],
+astListLonePara =
+[
+ enumAST.DD, enumAST.LI, enumAST.TH, enumAST.TD, enumAST.BLOCKQUOTE
+],
+astListAlone = [enumAST.PRE, enumAST.TD, enumAST.TH];
+
 function createCells(cellCount)
 {
  var cells = Array(cellCount);
@@ -113,8 +201,9 @@ function pruneLonePara(node)
  var first = node.first(),
   nodeCount = node.nodes.length;
 
- if (nodeCount === 1 && first && first.type === enumAST.P)
+ if (nodeCount === 1 && first.type === enumAST.P)
  {
+  node.attr = first.attr;
   node.nodes = first.nodes;
  }
 }
@@ -125,8 +214,13 @@ TODO: Inline-Level Tree Pruning & URL Substitution
 ---------------------------
 */
 
+
+var linksAST = [enumAST.LINK_EXT, enumAST.LINK_INT, enumAST.LINK_WIKI],
+ linksImgAST = linksAST.concat([enumAST.LINK_IMG]);
+
+
 /**
- * this = The root AST Node.
+ * this = root? Or, where should I put the root node?
  */
 function someNotWS(node)
 {

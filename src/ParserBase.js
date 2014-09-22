@@ -7,6 +7,7 @@ var utils = require("./utils.js"),
  ASTNode = require("./ASTNode.js"),
  enumAST = ASTNode.types;
 
+//Function declaration for useful stack trace names.
 function ParserBase()
 {
 

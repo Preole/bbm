@@ -13,7 +13,7 @@ var utils = require("./utils.js"),
 //Options before blank line: Lex/Parse options; After: Renderer options.
 var defOptions =
 {
- disallowed : ["LINK_EXT"],
+ disallowed : [],
  maxBlocks : 8,
  maxSpans : 8,
  

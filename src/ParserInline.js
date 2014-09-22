@@ -24,8 +24,6 @@ ParserInline.prototype = (function (){
  var base = new ParserBase(),
  linkCont = [enumLEX.WS, enumLEX.NL, enumLEX.LINK_CONT],
  linksLex = [enumLEX.LINK_INT, enumLEX.LINK_WIKI, enumLEX.LINK_EXT],
- linksAST = [enumAST.LINK_EXT, enumAST.LINK_INT, enumAST.LINK_WIKI],
- linksImgAST = linksAST.concat([enumAST.LINK_IMG]),
  
  //Maps text-formatting lexical tokens to ASTNode types.
  fmtASTMap =
