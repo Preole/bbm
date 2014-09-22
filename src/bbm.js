@@ -8,21 +8,17 @@
 "use strict";
 
 var utils = require("./utils.js"),
- Lexer = require("./Lexer.js"),
  Parser = require("./Parser.js");
 
-//Options before blank line: Parse time options; After: Renderer options.
+//Options before blank line: Lex/Parse options; After: Renderer options.
 var defOptions =
 {
+ disallowed : ["LINK_EXT"],
  maxBlocks : 8,
  maxSpans : 8,
  
  rmEOL : false,
  maxAttrChars : 2048,
- allowImg : true,
- allowLink : true,
- allowClass : true,
- allowID : true,
  cssPrefix : "bbm-",
  cssWiki : "w-bbm",
  target : "html",
@@ -49,7 +45,6 @@ function BBM(bbmStr, options)
   return bbmStatic(bbmStr, options);
  }
  this.options = utils.extend({}, defOptions, options);
- this.lexer = Lexer.create();
  this.parser = Parser.create(this.options);
 }
 
@@ -68,11 +63,7 @@ BBM.prototype = (function (){
 
  function compile(bbmStr)
  {
-  var tokens = this.lexer.parse(bbmStr),
-   ast = this.parser.parse(tokens);
-
-  return ast;
-  //TODO: ast.toHTML();
+  return this.parser.parse(bbmStr); //TODO: Translate to HTML
  }
  
 
@@ -88,3 +79,6 @@ if (typeof module === "object" && module.exports)
 }
 
 }());
+
+
+

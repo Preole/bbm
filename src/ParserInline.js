@@ -3,7 +3,7 @@
 "use strict";
 
 var utils = require("./utils.js"),
- enumLex = require("./Lexer.js").types,
+ enumLEX = require("./Lexer.js").types,
  ASTNode = require("./ASTNode.js"),
  enumAST = ASTNode.types,
  ParserBase = require("./ParserBase.js");
@@ -22,12 +22,10 @@ function create(options)
 ParserInline.create = create;
 ParserInline.prototype = (function (){
  var base = new ParserBase(),
- linkCont = [enumLex.WS, enumLex.NL, enumLex.LINK_CONT],
- linksLex = [enumLex.LINK_INT, enumLex.LINK_WIKI, enumLex.LINK_EXT],
- linksAST =
- [
-  enumAST.LINK_EXT, enumAST.LINK_INT, enumAST.LINK_WIKI, enumAST.LINK_IMG
- ],
+ linkCont = [enumLEX.WS, enumLEX.NL, enumLEX.LINK_CONT],
+ linksLex = [enumLEX.LINK_INT, enumLEX.LINK_WIKI, enumLEX.LINK_EXT],
+ linksAST = [enumAST.LINK_EXT, enumAST.LINK_INT, enumAST.LINK_WIKI],
+ linksImgAST = linksAST.concat([enumAST.LINK_IMG]),
  
  //Maps text-formatting lexical tokens to ASTNode types.
  fmtASTMap =
@@ -51,43 +49,43 @@ ParserInline.prototype = (function (){
  
  fmtStartEndMap =
  {
-  INS : enumLex.INS_END,
-  DEL : enumLex.DEL_END,
-  BOLD : enumLex.BOLD,
-  EM : enumLex.EM,
-  SUP : enumLex.SUP,
-  SUB : enumLex.SUB,
-  UNDER : enumLex.UNDER
+  INS : enumLEX.INS_END,
+  DEL : enumLEX.DEL_END,
+  BOLD : enumLEX.BOLD,
+  EM : enumLEX.EM,
+  SUP : enumLEX.SUP,
+  SUB : enumLEX.SUB,
+  UNDER : enumLEX.UNDER
  };
 
  
  function untilCode(token, tokStart)
  {
-  return (token.type === enumLex.CODE || token.type === enumLex.PRE) &&
-   (tokStart.type === enumLex.CODE || tokStart.type === enumLex.PRE) &&
+  return (token.type === enumLEX.CODE || token.type === enumLEX.PRE) &&
+   (tokStart.type === enumLEX.CODE || tokStart.type === enumLEX.PRE) &&
    token.lexeme === tokStart.lexeme;
  }
 
  function untilBracket(token)
  {
-  return token.type === enumLex.BRACKET_R;
+  return token.type === enumLEX.BRACKET_R;
  }
 
  function untilAngle(token)
  {
-  return token.type === enumLex.GT;
+  return token.type === enumLEX.GT;
  }
  
  function untilLinkCont(token)
  {
-  return token.type === enumLex.LINK_CONT || 
-   token.type !== enumLex.WS ||
-   token.type !== enumLex.NL;
+  return token.type === enumLEX.LINK_CONT || 
+   token.type !== enumLEX.WS ||
+   token.type !== enumLEX.NL;
  }
  
  function untilInline(token)
  {
-  return token.type === enumLex.BRACKET_R || fmtASTMap[token.type]; 
+  return token.type === enumLEX.BRACKET_R || fmtASTMap[token.type]; 
  }
 
  function parsePara(fStack, premade)
@@ -95,7 +93,7 @@ ParserInline.prototype = (function (){
   var node = premade || ASTNode.create(enumAST.P),
    isNotAbuse = fStack.length < (this.options.maxSpans || 8),
    txtStart = this.currPos,
-   hasBracket = fStack.indexOf(enumLex.BRACKET_R) > -1,
+   hasBracket = fStack.indexOf(enumLEX.BRACKET_R) > -1,
    fIndex = -1,
    token = null;
    
@@ -111,11 +109,11 @@ ParserInline.prototype = (function (){
     txtStart = this.shift();
    }
    
-   if (token.type === enumLex.CODE || token.type === enumLex.PRE)
+   if (token.type === enumLEX.CODE || token.type === enumLEX.PRE)
    {
     node.append(parseCode.call(this, token));
    }
-   else if (token.type === enumLex.LINK_IMG)
+   else if (token.type === enumLEX.LINK_IMG)
    {
     node.append(parseImg.call(this, token));
    }
@@ -147,7 +145,7 @@ ParserInline.prototype = (function (){
 
  function parseLink(lexTok, fStack)
  {
-  var callback = lexTok.type === enumLex.LINK_INT ? untilBracket : untilAngle,
+  var callback = lexTok.type === enumLEX.LINK_INT ? untilBracket : untilAngle,
    startPos = this.currPos,
    endPos = this.shiftUntilPast(callback) - 1,
    href = this.sliceText(startPos, endPos).trim();
@@ -159,16 +157,12 @@ ParserInline.prototype = (function (){
   var node = ASTNode.create(fmtASTMap[lexTok.type], {href : href});
   
   this.shiftUntil(untilLinkCont);
-  if (this.lookAheadT(enumLex.LINK_CONT))
+  if (this.lookAheadT(enumLEX.LINK_CONT))
   {
    this.shift();
-   fStack.push(enumLex.BRACKET_R);
+   fStack.push(enumLEX.BRACKET_R);
    parsePara.call(this, fStack, node);
    fStack.pop();
-  }
-  if (!node.nodes.some(someNotWS, this))
-  {
-   node.empty().append(href);
   }
   return node;
  }
@@ -186,12 +180,11 @@ ParserInline.prototype = (function (){
   }
   this.shiftUntil(untilLinkCont);
   
-  if (this.lookAheadT(enumLex.LINK_CONT))
+  if (this.lookAheadT(enumLEX.LINK_CONT))
   {
    alt = this.sliceText(this.shift(), this.shiftUntilPast(untilBracket) - 1);
   }
-  alt = utils.isBlankString(alt) ? src : alt.trim();
-  return ASTNode.create(enumAST.LINK_IMG, {src : src, alt : alt});
+  return ASTNode.create(enumAST.LINK_IMG, {src : src, alt : alt.trim()});
  }
 
  function parseCode(lexTok)
@@ -203,15 +196,6 @@ ParserInline.prototype = (function (){
    
   node.append(text);
   return node;
- }
-
- function someNotWS(node)
- {
-  if (node.type === enumAST.TEXT)
-  {
-   return !utils.isBlankString(node.nodes.join(""));
-  }
-  return linksAST.indexOf(node.type) > -1 || node.nodes.some(someNotWS, this);
  }
 
 
@@ -228,11 +212,7 @@ ParserInline.prototype = (function (){
   {
    this.root.type = forceType;
   }
-  if (this.root.nodes.some(someNotWS, this))
-  {
-   return this.reset(); //Non-empty paragraph.
-  }
-  this.reset(); //Empty paragraph: Don't return anything.
+  return this.reset();
  }
 
  base.parse = parse;

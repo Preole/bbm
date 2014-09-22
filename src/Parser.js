@@ -3,7 +3,8 @@
 "use strict";
 
 var utils = require("./utils.js"),
- enumLex = require("./Lexer.js").types,
+ Lexer = require("./Lexer.js"),
+ enumLEX = Lexer.types,
  ASTNode = require("./ASTNode.js"),
  enumAST = ASTNode.types,
  ParserInline = require("./ParserInline.js"),
@@ -13,6 +14,7 @@ var utils = require("./utils.js"),
 function Parser(options)
 {
  this.inlineParser = ParserInline.create(options);
+ this.lexer = Lexer.create(options);
  this.reset(options);
 }
 
@@ -54,11 +56,11 @@ Parser.prototype = (function (){
   OL : enumAST.OL_LI,
   UL : enumAST.UL_LI
  },
- lexListWSNL = [enumLex.WS, enumLex.NL],
- lexListParaDelim = [enumLex.HR, enumLex.ATX_END, enumLex.DIV],
- lexListSetext = [enumLex.HR, enumLex.ATX_END],
- lexListRefEnd = [enumLex.NL, enumLex.REF_END],
- lexListATXEnd = [enumLex.NL, enumLex.ATX_END],
+ lexListWSNL = [enumLEX.WS, enumLEX.NL],
+ lexListParaDelim = [enumLEX.HR, enumLEX.ATX_END, enumLEX.DIV],
+ lexListSetext = [enumLEX.HR, enumLEX.ATX_END],
+ lexListRefEnd = [enumLEX.NL, enumLEX.REF_END],
+ lexListATXEnd = [enumLEX.NL, enumLEX.ATX_END],
  astListAlone = [enumAST.PRE, enumAST.TD, enumAST.TH],
  astListBlock =
  [
@@ -87,7 +89,7 @@ Parser.prototype = (function (){
 
  function untilNL(token)
  {
-  return token.type === enumLex.NL;
+  return token.type === enumLEX.NL;
  }
 
  function untilRefEnd(token)
@@ -115,8 +117,8 @@ Parser.prototype = (function (){
    prev2 = this.lookAhead(-2);
    
   return !prev1 || 
-   prev1.type === enumLex.NL || 
-   prev1.type === enumLex.WS && (!prev2 || prev2.type === enumLex.NL);
+   prev1.type === enumLEX.NL || 
+   prev1.type === enumLEX.WS && (!prev2 || prev2.type === enumLEX.NL);
  }
 
  function isLineEnd()
@@ -125,8 +127,8 @@ Parser.prototype = (function (){
    next = this.lookAhead(1);
    
   return !now || 
-   now.type === enumLex.NL ||
-   now.type === enumLex.WS && (!next || next.type === enumLex.NL);
+   now.type === enumLEX.NL ||
+   now.type === enumLEX.WS && (!next || next.type === enumLEX.NL);
  }
  
  function isDivMatch(start, now)
@@ -141,7 +143,7 @@ Parser.prototype = (function (){
   var minCol = this,
    prev = tokens[index - 1];
 
-  if (tok.type === enumLex.WS && (!prev || prev.type === enumLex.NL))
+  if (tok.type === enumLEX.WS && (!prev || prev.type === enumLEX.NL))
   {
    return tok.lexeme.slice(minCol);
   }
@@ -153,7 +155,7 @@ Parser.prototype = (function (){
   var minCol = this,
    prev = tokens[index - 1];
 
-  if (tok.type === enumLex.WS && (!prev || prev.type === enumLex.NL))
+  if (tok.type === enumLEX.WS && (!prev || prev.type === enumLEX.NL))
   {
    tok.lexeme = tok.lexeme.slice(minCol);
   }
@@ -191,7 +193,7 @@ Parser.prototype = (function (){
   }
   this.shiftUntil(untilNotWSNL);
   
-  return lexTok.type === enumLex.DT ? 
+  return lexTok.type === enumLEX.DT ? 
    parsePara.call(this, this.lookAhead(), enumAST.DT) : 
    parseList.call(this, lexTok);
  }
@@ -213,7 +215,7 @@ Parser.prototype = (function (){
  function parseHRTR(lexTok)
  {
   this.shiftUntilPast(untilNL);
-  return ASTNode.create(lexTok.type === enumLex.HR ? enumAST.HR : enumAST.TRSEP);
+  return ASTNode.create(lexTok.type === enumLEX.HR ? enumAST.HR : enumAST.TRSEP);
  }
 
  function parseDiv(lexTok)
@@ -240,7 +242,7 @@ Parser.prototype = (function (){
  {
   var startPos = this.shiftUntilPast(untilNL),
    endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-   text = lexTok.type === enumLex.PRE ? this.slice(startPos, endPos)
+   text = lexTok.type === enumLEX.PRE ? this.slice(startPos, endPos)
     .map(accText, lexTok.col)
     .join("")
     .replace(reTailWSNL, "") : "";
@@ -269,7 +271,7 @@ Parser.prototype = (function (){
 
  function parseLabel(lexTok)
  {
-  var nodeType = lexTok.type === enumLex.ID ? enumAST.ID : enumAST.CLASS,
+  var nodeType = lexTok.type === enumLEX.ID ? enumAST.ID : enumAST.CLASS,
    startPos = this.currPos + 1,
    endPos = this.shiftUntilPast(untilNL) - 1,
    idClass = this.sliceText(startPos, endPos).trim();
@@ -332,154 +334,32 @@ Parser.prototype = (function (){
   if (node && !forceType && lexListSetext.indexOf(endTok.type) !== -1)
   {
    node.type = enumAST.HEADER;
-   node.level = endTok.type === enumLex.HR ? 2 : 1;
+   node.level = endTok.type === enumLEX.HR ? 2 : 1;
   }
   
   return node;
  }
 
 
-
- /*
- Private: Tree Pruning
- ---------------------
- */
- function createCells(cellCount)
- {
-  var cells = Array(cellCount);
-  cells.forEach(function (val, index, array){
-   array[index] = ASTNode.create(enumAST.TD);
-  });
-  return cells;
- }
- 
- //Remove empty block elements, post-order traversal.
- function reduceBlock(acc, node, index, sibs)
- {
-  if (!(node instanceof ASTNode)) //Guard case
-  {
-   return acc;
-  }
-
-  var next = sibs[index + 1],
-   first = node.nodes[0],
-   isPre = node.type === enumAST.PRE;
-   
-  if (!isPre && first && astListInline.indexOf(first.type) !== -1)
-  {
-   node.nodes = node.nodes.reduce(reduceInline, []);
-  }
-  else if (astListBlock.indexOf(node.type) !== -1)
-  {
-   node.nodes = node.nodes.reduce(reduceBlock, []);
-  }
-
-  if (node.type === enumAST.TABLE)
-  {
-   node.nodes = node.nodes.reduce(reduceTR, []);
-  }
-  else if (node.type === enumAST.DL)
-  {
-   pruneDL(node);
-  }
-  else if ((node.type === enumAST.ID || node.type === enumAST.CLASS) && next)
-  {
-   pruneIDClass(node, next);
-  }
-  else if (astListLonePara.indexOf(node.type) !== -1)
-  {
-   pruneLonePara(node);
-  }
-  
-  if (astListAlone.indexOf(node.type) !== -1 || node.nodes.length > 0)
-  {
-   acc.push(node);
-  }
-  return acc;
- }
-
- function reduceTR(acc, rowNode)
- {
-  var gCol = acc[0] ? acc[0].nodes.length : rowNode.nodes.length;
-   rCol = rowNode.nodes.length;
-   
-  if (rCol <= 0)
-  {
-   return acc;
-  }
-  else if (rCol > gCol)
-  {
-   rowNode.nodes = rowNode.nodes.slice(0, gCol);
-  }
-  else if (rCol < gCol)
-  {
-   rowNode.nodes = rowNode.nodes.concat(createCells(gCol - rCol));
-  }
-  acc.push(rowNode);
-  return acc;
- }
- 
- function pruneDL(node)
- {
-  var first = node.first();
-  while (first && first.type === enumAST.DD)
-  {
-   node.nodes.shift();
-  }
-  
-  var last = node.last();
-  while (last && last.type === enumAST.DT)
-  {
-   node.nodes.pop();
-  }
- }
-
- function pruneIDClass(node, next)
- {
-  if (node.attr["class"])
-  {
-   if (!utils.isString(next.attr["class"]))
-   {
-    next.attr["class"] = "";
-   }
-   next.attr["class"] += node.attr["class"] + " ";
-  }
-  else if (node.attr.id)
-  {
-   next.attr.id = node.attr.id;
-  }
- }
- 
- function pruneLonePara(node)
- {
-  var first = node.first(),
-   nodeCount = node.nodes.length;
-
-  if (nodeCount === 1 && first && first.type === enumAST.P)
-  {
-   node.nodes = first.nodes;
-  }
- }
-
  
  /*
  Public Methods
  --------------
  */
- function parse(bbmTokens)
+ function parse(bbmString)
  {
-  this.tokens = bbmTokens;
+  this.tokens = this.lexer.parse(bbmString);
   this.root.refTable = {};
   while (this.lookAhead())
   {
    this.root.append(parseBlock.call(this));
   }
-  //this.root.nodes = this.root.nodes.reduce(reduceBlock, []);
   return this.reset();
  }
  
  function reset(newOptions)
  {
+  this.lexer.reset(newOptions);
   this.inlineParser.reset(newOptions);
   return ParserBase.prototype.reset.call(this, newOptions);
  }

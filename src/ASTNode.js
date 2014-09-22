@@ -46,6 +46,10 @@ var ENUM =
 //Nodes that should have no descendants.
 var NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG];
 
+
+
+
+
 function ASTNode(type, attr)
 {
  this.type = type || "";
@@ -80,6 +84,24 @@ ASTNode.prototype = (function (){
   LI : appendULOL,
  };
 
+ /*
+ Private Methods : Text
+ ----------------------
+ */
+ function textReduce(accText, node)
+ {
+  if (node.type === enumAST.TEXT)
+  {
+   accText += node.nodes.join("");
+  }
+  else if (node.nodes instanceof Array)
+  {
+   accText += node.nodes.reduce(textReduce, "");
+  }
+  return accText;
+ }
+
+ 
  /*
  Private Methods : Append
  ------------------------
@@ -161,11 +183,12 @@ ASTNode.prototype = (function (){
   this.nodes.push(node);
  }
 
+
+
  /*
  Public Methods
  --------------
  */
- 
  function append(nodeText)
  {
   var isNode = nodeText instanceof ASTNode,
@@ -205,12 +228,28 @@ ASTNode.prototype = (function (){
   return this;
  }
 
+ function some(callback, thisArg)
+ {
+  return this.nodes ? this.nodes.some(callback, this) : false;
+ }
+ 
+ function text(innerText)
+ {
+  if (arguments.length > 0 && utils.isString(innerText))
+  {
+   return this.empty().append(innerText);
+  }
+  return node.nodes.reduce(textReduce, "");
+ }
+ 
 
  return {
   append : append,
   first : first,
   last : last,
-  empty : empty
+  empty : empty,
+  some : some,
+  text : text
  };
 
 }());
@@ -221,3 +260,5 @@ if (typeof module === "object" && module.exports)
  module.exports = ASTNode;
 }
 }());
+
+

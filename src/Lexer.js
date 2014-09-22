@@ -2,12 +2,14 @@
 (function (){
 "use strict";
 
-var STREX = {
+var utils = require("./utils.js"),
+
+STREX = {
  WS : "[ \\t\\u2000-\\u200d\\u205f\\u1680\\u237d\\u2420\\u2422\\u2423\\u3000]",
  EOL : "(?=[\\v\\f\\n]|\\r\\n?|$)"
-};
+},
 
-var RULES = (function (){
+RULES = (function (){
 return [
  {
   pattern : "\\\\[\\S\\s]",
@@ -158,15 +160,14 @@ return [
   name : "WS"
  }
 ];
-}());
+}()),
 
-var TYPES = RULES.reduce(function (acc, rule){
+TYPES = RULES.reduce(function (acc, rule){
  acc[rule.name] = rule.name;
  return acc;
-}, {TEXT : "TEXT"});
+}, {TEXT : "TEXT"}),
 
-var RENL = /[\v\f\n]|\r\n?/;
-
+RENL = /[\v\f\n]|\r\n?/;
 
 function makeRegex()
 {
@@ -176,6 +177,43 @@ function makeRegex()
  
  return new RegExp(regexStrList.join("|"), "g");
 }
+
+//Add line and column information into tokens.
+function updateLinesCols(token, index, tokens)
+{
+ if (index === 0)
+ {
+  token.line = 0;
+  token.col = 0;
+  return;
+ }
+ var prevTok = tokens[index - 1],
+  nlCount = prevTok.lexeme.split(RENL).length - 1;
+  
+ token.line = prevTok.line + nlCount;
+ token.col = nlCount > 0 ? 0 : prevTok.col + prevTok.lexeme.length;
+}
+
+//Remove leading backslash on escape tokens.
+function updateEscape(token, index)
+{
+ if (token.type === TYPES.ESCAPE)
+ {
+  token.lexeme = token.lexeme.slice(1);
+ }
+}
+
+//Treat prohibited token types as plain text.
+function updateDisallowed(token)
+{
+ if (this.indexOf(token.type) > -1)
+ {
+  token.type = TYPES.TEXT;
+ }
+}
+
+
+
 
 function LexToken(lexeme, type, col, line)
 {
@@ -187,14 +225,15 @@ function LexToken(lexeme, type, col, line)
  };
 }
 
-function Lexer()
+function Lexer(options)
 {
  this.regex = makeRegex();
+ this.options = utils.extend({}, options);
 }
 
-function create()
+function create(options)
 {
- return new Lexer();
+ return new Lexer(options);
 }
 
 function parse(strInput)
@@ -203,6 +242,7 @@ function parse(strInput)
   ruleObj = null,
   regex = this.regex,
   tokens = [],
+  disallowed = this.options.disallowed,
   lastPos = 0;
  
  regex.lastIndex = 0;
@@ -230,38 +270,23 @@ function parse(strInput)
  
  tokens.forEach(updateEscape);
  tokens.forEach(updateLinesCols);
+ if (disallowed instanceof Array && disallowed.length > 0)
+ {
+  tokens.forEach(updateDisallowed, disallowed);
+ }
  
  return tokens;
 }
 
-function updateLinesCols(token, index, tokens)
+function reset(newOptions)
 {
- if (index === 0)
- {
-  token.line = 0;
-  token.col = 0;
-  return;
- }
- var prevTok = tokens[index - 1],
-  nlCount = prevTok.lexeme.split(RENL).length - 1;
-  
- token.line = prevTok.line + nlCount;
- token.col = nlCount > 0 ? 0 : prevTok.col + prevTok.lexeme.length;
+ this.options = utils.extend(this.options, newOptions);
 }
-
-function updateEscape(token, index)
-{
- if (token.type === TYPES.ESCAPE)
- {
-  token.lexeme = token.lexeme.slice(1);
- }
-}
-
-
 
 Lexer.create = create;
 Lexer.types = TYPES;
 Lexer.prototype.parse = parse;
+Lexer.prototype.reset = reset;
 
 if (typeof module === "object" && module.exports)
 {
