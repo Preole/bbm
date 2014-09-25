@@ -1,5 +1,4 @@
-
-(function (){
+module.exports = (function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -165,10 +164,10 @@ function Lexer(strInput, disallowed)
  return tokens;
 }
 
-if (typeof module === "object" && module.exports)
-{
- Lexer.types = TYPES;
- module.exports = Lexer;
-}
 
+
+Lexer.types = TYPES;
+return Lexer;
 }());
+
+

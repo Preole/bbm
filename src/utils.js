@@ -1,4 +1,4 @@
-(function (){
+module.exports = (function (){
 "use strict";
 
 function isObject(obj)
@@ -41,15 +41,11 @@ function extend(obj)
  return toObj;
 }
 
-if (typeof module === "object" && module.exports)
-{
- module.exports = {
-  isObject : isObject,
-  isString : isString,
-  isBlankString : isBlankString,
-  hasOwn : hasOwn,
-  extend : extend
- };
-}
-
+return {
+ isObject : isObject,
+ isString : isString,
+ isBlankString : isBlankString,
+ hasOwn : hasOwn,
+ extend : extend
+};
 }());
