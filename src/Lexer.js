@@ -132,7 +132,7 @@ function Lexer(strInput, disallowed)
   lastPos = 0;
  
  regex.lastIndex = 0;
- while ((res = regex.exec(strInput)) instanceof Array)
+ while (Array.isArray(res = regex.exec(strInput)))
  {
   ruleObj = RULES[res.indexOf(res[0], 1) - 1];
 
@@ -156,7 +156,7 @@ function Lexer(strInput, disallowed)
  
  tokens.forEach(updateEscape);
  tokens.forEach(updateLinesCols);
- if (disallowed instanceof Array && disallowed.length > 0)
+ if (Array.isArray(disallowed) && disallowed.length > 0)
  {
   tokens.forEach(updateDisallowed, disallowed);
  }

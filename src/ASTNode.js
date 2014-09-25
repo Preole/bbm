@@ -70,7 +70,7 @@ function textReduce(accText, node)
  {
   accText += node.nodes.join("");
  }
- else if (node.nodes instanceof Array)
+ else if (Array.isArray(node.nodes))
  {
   accText += node.nodes.reduce(textReduce, "");
  }
@@ -144,7 +144,7 @@ function last()
 
 function empty()
 {
- if (this.nodes instanceof Array)
+ if (Array.isArray(this.nodes))
  {
   this.nodes = [];
  }
