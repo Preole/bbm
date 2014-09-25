@@ -11,172 +11,70 @@ STREX = {
 
 RULES = (function (){
 return [
- {
-  pattern : "\\\\[\\S\\s]",
-  name : "ESCAPE"
- },
- {
-  pattern : "!!" + STREX.WS,
-  name : "TH"
- },
- {
-  pattern : "\\|\\|" + STREX.WS,
-  name : "TD"
- },
- {
-  pattern : "\\|[=]+" + STREX.EOL,
-  name : "TRSEP"
- },
- {
-  pattern : "=+" + STREX.EOL,
-  name : "ATX_END" //Also used as Setext H1
- },
- {
-  pattern : "=+",
-  name : "ATX"
- },
- {
-  pattern : "---[\\-]+" + STREX.EOL,
-  name : "HR" //Also used as Setext H2
- },
- {
-  pattern : "///[/]+" + STREX.EOL,
-  name : "COMMENT"
- },
- {
-  pattern : "\\.\\." + STREX.WS,
-  name : "CLASS"
- },
- {
-  pattern : "\\." + STREX.WS,
-  name : "ID"
- },
- {
-  pattern : ">",
-  name : "GT"
- },
- {
-  pattern : ":{",
-  name : "REF"
- },
- {
-  pattern : "}:",
-  name : "REF_END"
- },
- {
-  pattern : ":" + STREX.WS,
-  name : "DD"
- },
- {
-  pattern : ";" + STREX.WS,
-  name : "DT"
- },
- {
-  pattern : "#\\." + STREX.WS + "|" + "[0-9]+\\." + STREX.WS,
-  name : "OL"
- },
- {
-  pattern : "\\*\\*\\*[*]+" + STREX.EOL,
-  name : "DIV"
- },
- {
-  pattern : "[\\-\\+\\*\\u2022\\u2043]" + STREX.WS,
-  name : "UL"
- },
- {
-  pattern : "\\\"\\\"[\\\"]+" + STREX.EOL,
-  name : "PRE"
- },
- {
-  pattern : "\\\"\\\"[\\\"]+",
-  name : "CODE"
- },
- {
-  pattern : "{--",
-  name : "DEL"
- },
- {
-  pattern : "--}",
-  name : "DEL_END"
- },
- {
-  pattern : "\\*\\*",
-  name : "BOLD"
- },
- {
-  pattern : "\\{\\+\\+",
-  name : "INS"
- },
- {
-  pattern : "\\+\\+\\}",
-  name : "INS_END"
- },
- {
-  pattern : "\\^\\^",
-  name : "SUP"
- },
- {
-  pattern : ",,",
-  name : "SUB"
- },
- {
-  pattern : "__",
-  name : "UNDER"
- },
- {
-  pattern : "''",
-  name : "EM"
- },
- {
-  pattern : "\\?<",
-  name : "LINK_EXT"
- },
- {
-  pattern : "!<",
-  name : "LINK_IMG"
- },
- {
-  pattern : "#<",
-  name : "LINK_WIKI"
- },
- {
-  pattern : "#\\[",
-  name : "LINK_INT"
- },
- {
-  pattern : "\\-\\[",
-  name : "LINK_CONT"
- },
- {
-  pattern : "\\]",
-  name : "BRACKET_R"
- },
- {
-  pattern : "[\\v\\f\\n]|\\r\\n?",
-  name : "NL"
- },
- {
-  pattern : STREX.WS + "+",
-  name : "WS"
- }
+ Rule("ESCAPE"   , "\\\\[\\S\\s]"),
+ Rule("TH"       , "!!" + STREX.WS),
+ Rule("TD"       , "\\|\\|" + STREX.WS),
+ Rule("TRSEP"    , "\\|[=]+" + STREX.EOL),
+ Rule("ATX_END"  , "=+" + STREX.EOL),
+ Rule("ATX"      , "=+"),
+ Rule("HR"       , "---[\\-]+" + STREX.EOL),
+ Rule("COMMENT"  , "///[/]+" + STREX.EOL),
+ Rule("CLASS"    , "\\.\\." + STREX.WS),
+ Rule("ID"       , "\\." + STREX.WS),
+ Rule("GT"       , ">"),
+ Rule("REF"      , ":{"),
+ Rule("REF_END"  , "}:"),
+ Rule("DD"       , ":" + STREX.WS),
+ Rule("DT"       , ";" + STREX.WS),
+ Rule("OL"       , "[0-9]+\\." + STREX.WS),
+ Rule("OL"       , "#\\." + STREX.WS),
+ Rule("DIV"      , "\\*\\*\\*[*]+" + STREX.EOL),
+ Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + STREX.WS),
+ Rule("PRE"      , "\\\"\\\"[\\\"]+" + STREX.EOL),
+ Rule("CODE"     , "\\\"\\\"[\\\"]+"),
+ Rule("DEL"      , "{--"),
+ Rule("DEL_END"  , "--}"),
+ Rule("BOLD"     , "\\*\\*"),
+ Rule("INS"      , "\\{\\+\\+"),
+ Rule("INS_END"  , "\\+\\+\\}"),
+ Rule("SUP"      , "\\^\\^"),
+ Rule("SUB"      , ",,"),
+ Rule("UNDER"    , "__"),
+ Rule("EM"       , "''"),
+ Rule("LINK_EXT" , "\\?<"),
+ Rule("LINK_IMG" , "!<"),
+ Rule("LINK_WIKI", "#<"),
+ Rule("LINK_INT" , "#\\["),
+ Rule("LINK_CONT", "\\-\\["),
+ Rule("BRACKET_R", "\\]"),
+ Rule("NL"       , "[\\v\\f\\n]|\\r\\n?"),
+ Rule("WS"       , STREX.WS + "+")
 ];
 }()),
 
-TYPES = RULES.reduce(function (acc, rule){
+TYPES = RULES.reduce(reduceRulesTypes, {TEXT : "TEXT"}),
+RENL = /[\v\f\n]|\r\n?/,
+REGEX = new RegExp(RULES.map(mapRules).join("|"), "g");
+
+
+
+function Rule(name, pattern)
+{
+ return {name : name, pattern : pattern};
+}
+
+function mapRules(rule)
+{
+ return "(" + rule.pattern + ")";
+}
+
+function reduceRulesTypes(acc, rule)
+{
  acc[rule.name] = rule.name;
  return acc;
-}, {TEXT : "TEXT"}),
-
-RENL = /[\v\f\n]|\r\n?/;
-
-function makeRegex()
-{
- var regexStrList = RULES.map(function (rule){
-  return "(" + rule.pattern + ")";
- });
- 
- return new RegExp(regexStrList.join("|"), "g");
 }
+
+
 
 //Add line and column information into tokens.
 function updateLinesCols(token, index, tokens)
@@ -214,7 +112,6 @@ function updateDisallowed(token)
 
 
 
-
 function LexToken(lexeme, type, col, line)
 {
  return {
@@ -225,24 +122,14 @@ function LexToken(lexeme, type, col, line)
  };
 }
 
-function Lexer(options)
-{
- this.regex = makeRegex();
- this.options = utils.extend({}, options);
-}
 
-function create(options)
-{
- return new Lexer(options);
-}
 
-function parse(strInput)
+function Lexer(strInput, disallowed)
 {
  var res = null,
   ruleObj = null,
-  regex = this.regex,
+  regex = new RegExp(REGEX),
   tokens = [],
-  disallowed = this.options.disallowed,
   lastPos = 0;
  
  regex.lastIndex = 0;
@@ -278,18 +165,10 @@ function parse(strInput)
  return tokens;
 }
 
-function reset(newOptions)
-{
- this.options = utils.extend(this.options, newOptions);
-}
-
-Lexer.create = create;
-Lexer.types = TYPES;
-Lexer.prototype.parse = parse;
-Lexer.prototype.reset = reset;
-
 if (typeof module === "object" && module.exports)
 {
+ Lexer.types = TYPES;
  module.exports = Lexer;
 }
+
 }());

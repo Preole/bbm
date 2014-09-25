@@ -14,7 +14,6 @@ var utils = require("./utils.js"),
 function Parser(options)
 {
  this.inlineParser = ParserInline.create(options);
- this.lexer = Lexer.create(options);
  this.reset(options);
 }
 
@@ -333,7 +332,7 @@ Parser.prototype = (function (){
  */
  function parse(bbmString)
  {
-  this.tokens = this.lexer.parse(bbmString);
+  this.tokens = Lexer(bbmString, this.options.disallowed);
   this.root.refTable = {};
   while (this.lookAhead())
   {
@@ -344,7 +343,6 @@ Parser.prototype = (function (){
  
  function reset(newOptions)
  {
-  this.lexer.reset(newOptions);
   this.inlineParser.reset(newOptions);
   return ParserBase.prototype.reset.call(this, newOptions);
  }
