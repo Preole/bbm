@@ -1,0 +1,5 @@
+/**!
+ * @desc BakaBakaMark: An Extensible LML-HTML Compiler
+ * @version 2.0.0
+ * @license BSD-2-Clause; Copyright (c) 2014 Preole, All rights reserved.
+ */

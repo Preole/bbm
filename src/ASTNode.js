@@ -1,10 +1,10 @@
 
 //TODO: AST Manipulation API.
-(function (){
+module.exports = (function (){
 "use strict";
 
-var utils = require("./utils.js");
-var ENUM =
+var utils = require("./utils.js"),
+ENUM =
 {
  ROOT : "ROOT",
  P : "P",
@@ -41,164 +41,157 @@ var ENUM =
  BOLD : "BOLD",
  CODE : "CODE",
  TEXT : "TEXT" //After Transform
+},
+
+NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG],
+
+ASTNode =
+{
+ types : ENUM,
+ create : create,
+ append : append,
+ first : first,
+ last : last,
+ empty : empty,
+ some : some,
+ text : text,
+ toJSON : toJSON
 };
 
-//Nodes that should have no descendants.
-var NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG];
 
 
-
-
-
-function ASTNode(type, attr)
+/*
+Private Methods : Text
+----------------------
+*/
+function textReduce(accText, node)
 {
- this.type = type || "";
- this.parent = null;
- if (type !== ENUM.TEXT)
+ if (node.type === enumAST.TEXT)
  {
-  this.attr = utils.isObject(attr) ? attr : {};
+  accText += node.nodes.join("");
  }
- if (NODESC.indexOf(type) === -1)
+ else if (node.nodes instanceof Array)
+ {
+  accText += node.nodes.reduce(textReduce, "");
+ }
+ return accText;
+}
+
+ 
+/*
+Private Methods : Append
+------------------------
+*/
+function appendText(text)
+{
+ var last = this.last();
+ if (last && last.type === ENUM.TEXT)
+ {
+  last.nodes[0] += text;
+ }
+ else
+ {
+  last = create.call(this, ENUM.TEXT);
+  last.nodes.push(text);
+  this.nodes.push(last);
+  last.parent = this;
+ }
+}
+
+function appendNode(node)
+{
+ if (!utils.hasOwn(ENUM, node.type))
+ {
+  throw TypeError(node.type + " is not member of ASTNode.types");
+ }
+ this.nodes.push(node);
+ node.parent = this;
+}
+
+
+
+/*
+Public Methods
+--------------
+*/
+function append(nodeText)
+{
+ if (utils.isString(nodeText) && nodeText.length > 0)
+ {
+  appendText.call(this, nodeText);
+ }
+ 
+ /*
+ TODO: More reliable type checking than just an object. Not sure how to 
+ check an object's prototype created by Object.create();
+ */
+ else if (ASTNode.isPrototypeOf(nodeText))
+ {
+  appendNode.call(this, nodeText);
+ }
+ return this;
+}
+
+function first()
+{
+ return this.nodes[0];
+}
+
+function last()
+{
+ return this.nodes[this.nodes.length - 1];
+}
+
+function empty()
+{
+ if (this.nodes instanceof Array)
  {
   this.nodes = [];
  }
+ return this;
+}
+
+function some(callback, thisArg)
+{
+ return this.nodes ? this.nodes.some(callback, this) : false;
+}
+
+function text(innerText)
+{
+ if (arguments.length > 0 && utils.isString(innerText))
+ {
+  return this.empty().append(innerText);
+ }
+ return node.nodes.reduce(textReduce, "");
+}
+
+function toJSON()
+{
+ var obj = utils.extend({}, this);
+ delete obj.parent;
+ return obj;
 }
 
 function create(type, attr)
 {
- return new ASTNode(type, attr);
+ var obj = Object.create(ASTNode);
+ 
+ obj.type = type || "";
+ obj.parent = null;
+ if (type !== ENUM.TEXT)
+ {
+  obj.attr = utils.isObject(attr) ? attr : {};
+ }
+ if (NODESC.indexOf(type) === -1)
+ {
+  obj.nodes = [];
+ }
+ 
+ return obj;
 }
 
-ASTNode.create = create;
-ASTNode.types = ENUM;
-ASTNode.prototype = (function (){
-
-
- /*
- Private Methods : Text
- ----------------------
- */
- function textReduce(accText, node)
- {
-  if (node.type === enumAST.TEXT)
-  {
-   accText += node.nodes.join("");
-  }
-  else if (node.nodes instanceof Array)
-  {
-   accText += node.nodes.reduce(textReduce, "");
-  }
-  return accText;
- }
-
- 
- /*
- Private Methods : Append
- ------------------------
- */
- function appendText(text)
- {
-  var last = this.last();
-  if (last && last.type === ENUM.TEXT)
-  {
-   last.nodes[0] += text;
-  }
-  else
-  {
-   last = ASTNode.create(ENUM.TEXT);
-   last.nodes.push(text);
-   this.nodes.push(last);
-   last.parent = this;
-  }
- }
- 
- function appendNode(node)
- {
-  if (!utils.hasOwn(ENUM, node.type))
-  {
-   throw TypeError(node.type + " is not member of ASTNode.types");
-  }
-  this.nodes.push(node);
-  node.parent = this;
- }
-
-
-
- /*
- Public Methods
- --------------
- */
- function append(nodeText)
- {
-  if (utils.isString(nodeText) && nodeText.length > 0)
-  {
-   appendText.call(this, nodeText);
-  }
-  else if (nodeText instanceof ASTNode)
-  {
-   appendNode.call(this, nodeText);
-  }
-  return this;
- }
- 
- function first()
- {
-  return this.nodes[0];
- }
-
- function last()
- {
-  return this.nodes[this.nodes.length - 1];
- }
- 
- function empty()
- {
-  if (this.nodes instanceof Array)
-  {
-   this.nodes = [];
-  }
-  return this;
- }
-
- function some(callback, thisArg)
- {
-  return this.nodes ? this.nodes.some(callback, this) : false;
- }
- 
- function text(innerText)
- {
-  if (arguments.length > 0 && utils.isString(innerText))
-  {
-   return this.empty().append(innerText);
-  }
-  return node.nodes.reduce(textReduce, "");
- }
- 
- function toJSON()
- {
-  var obj = utils.extend({}, this);
-  delete obj.parent;
-  return obj;
- }
- 
-
- return {
-  append : append,
-  first : first,
-  last : last,
-  empty : empty,
-  some : some,
-  text : text,
-  toJSON : toJSON
- };
-
+return ASTNode;
 }());
 
-
-if (typeof module === "object" && module.exports)
-{
- module.exports = ASTNode;
-}
-}());
 
 
