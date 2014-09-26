@@ -25,12 +25,12 @@ function appendTable(node)
  if (!(last && last.type === ENUM.TABLE))
  {
   if (isRow) {return;}
-  last = ASTNode.create(ENUM.TABLE);
+  last = ASTNode(ENUM.TABLE);
   appendNode.call(this, last);
  }
  if (last.nodes.length <= 0)
  {
-  appendNode.call(last, ASTNode.create(ENUM.TR));
+  appendNode.call(last, ASTNode(ENUM.TR));
  }
 
  if (isCell)
@@ -49,7 +49,7 @@ function appendDL(node)
  var last = this.last();
  if (!(last && last.type === ENUM.DL))
  {
-  last = ASTNode.create(ENUM.DL);
+  last = ASTNode(ENUM.DL);
   appendNode.call(this, last);
  }
  appendNode.call(last, node);
@@ -62,7 +62,7 @@ function appendULOL(node)
   
  if (!(last && last.type === listType))
  {
-  last = ASTNode.create(listType);
+  last = ASTNode(listType);
   appendNode.call(this, last);
  }
  appendNode.call(last, node);
@@ -94,7 +94,7 @@ function createCells(cellCount)
 {
  var cells = Array(cellCount);
  cells.forEach(function (val, index, array){
-  array[index] = ASTNode.create(enumAST.TD);
+  array[index] = ASTNode(enumAST.TD);
  });
  return cells;
 }

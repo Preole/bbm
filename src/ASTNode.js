@@ -43,20 +43,7 @@ ENUM =
  TEXT : "TEXT" //After Transform
 },
 
-NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG],
-
-ASTNode =
-{
- types : ENUM,
- create : create,
- append : append,
- first : first,
- last : last,
- empty : empty,
- some : some,
- text : text,
- toJSON : toJSON
-};
+NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG];
 
 
 
@@ -91,7 +78,7 @@ function appendText(text)
  }
  else
  {
-  last = create.call(this, ENUM.TEXT);
+  last = ASTNode(ENUM.TEXT);
   last.nodes.push(text);
   this.nodes.push(last);
   last.parent = this;
@@ -120,12 +107,7 @@ function append(nodeText)
  {
   appendText.call(this, nodeText);
  }
- 
- /*
- TODO: More reliable type checking than just an object. Not sure how to 
- check an object's prototype created by Object.create();
- */
- else if (ASTNode.isPrototypeOf(nodeText))
+ else if (nodeText instanceof ASTNode)
  {
   appendNode.call(this, nodeText);
  }
@@ -172,10 +154,11 @@ function toJSON()
  return obj;
 }
 
-function create(type, attr)
+
+
+function ASTNode(type, attr)
 {
- var obj = Object.create(ASTNode);
- 
+ var obj = ASTNode.prototype.isPrototypeOf(this) ? this : new ASTNode;
  obj.type = type || "";
  obj.parent = null;
  if (type !== ENUM.TEXT)
@@ -185,10 +168,24 @@ function create(type, attr)
  if (NODESC.indexOf(type) === -1)
  {
   obj.nodes = [];
- }
- 
+ } 
  return obj;
 }
+
+utils.extend(ASTNode,
+{
+ types : ENUM,
+ prototype :
+ {
+  append : append,
+  first : first,
+  last : last,
+  empty : empty,
+  some : some,
+  text : text,
+  toJSON : toJSON
+ }
+});
 
 return ASTNode;
 }());

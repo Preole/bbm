@@ -72,7 +72,7 @@ function untilInline(token)
 
 function parsePara(fStack, premade)
 {
- var node = premade || ASTNode.create(enumAST.P),
+ var node = premade || ASTNode(enumAST.P),
   isNotAbuse = fStack.length < (this.options.maxSpans || 8),
   txtStart = this.currPos,
   hasBracket = fStack.indexOf(enumLEX.BRACKET_R) > -1,
@@ -106,7 +106,7 @@ function parsePara(fStack, premade)
   else if (fIndex === -1 && isNotAbuse && fmtStartEndMap[token.type])
   {
    fStack.push(fmtStartEndMap[token.type]);
-   node.append(parsePara.call(this, fStack, ASTNode.create(fmtASTMap[token.type])));
+   node.append(parsePara.call(this, fStack, ASTNode(fmtASTMap[token.type])));
    fStack.pop();
   }
   
@@ -136,7 +136,7 @@ function parseLink(lexTok, fStack)
  {
   return;
  }
- var node = ASTNode.create(fmtASTMap[lexTok.type], {href : href});
+ var node = ASTNode(fmtASTMap[lexTok.type], {href : href});
  
  this.shiftUntil(untilLinkCont);
  if (this.lookAheadT(enumLEX.LINK_CONT))
@@ -166,12 +166,12 @@ function parseImg(lexTok)
  {
   alt = this.sliceText(this.shift(), this.shiftUntilPast(untilBracket) - 1);
  }
- return ASTNode.create(enumAST.LINK_IMG, {src : src, alt : alt.trim()});
+ return ASTNode(enumAST.LINK_IMG, {src : src, alt : alt.trim()});
 }
 
 function parseCode(lexTok)
 {
- var node = ASTNode.create(enumAST.CODE),
+ var node = ASTNode(enumAST.CODE),
   startPos = this.currPos,
   endPos = this.shiftUntilPast(untilCode, lexTok) - 1,
   text = this.sliceText(startPos, endPos);

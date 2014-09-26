@@ -172,7 +172,7 @@ function parseListPre(lexTok)
 
 function parseList(lexTok)
 {
- var node = ASTNode.create(lexListASTMap[lexTok.type]),
+ var node = ASTNode(lexListASTMap[lexTok.type]),
   col = lexTok.col + lexTok.lexeme.length,
   tok = null;
   
@@ -187,12 +187,12 @@ function parseList(lexTok)
 function parseHRTR(lexTok)
 {
  this.shiftUntilPast(untilNL);
- return ASTNode.create(lexTok.type === enumLEX.HR ? enumAST.HR : enumAST.TRSEP);
+ return ASTNode(lexTok.type === enumLEX.HR ? enumAST.HR : enumAST.TRSEP);
 }
 
 function parseDiv(lexTok)
 {
- var node = ASTNode.create(enumAST.DIV),
+ var node = ASTNode(enumAST.DIV),
   col = lexTok.col,
   tok = null;
 
@@ -221,7 +221,7 @@ function parsePre(lexTok)
 
  if (text.length > 0)
  {
-  return ASTNode.create(enumAST.PRE).append(text);
+  return ASTNode(enumAST.PRE).append(text);
  }
 }
 
@@ -234,7 +234,7 @@ function parseATX(lexTok)
 
  if (!utils.isBlankString(text))
  {
-  var node = ASTNode.create(enumAST.HEADER);
+  var node = ASTNode(enumAST.HEADER);
   node.level = hLen;
   node.append(text);
   return node;
@@ -253,7 +253,7 @@ function parseLabel(lexTok)
   return;
  }
  
- var node = ASTNode.create(nodeType);
+ var node = ASTNode(nodeType);
  if (nodeType === enumAST.ID)
  {
   node.attr.id = idClass;
@@ -316,7 +316,7 @@ function parsePara(lexTok, forceType)
 function ParseBlock(bbmStr, options)
 {
  var parser = ParserBase.create(Lexer(bbmStr, options.disallowed), options);
- parser.root = ASTNode.create(enumAST.ROOT);
+ parser.root = ASTNode(enumAST.ROOT);
  parser.root.refTable = {};
  while (parser.lookAhead())
  {
