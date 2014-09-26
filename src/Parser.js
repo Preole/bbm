@@ -11,6 +11,7 @@ ParserBase = require("./ParserBase.js"),
 Analyzer = require("./Analyzer.js"),
 
 EOF = {},
+RE_NL_TAIL = /[\v\f\n]$|\r\n?$/,
 lexMapBlock =
 {
  TH : parseListPre,
@@ -110,6 +111,20 @@ function isDivMatch(start, now)
   start.col === now.col && isLineStart.call(this);
 }
 
+function popUntil(tokens)
+{
+ var token = null;
+ while (token = tokens.pop())
+ {
+  if (untilNotWSNL(token))
+  {
+   tokens.push(token);
+   break;
+  }
+ }
+ return tokens;
+}
+
 
 
 function parseBlock(ignoreLine)
@@ -188,7 +203,7 @@ function parsePre(lexTok)
 {
  var startPos = this.shiftUntilPast(untilNL),
   endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-  text = this.sliceText(startPos, endPos, lexTok.col);
+  text = this.sliceText(startPos, endPos, lexTok.col).replace(RE_NL_TAIL, "");
 
  if (lexTok.type === LEX.PRE && text.length > 0)
  {
@@ -247,6 +262,7 @@ function parseRef(lexTok)
  }
 }
 
+
 function parsePara(lexTok, forceType)
 {
  if (!lexTok)
@@ -267,7 +283,7 @@ function parsePara(lexTok, forceType)
   return;
  }
  
- var paraToks = this.slice(startPos, endPos, lexTok.col),
+ var paraToks = popUntil(this.slice(startPos, endPos, lexTok.col)),
   node = ParserInline(paraToks, this.options);
   
  if (node && forceType)
