@@ -1,25 +1,21 @@
 module.exports = (function (){
 "use strict";
 
-var utils = require("./utils.js"),
-ASTNode = require("./ASTNode.js"),
-enumAST = ASTNode.types;
+var utils = require("./utils.js");
 
-
-
-function lookAt(index)
+function peekAt(index)
 {
  return this.tokens[index || this.currPos];
 }
 
-function lookAhead(offset)
+function peek(offset)
 {
  return this.tokens[this.currPos + (offset || 0)];
 }
 
-function lookAheadT(type, offset)
+function peekT(type, offset)
 {
- var token = this.lookAhead(offset);
+ var token = this.peek(offset);
  if (utils.isObject(token))
  {
   return type === token.type;
@@ -35,12 +31,12 @@ function shift()
 function shiftUntil(callback)
 {
  var params = Array.prototype.slice.call(arguments, 1),
-  token = this.lookAhead();
+  token = this.peek();
   
  while (token && !callback.apply(this, [token].concat(params)))
  {
   this.shift();
-  token = this.lookAhead();
+  token = this.peek();
  }
  return this.currPos;
 }
@@ -83,9 +79,9 @@ utils.extend(ParserBase,
 {
  prototype :
  {
-  lookAt : lookAt,
-  lookAhead : lookAhead,
-  lookAheadT : lookAheadT,
+  peekAt : peekAt,
+  peek : peek,
+  peekT : peekT,
   shift : shift,
   shiftUntil : shiftUntil,
   shiftUntilPast : shiftUntilPast,

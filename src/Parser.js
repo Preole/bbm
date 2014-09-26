@@ -3,15 +3,16 @@ module.exports = (function (){
 
 var utils = require("./utils.js"),
 Lexer = require("./Lexer.js"),
-enumLEX = Lexer.types,
+enumLEX = Lexer.ENUM,
 ASTNode = require("./ASTNode.js"),
-enumAST = ASTNode.types,
+enumAST = ASTNode.ENUM,
 ParserInline = require("./ParserInline.js"),
 ParserBase = require("./ParserBase.js"),
+Analyzer = require("./Analyzer.js"),
 
 EOF = {},
 reTailWSNL = /\s$/,
-lexBlockSwitch =
+lexMapBlock =
 {
  TH : parseListPre,
  TD : parseListPre,
@@ -85,8 +86,8 @@ function untilParaEnd(token, minCol)
 
 function isLineStart()
 {
- var prev1 = this.lookAhead(-1),
-  prev2 = this.lookAhead(-2);
+ var prev1 = this.peek(-1),
+  prev2 = this.peek(-2);
   
  return !prev1 || 
   prev1.type === enumLEX.NL || 
@@ -95,8 +96,8 @@ function isLineStart()
 
 function isLineEnd()
 {
- var now = this.lookAhead(),
-  next = this.lookAhead(1);
+ var now = this.peek(),
+  next = this.peek(1);
   
  return !now || 
   now.type === enumLEX.NL ||
@@ -135,11 +136,10 @@ function accTokens(tok, index, tokens)
 }
 
 
-
 function parseBlock(ignoreLine)
 {
- var tok = this.lookAt(this.shiftUntil(untilNotWSNL)),
-  func = tok ? lexBlockSwitch[tok.type] : null,
+ var tok = this.peekAt(this.shiftUntil(untilNotWSNL)),
+  func = tok ? lexMapBlock[tok.type] : null,
   isNotAbuse = this.currlvl < (this.options.maxBlocks || 8),
   node = null;
   
@@ -166,7 +166,7 @@ function parseListPre(lexTok)
  this.shiftUntil(untilNotWSNL);
  
  return lexTok.type === enumLEX.DT ? 
-  parsePara.call(this, this.lookAhead(), enumAST.DT) : 
+  parsePara.call(this, this.peek(), enumAST.DT) : 
   parseList.call(this, lexTok);
 }
 
@@ -176,7 +176,7 @@ function parseList(lexTok)
   col = lexTok.col + lexTok.lexeme.length,
   tok = null;
   
- while ((tok = this.lookAhead()) && tok.col >= col)
+ while ((tok = this.peek()) && tok.col >= col)
  {
   node.append(parseBlock.call(this, true));
   this.shiftUntil(untilNotWSNL);
@@ -196,17 +196,16 @@ function parseDiv(lexTok)
   col = lexTok.col,
   tok = null;
 
- this.shift();
- while ((tok = this.lookAhead()) && tok.col >= col)
+ this.shiftUntilPast(untilNL);
+ while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
  {
   if (isDivMatch.call(this, lexTok, tok))
   {
-   this.shiftUntilPast(untilNL);
    break;
   }
   node.append(parseBlock.call(this));
-  this.shiftUntil(untilNotWSNL);
  }
+ this.shiftUntilPast(untilNL);
  return node;
 }
 
@@ -285,7 +284,7 @@ function parsePara(lexTok, forceType)
 
  var startPos = this.currPos,
   endPos = this.shiftUntil(untilParaEnd, lexTok.col),
-  endTok = this.lookAhead() || EOF;
+  endTok = this.peek() || EOF;
   
  if (startPos >= endPos || lexListWSNL.indexOf(endTok.type) !== -1)
  {
@@ -295,7 +294,6 @@ function parsePara(lexTok, forceType)
  {
   return;
  }
- //TODO: Strip trailing line break tokens from paragraphs.
  
  var paraToks = this.slice(startPos, endPos).filter(accTokens, lexTok.col),
   node = ParserInline(paraToks, this.options);
@@ -319,11 +317,11 @@ function Parser(bbmStr, options)
  var parser = ParserBase(Lexer(bbmStr, options.disallowed), options);
  parser.root = ASTNode(enumAST.ROOT);
  parser.root.refTable = {};
- while (parser.lookAhead())
+ while (parser.peek())
  {
   parser.root.append(parseBlock.call(parser));
  }
- return parser.root;
+ return Analyzer(parser.root);
 }
 
 return Parser;

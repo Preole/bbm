@@ -3,9 +3,9 @@ module.exports = (function (){
 "use strict";
 
 var utils = require("./utils.js"),
-enumLEX = require("./Lexer.js").types,
+enumLEX = require("./Lexer.js").ENUM,
 ASTNode = require("./ASTNode.js"),
-enumAST = ASTNode.types,
+enumAST = require("./ASTNode.js").ENUM,
 ParserBase = require("./ParserBase.js"),
 
 linkCont = [enumLEX.WS, enumLEX.NL, enumLEX.LINK_CONT],
@@ -79,7 +79,7 @@ function parsePara(fStack, premade)
   fIndex = -1,
   token = null;
   
- while ((token = this.lookAt(this.shiftUntil(untilInline))))
+ while ((token = this.peekAt(this.shiftUntil(untilInline))))
  {
   fIndex = fStack.indexOf(token.type);
   if (txtStart < this.currPos) //Collect text.
@@ -139,7 +139,7 @@ function parseLink(lexTok, fStack)
  var node = ASTNode(fmtASTMap[lexTok.type], {href : href});
  
  this.shiftUntil(untilLinkCont);
- if (this.lookAheadT(enumLEX.LINK_CONT))
+ if (this.peekT(enumLEX.LINK_CONT))
  {
   this.shift();
   fStack.push(enumLEX.BRACKET_R);
@@ -162,7 +162,7 @@ function parseImg(lexTok)
  }
  this.shiftUntil(untilLinkCont);
  
- if (this.lookAheadT(enumLEX.LINK_CONT))
+ if (this.peekT(enumLEX.LINK_CONT))
  {
   alt = this.sliceText(this.shift(), this.shiftUntilPast(untilBracket) - 1);
  }

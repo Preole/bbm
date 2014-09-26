@@ -15,19 +15,19 @@ ENUM =
  CLASS : "CLASS", //Private
  UL_LI : "UL_LI", //Private
  OL_LI : "OL_LI", //Private
- LI : "LI", //After Transform
- UL : "UL", //After Transform
- OL : "OL", //After Transform
+ LI : "LI",
+ UL : "UL",
+ OL : "OL",
  HEADER : "HEADER",
  DT : "DT",
  DD : "DD",
- DL : "DL", //After Transform
+ DL : "DL",
  TH : "TH",
  TD : "TD",
  HR : "HR",
- TR : "TR", //After Transform
+ TR : "TR",
  TRSEP : "TRSEP", //Private
- TABLE : "TABLE", //After Transform
+ TABLE : "TABLE",
  LINK_INT : "LINK_INT",
  LINK_EXT : "LINK_EXT",
  LINK_IMG : "LINK_IMG",
@@ -40,16 +40,79 @@ ENUM =
  EM : "EM",
  BOLD : "BOLD",
  CODE : "CODE",
- TEXT : "TEXT" //After Transform
+ TEXT : "TEXT"
 },
 
-NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG];
+ENUM_EMPTY = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG],
+MAP_APPEND =
+{
+ TRSEP : appendTable,
+ TH : appendTable,
+ TD : appendTable,
+ DT : appendDL,
+ DD : appendDL,
+ UL_LI : appendULOL,
+ OL_LI : appendULOL,
+ LI : appendULOL,
+};
 
  
 /*
 Private Methods : Append
 ------------------------
 */
+
+function appendTable(node)
+{
+ var last = this.last(), isRow = node.type === ENUM.TRSEP;
+ if (!(last && last.type === ENUM.TABLE))
+ {
+  if (isRow) {return;}
+  last = ASTNode(ENUM.TABLE);
+  appendSimple.call(this, last);
+ }
+ if (last.nodes.length <= 0)
+ {
+  appendSimple.call(last, ASTNode(ENUM.TR));
+ }
+
+ if (isRow)
+ {
+  
+  node.type = ENUM.TR;
+  appendSimple.call(last, node);
+ }
+ else
+ {
+  appendSimple.call(last.last(), node);
+ }
+}
+
+function appendDL(node)
+{
+ var last = this.last();
+ if (!(last && last.type === ENUM.DL))
+ {
+  last = ASTNode(ENUM.DL);
+  appendSimple.call(this, last);
+ }
+ appendSimple.call(last, node);
+}
+
+function appendULOL(node)
+{
+ var listType = node.type === ENUM.OL_LI ? ENUM.OL : ENUM.UL,
+  last = this.last();
+  
+ if (!(last && last.type === listType))
+ {
+  last = ASTNode(listType);
+  appendSimple.call(this, last);
+ }
+ appendSimple.call(last, node);
+ node.type = ENUM.LI;
+}
+
 function appendText(text)
 {
  var last = this.last();
@@ -68,10 +131,18 @@ function appendText(text)
 
 function appendNode(node)
 {
- if (!utils.hasOwn(ENUM, node.type))
+ if (MAP_APPEND[node.type])
  {
-  throw TypeError(node.type + " is not member of ASTNode.types");
+  MAP_APPEND[node.type].call(this, node);
  }
+ else
+ {
+  appendSimple.call(this, node);
+ }
+}
+
+function appendSimple(node)
+{
  this.nodes.push(node);
  node.parent = this;
 }
@@ -91,6 +162,10 @@ function append(nodeText)
  else if (nodeText instanceof ASTNode)
  {
   appendNode.call(this, nodeText);
+ }
+ else if (Array.isArray(nodeText))
+ {
+  nodeText.forEach(this.append, this);
  }
  return this;
 }
@@ -114,14 +189,16 @@ function empty()
  return this;
 }
 
-
-
 function toJSON()
 {
  var obj = utils.extend({}, this);
  delete obj.parent;
  return obj;
 }
+
+
+
+
 
 function ASTNode(type, attr)
 {
@@ -132,7 +209,7 @@ function ASTNode(type, attr)
  {
   obj.attr = utils.isObject(attr) ? attr : {};
  }
- if (NODESC.indexOf(type) === -1)
+ if (ENUM_EMPTY.indexOf(type) === -1)
  {
   obj.nodes = [];
  } 
@@ -141,7 +218,7 @@ function ASTNode(type, attr)
 
 utils.extend(ASTNode,
 {
- types : ENUM,
+ ENUM : ENUM,
  prototype :
  {
   append : append,

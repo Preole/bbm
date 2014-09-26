@@ -51,7 +51,7 @@ return [
 ];
 }()),
 
-TYPES = RULES.reduce(reduceRulesTypes, {TEXT : "TEXT"}),
+ENUM = RULES.reduce(reduceRulesTypes, {TEXT : "TEXT"}),
 RENL = /[\v\f\n]|\r\n?/,
 REGEX = new RegExp(RULES.map(mapRules).join("|"), "g");
 
@@ -94,7 +94,7 @@ function updateLinesCols(token, index, tokens)
 //Remove leading backslash on escape tokens.
 function updateEscape(token, index)
 {
- if (token.type === TYPES.ESCAPE)
+ if (token.type === ENUM.ESCAPE)
  {
   token.lexeme = token.lexeme.slice(1);
  }
@@ -105,12 +105,11 @@ function updateDisallowed(token)
 {
  if (this.indexOf(token.type) > -1)
  {
-  token.type = TYPES.TEXT;
+  token.type = ENUM.TEXT;
  }
 }
 
-
-
+//Returns a Lexical Token object; No prototypes.
 function LexToken(lexeme, type, col, line)
 {
  return {
@@ -138,9 +137,9 @@ function Lexer(strInput, disallowed)
 
   if (lastPos < res.index)
   {
-   tokens.push(LexToken(strInput.slice(lastPos, res.index), TYPES.TEXT));
+   tokens.push(LexToken(strInput.slice(lastPos, res.index), ENUM.TEXT));
   }
-  tokens.push(LexToken(res[0], ruleObj ? ruleObj.name : TYPES.TEXT));
+  tokens.push(LexToken(res[0], ruleObj ? ruleObj.name : ENUM.TEXT));
 
   if (lastPos > regex.lastIndex)
   {
@@ -151,7 +150,7 @@ function Lexer(strInput, disallowed)
 
  if (lastPos < strInput.length)
  {
-  tokens.push(LexToken(strInput.slice(lastPos), TYPES.TEXT));
+  tokens.push(LexToken(strInput.slice(lastPos), ENUM.TEXT));
  }
  
  tokens.forEach(updateEscape);
@@ -166,7 +165,7 @@ function Lexer(strInput, disallowed)
 
 
 
-Lexer.types = TYPES;
+Lexer.ENUM = ENUM;
 return Lexer;
 }());
 
