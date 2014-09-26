@@ -4,7 +4,8 @@ module.exports = (function (){
 var utils = require("./utils.js"),
 Parser = require("./Parser.js"),
 Lexer = require("./Lexer.js"),
-defOptions =
+ASTNode = require("./ASTNode.js"),
+defOpt =
 {
  disallowed : [],
  maxBlocks : 8,
@@ -18,21 +19,29 @@ defOptions =
  cssWiki : "w-bbm",
  target : "html",
  headerOffset : 0
-};
+},
+currOpt = utils.extend({}, defOpt);
 
 
 /*
 TODO: Add Mapping between target name and actual generated output.
-TODO: Add private filtering steps wrapped over the parser.
 */
 function BBM(bbmStr, options)
 {
- return Parser(bbmStr, utils.extend({}, defOptions, options));
+ return Parser(bbmStr, utils.extend({}, currOpt, options));
 }
 
-BBM.lexer = Lexer; //Expose Lexer for producing the token stream.
-BBM.parser = Parser; //Expose the parser for raw AST. (TODO: Wrap a filter)
-return BBM;
+function setOptions(options)
+{
+ utils.extend(currOpt, options);
+}
+
+return utils.extend(BBM, {
+ Lexer : Lexer,
+ Parser : Parser,
+ ASTNode : ASTNode,
+ setOptions : setOptions
+});
 
 }());
 
