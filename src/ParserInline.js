@@ -3,79 +3,79 @@ module.exports = (function (){
 "use strict";
 
 var utils = require("./utils.js"),
-enumLEX = require("./Lexer.js").ENUM,
+LEX = require("./Lexer.js").ENUM,
 ASTNode = require("./ASTNode.js"),
-enumAST = require("./ASTNode.js").ENUM,
+AST = require("./ASTNode.js").ENUM,
 ParserBase = require("./ParserBase.js"),
 
-linkCont = [enumLEX.WS, enumLEX.NL, enumLEX.LINK_CONT],
-linksLex = [enumLEX.LINK_INT, enumLEX.LINK_WIKI, enumLEX.LINK_EXT],
+linkCont = [LEX.WS, LEX.NL, LEX.LINK_CONT],
+linksLex = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT],
 fmtASTMap =
 {
- LINK_INT : enumAST.LINK_INT,
- LINK_EXT : enumAST.LINK_EXT,
- LINK_IMG : enumAST.LINK_IMG,
- LINK_WIKI : enumAST.LINK_WIKI,
- INS : enumAST.INS,
- DEL : enumAST.DEL,
- INS_END : enumAST.INS,
- DEL_END : enumAST.DEL,
- BOLD : enumAST.BOLD,
- EM : enumAST.EM,
- SUP : enumAST.SUP,
- SUB : enumAST.SUB,
- UNDER : enumAST.UNDER,
- CODE : enumAST.CODE,
- PRE : enumAST.CODE
+ LINK_INT : AST.LINK_INT,
+ LINK_EXT : AST.LINK_EXT,
+ LINK_IMG : AST.LINK_IMG,
+ LINK_WIKI : AST.LINK_WIKI,
+ INS : AST.INS,
+ DEL : AST.DEL,
+ INS_END : AST.INS,
+ DEL_END : AST.DEL,
+ BOLD : AST.BOLD,
+ EM : AST.EM,
+ SUP : AST.SUP,
+ SUB : AST.SUB,
+ UNDER : AST.U,
+ CODE : AST.CODE,
+ PRE : AST.CODE
 },
 
 fmtStartEndMap =
 {
- INS : enumLEX.INS_END,
- DEL : enumLEX.DEL_END,
- BOLD : enumLEX.BOLD,
- EM : enumLEX.EM,
- SUP : enumLEX.SUP,
- SUB : enumLEX.SUB,
- UNDER : enumLEX.UNDER
+ INS : LEX.INS_END,
+ DEL : LEX.DEL_END,
+ BOLD : LEX.BOLD,
+ EM : LEX.EM,
+ SUP : LEX.SUP,
+ SUB : LEX.SUB,
+ UNDER : LEX.UNDER
 };
 
  
 function untilCode(token, tokStart)
 {
- return (token.type === enumLEX.CODE || token.type === enumLEX.PRE) &&
-  (tokStart.type === enumLEX.CODE || tokStart.type === enumLEX.PRE) &&
+ return (token.type === LEX.CODE || token.type === LEX.PRE) &&
+  (tokStart.type === LEX.CODE || tokStart.type === LEX.PRE) &&
   token.lexeme === tokStart.lexeme;
 }
 
 function untilBracket(token)
 {
- return token.type === enumLEX.BRACKET_R;
+ return token.type === LEX.BRACKET_R;
 }
 
 function untilAngle(token)
 {
- return token.type === enumLEX.GT;
+ return token.type === LEX.GT;
 }
 
 function untilLinkCont(token)
 {
- return token.type === enumLEX.LINK_CONT || 
-  token.type !== enumLEX.WS ||
-  token.type !== enumLEX.NL;
+ return token.type === LEX.LINK_CONT || 
+  token.type !== LEX.WS ||
+  token.type !== LEX.NL;
 }
 
 function untilInline(token)
 {
- return token.type === enumLEX.BRACKET_R || fmtASTMap[token.type]; 
+ return token.type === LEX.BRACKET_R || fmtASTMap[token.type]; 
 }
 
 function parsePara(fStack, premade)
 {
- var node = premade || ASTNode(enumAST.P),
+ var node = premade || ASTNode(AST.P),
   isNotAbuse = fStack.length < (this.options.maxSpans || 8),
   txtStart = this.currPos,
-  hasBracket = fStack.indexOf(enumLEX.BRACKET_R) > -1,
+  hasBracket = fStack.indexOf(LEX.BRACKET_R) > -1,
   fIndex = -1,
   token = null;
   
@@ -91,11 +91,11 @@ function parsePara(fStack, premade)
    txtStart = this.shift();
   }
   
-  if (token.type === enumLEX.CODE || token.type === enumLEX.PRE)
+  if (token.type === LEX.CODE || token.type === LEX.PRE)
   {
    node.append(parseCode.call(this, token));
   }
-  else if (token.type === enumLEX.LINK_IMG)
+  else if (token.type === LEX.LINK_IMG)
   {
    node.append(parseImg.call(this, token));
   }
@@ -127,7 +127,7 @@ function parsePara(fStack, premade)
 
 function parseLink(lexTok, fStack)
 {
- var callback = lexTok.type === enumLEX.LINK_INT ? untilBracket : untilAngle,
+ var callback = lexTok.type === LEX.LINK_INT ? untilBracket : untilAngle,
   startPos = this.currPos,
   endPos = this.shiftUntilPast(callback) - 1,
   href = this.sliceText(startPos, endPos).trim();
@@ -139,10 +139,10 @@ function parseLink(lexTok, fStack)
  var node = ASTNode(fmtASTMap[lexTok.type], {href : href});
  
  this.shiftUntil(untilLinkCont);
- if (this.peekT(enumLEX.LINK_CONT))
+ if (this.peekT(LEX.LINK_CONT))
  {
   this.shift();
-  fStack.push(enumLEX.BRACKET_R);
+  fStack.push(LEX.BRACKET_R);
   parsePara.call(this, fStack, node);
   fStack.pop();
  }
@@ -162,22 +162,20 @@ function parseImg(lexTok)
  }
  this.shiftUntil(untilLinkCont);
  
- if (this.peekT(enumLEX.LINK_CONT))
+ if (this.peekT(LEX.LINK_CONT))
  {
   alt = this.sliceText(this.shift(), this.shiftUntilPast(untilBracket) - 1);
  }
- return ASTNode(enumAST.LINK_IMG, {src : src, alt : alt.trim()});
+ return ASTNode(AST.LINK_IMG, {src : src, alt : alt.trim()});
 }
 
 function parseCode(lexTok)
 {
- var node = ASTNode(enumAST.CODE),
+ var node = ASTNode(AST.CODE),
   startPos = this.currPos,
-  endPos = this.shiftUntilPast(untilCode, lexTok) - 1,
-  text = this.sliceText(startPos, endPos);
-  
- node.append(text);
- return node;
+  endPos = this.shiftUntilPast(untilCode, lexTok) - 1;
+
+ return node.append(this.sliceText(startPos, endPos));
 }
 
 

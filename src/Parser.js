@@ -3,15 +3,14 @@ module.exports = (function (){
 
 var utils = require("./utils.js"),
 Lexer = require("./Lexer.js"),
-enumLEX = Lexer.ENUM,
+LEX = Lexer.ENUM,
 ASTNode = require("./ASTNode.js"),
-enumAST = ASTNode.ENUM,
+AST = ASTNode.ENUM,
 ParserInline = require("./ParserInline.js"),
 ParserBase = require("./ParserBase.js"),
 Analyzer = require("./Analyzer.js"),
 
 EOF = {},
-reTailWSNL = /\s$/,
 lexMapBlock =
 {
  TH : parseListPre,
@@ -33,18 +32,18 @@ lexMapBlock =
 },
 lexListASTMap =
 {
- TH : enumAST.TH,
- TD : enumAST.TD,
- GT : enumAST.BLOCKQUOTE,
- DD : enumAST.DD,
- OL : enumAST.OL_LI,
- UL : enumAST.UL_LI
+ TH : AST.TH,
+ TD : AST.TD,
+ GT : AST.BLOCKQUOTE,
+ DD : AST.DD,
+ OL : AST.OL_LI,
+ UL : AST.UL_LI
 },
-lexListWSNL = [enumLEX.WS, enumLEX.NL],
-lexListParaDelim = [enumLEX.HR, enumLEX.ATX_END, enumLEX.DIV],
-lexListSetext = [enumLEX.HR, enumLEX.ATX_END],
-lexListRefEnd = [enumLEX.NL, enumLEX.REF_END],
-lexListATXEnd = [enumLEX.NL, enumLEX.ATX_END];
+lexListWSNL = [LEX.WS, LEX.NL],
+lexListParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV],
+lexListSetext = [LEX.HR, LEX.ATX_END],
+lexListRefEnd = [LEX.NL, LEX.REF_END],
+lexListATXEnd = [LEX.NL, LEX.ATX_END];
 
 
 function untilNotWSNL(token)
@@ -62,7 +61,7 @@ function untilPre(token, tokStart)
 
 function untilNL(token)
 {
- return token.type === enumLEX.NL;
+ return token.type === LEX.NL;
 }
 
 function untilRefEnd(token)
@@ -90,8 +89,8 @@ function isLineStart()
   prev2 = this.peek(-2);
   
  return !prev1 || 
-  prev1.type === enumLEX.NL || 
-  prev1.type === enumLEX.WS && (!prev2 || prev2.type === enumLEX.NL);
+  prev1.type === LEX.NL || 
+  prev1.type === LEX.WS && (!prev2 || prev2.type === LEX.NL);
 }
 
 function isLineEnd()
@@ -100,8 +99,8 @@ function isLineEnd()
   next = this.peek(1);
   
  return !now || 
-  now.type === enumLEX.NL ||
-  now.type === enumLEX.WS && (!next || next.type === enumLEX.NL);
+  now.type === LEX.NL ||
+  now.type === LEX.WS && (!next || next.type === LEX.NL);
 }
 
 function isDivMatch(start, now)
@@ -111,29 +110,6 @@ function isDivMatch(start, now)
   start.col === now.col && isLineStart.call(this);
 }
 
-function accText(tok, index, tokens)
-{
- var minCol = this,
-  prev = tokens[index - 1];
-
- if (tok.type === enumLEX.WS && (!prev || prev.type === enumLEX.NL))
- {
-  return tok.lexeme.slice(minCol);
- }
- return tok.lexeme;
-}
-
-function accTokens(tok, index, tokens)
-{
- var minCol = this,
-  prev = tokens[index - 1];
-
- if (tok.type === enumLEX.WS && (!prev || prev.type === enumLEX.NL))
- {
-  tok.lexeme = tok.lexeme.slice(minCol);
- }
- return tok.lexeme.length > 0;
-}
 
 
 function parseBlock(ignoreLine)
@@ -165,8 +141,8 @@ function parseListPre(lexTok)
  }
  this.shiftUntil(untilNotWSNL);
  
- return lexTok.type === enumLEX.DT ? 
-  parsePara.call(this, this.peek(), enumAST.DT) : 
+ return lexTok.type === LEX.DT ? 
+  parsePara.call(this, this.peek(), AST.DT) : 
   parseList.call(this, lexTok);
 }
 
@@ -176,10 +152,9 @@ function parseList(lexTok)
   col = lexTok.col + lexTok.lexeme.length,
   tok = null;
   
- while ((tok = this.peek()) && tok.col >= col)
+ while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
  {
   node.append(parseBlock.call(this, true));
-  this.shiftUntil(untilNotWSNL);
  }
  return node;
 }
@@ -187,12 +162,12 @@ function parseList(lexTok)
 function parseHRTR(lexTok)
 {
  this.shiftUntilPast(untilNL);
- return ASTNode(lexTok.type === enumLEX.HR ? enumAST.HR : enumAST.TRSEP);
+ return ASTNode(lexTok.type === LEX.HR ? AST.HR : AST.TRSEP);
 }
 
 function parseDiv(lexTok)
 {
- var node = ASTNode(enumAST.DIV),
+ var node = ASTNode(AST.DIV),
   col = lexTok.col,
   tok = null;
 
@@ -213,14 +188,11 @@ function parsePre(lexTok)
 {
  var startPos = this.shiftUntilPast(untilNL),
   endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-  text = lexTok.type === enumLEX.PRE ? this.slice(startPos, endPos)
-   .map(accText, lexTok.col)
-   .join("")
-   .replace(reTailWSNL, "") : "";
+  text = this.sliceText(startPos, endPos, lexTok.col);
 
- if (text.length > 0)
+ if (lexTok.type === LEX.PRE && text.length > 0)
  {
-  return ASTNode(enumAST.PRE).append(text);
+  return ASTNode(AST.PRE).append(text);
  }
 }
 
@@ -233,7 +205,7 @@ function parseATX(lexTok)
 
  if (!utils.isBlankString(text))
  {
-  var node = ASTNode(enumAST.HEADER);
+  var node = ASTNode(AST.HEADER);
   node.level = hLen;
   node.append(text);
   return node;
@@ -242,7 +214,7 @@ function parseATX(lexTok)
 
 function parseLabel(lexTok)
 {
- var nodeType = lexTok.type === enumLEX.ID ? enumAST.ID : enumAST.CLASS,
+ var nodeType = lexTok.type === LEX.ID ? AST.ID : AST.CLASS,
   startPos = this.currPos + 1,
   endPos = this.shiftUntilPast(untilNL) - 1,
   idClass = this.sliceText(startPos, endPos).trim();
@@ -253,7 +225,7 @@ function parseLabel(lexTok)
  }
  
  var node = ASTNode(nodeType);
- if (nodeType === enumAST.ID)
+ if (nodeType === AST.ID)
  {
   node.attr.id = idClass;
  }
@@ -295,7 +267,7 @@ function parsePara(lexTok, forceType)
   return;
  }
  
- var paraToks = this.slice(startPos, endPos).filter(accTokens, lexTok.col),
+ var paraToks = this.slice(startPos, endPos, lexTok.col),
   node = ParserInline(paraToks, this.options);
   
  if (node && forceType)
@@ -304,8 +276,8 @@ function parsePara(lexTok, forceType)
  }
  else if (node && lexListSetext.indexOf(endTok.type) !== -1)
  {
-  node.type = enumAST.HEADER;
-  node.level = endTok.type === enumLEX.HR ? 2 : 1;
+  node.type = AST.HEADER;
+  node.level = endTok.type === LEX.HR ? 2 : 1;
  }
  
  return node;
@@ -315,7 +287,7 @@ function parsePara(lexTok, forceType)
 function Parser(bbmStr, options)
 {
  var parser = ParserBase(Lexer(bbmStr, options.disallowed), options);
- parser.root = ASTNode(enumAST.ROOT);
+ parser.root = ASTNode(AST.ROOT);
  parser.root.refTable = {};
  while (parser.peek())
  {

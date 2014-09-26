@@ -1,7 +1,37 @@
 module.exports = (function (){
 "use strict";
 
-var utils = require("./utils.js");
+var utils = require("./utils.js"),
+LEX = require("./Lexer.js").ENUM;
+
+/*
+Private methods
+---------------
+*/
+
+function doSlice(tok, index, tokens)
+{
+ var minCol = this,
+  prev = tokens[index - 1];
+
+ if (tok.type === LEX.WS && (!prev || prev.type === LEX.NL))
+ {
+  tok.lexeme = tok.lexeme.slice(minCol);
+ }
+ return tok.lexeme.length > 0;
+}
+
+function doSliceText(tok, index, tokens)
+{
+ return tok.lexeme;
+}
+
+
+
+/*
+Public Methods
+--------------
+*/
 
 function peekAt(index)
 {
@@ -48,19 +78,19 @@ function shiftUntilPast(callback)
  return this.currPos;
 }
 
-function slice(fromPos, toPos)
+function slice(fromPos, toPos, minCol)
 {
- return this.tokens.slice(fromPos, toPos);
+ var tokens = this.tokens.slice(fromPos, toPos);
+ if (utils.isNumber(minCol) && minCol > 0)
+ {
+  tokens = tokens.filter(doSlice, minCol);
+ }
+ return tokens;
 }
 
-function sliceText(fromPos, toPos)
+function sliceText(fromPos, toPos, minCol)
 {
- return this.slice(fromPos, toPos).map(doSliceText).join("");
-}
-
-function doSliceText(token)
-{
- return token.lexeme;
+ return this.slice(fromPos, toPos, minCol).map(doSliceText).join("");
 }
 
 
@@ -71,7 +101,7 @@ function ParserBase(tokens, options)
  obj.tokens = tokens || []; //Array of LexToken
  obj.currPos = 0; //Current token index
  obj.currlvl = 0; //Current nesting level
- obj.options = options;
+ obj.options = options || {};
  return obj;
 }
 

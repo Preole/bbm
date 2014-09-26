@@ -34,7 +34,7 @@ ENUM =
  LINK_WIKI : "LINK_WIKI",
  DEL : "DEL",
  INS : "INS",
- UNDER : "UNDER",
+ U : "U",
  SUB : "SUB",
  SUP : "SUP",
  EM : "EM",

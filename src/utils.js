@@ -1,6 +1,8 @@
 module.exports = (function (){
 "use strict";
 
+var toString = Object.prototype.toString;
+
 function isObject(obj)
 {
  return obj instanceof Object || typeof obj === "object";
@@ -8,7 +10,12 @@ function isObject(obj)
 
 function isString(obj)
 {
- return typeof obj === "string" || obj instanceof String;
+ return typeof obj === "string" || toString.call(obj) === "[object String]";
+}
+
+function isNumber(obj)
+{
+ return typeof obj === "number" || toString.call(obj) === "[object Number]";
 }
 
 function isBlankString(str)
@@ -44,6 +51,7 @@ function extend(obj)
 return {
  isObject : isObject,
  isString : isString,
+ isNumber : isNumber,
  isBlankString : isBlankString,
  hasOwn : hasOwn,
  extend : extend

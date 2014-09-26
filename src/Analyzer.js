@@ -24,11 +24,11 @@ AST_INLINE = AST_LINKS.concat([
 //Remove empty block elements, post-order traversal.
 function reduceBlock(acc, node, index, sibs)
 {
- var first = node.first();
+ var first = node.first(), isPre = node.type === AST.PRE;
  
- if (node.type !== AST.PRE && first && AST_INLINE.indexOf(first.type) > -1)
+ if (first && AST_INLINE.indexOf(first.type) > -1)
  {
-  node.nodes = node.nodes.some(someNotWS) ? node.nodes : [];
+  node.nodes = (isPre || node.nodes.some(someNotWS)) ? node.nodes : [];
  }
  else if (Array.isArray(node.nodes) && node.nodes.length > 0)
  {
@@ -52,7 +52,7 @@ function reduceBlock(acc, node, index, sibs)
   pruneLonePara(node);
  }
  
- if (AST_ALONE.indexOf(node.type) !== -1 || node.nodes.length > 0)
+ if (AST_ALONE.indexOf(node.type) > -1 || node.nodes.length > 0)
  {
   acc.push(node);
  }
@@ -119,7 +119,7 @@ function pruneLonePara(node)
  if (nodeCount === 1 && first.type === AST.P)
  {
   node.attr = first.attr;
-  node.append(first.nodes);
+  node.empty().append(first.nodes);
  }
 }
 
@@ -140,7 +140,7 @@ function someNotWS(node)
  {
   return !utils.isBlankString(node.nodes.join(""));
  }
- return linksImgAST.indexOf(node.type) > -1 || node.nodes.some(someNotWS);
+ return AST_LINKS.indexOf(node.type) > -1 || node.nodes.some(someNotWS);
 }
 
 //this = The root node.
