@@ -45,25 +45,6 @@ ENUM =
 
 NODESC = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG];
 
-
-
-/*
-Private Methods : Text
-----------------------
-*/
-function textReduce(accText, node)
-{
- if (node.type === enumAST.TEXT)
- {
-  accText += node.nodes.join("");
- }
- else if (Array.isArray(node.nodes))
- {
-  accText += node.nodes.reduce(textReduce, "");
- }
- return accText;
-}
-
  
 /*
 Private Methods : Append
@@ -133,19 +114,7 @@ function empty()
  return this;
 }
 
-function some(callback, thisArg)
-{
- return this.nodes ? this.nodes.some(callback, this) : false;
-}
 
-function text(innerText)
-{
- if (arguments.length > 0 && utils.isString(innerText))
- {
-  return this.empty().append(innerText);
- }
- return node.nodes.reduce(textReduce, "");
-}
 
 function toJSON()
 {
@@ -153,7 +122,6 @@ function toJSON()
  delete obj.parent;
  return obj;
 }
-
 
 function ASTNode(type, attr)
 {
@@ -180,8 +148,6 @@ utils.extend(ASTNode,
   first : first,
   last : last,
   empty : empty,
-  some : some,
-  text : text,
   toJSON : toJSON
  }
 });

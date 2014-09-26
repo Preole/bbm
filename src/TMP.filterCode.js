@@ -1,6 +1,6 @@
 /*
-TODO: Private ASTNode methods: Append... Use a tree walkter reduce for privacy 
-instead.
+TODO: Private ASTNode methods: Append... Use a tree walker reduce for privacy 
+instead?
 ------------------------------------------------------------------------
 */
 
@@ -214,50 +214,56 @@ TODO: Inline-Level Tree Pruning & URL Substitution
 ---------------------------
 */
 
+var linksAST =
+[
+ enumAST.LINK_EXT, enumAST.LINK_INT, enumAST.LINK_WIKI, enumAST.LINK_IMG
+];
 
-var linksAST = [enumAST.LINK_EXT, enumAST.LINK_INT, enumAST.LINK_WIKI],
- linksImgAST = linksAST.concat([enumAST.LINK_IMG]);
-
-
-/**
- * this = root? Or, where should I put the root node?
- */
 function someNotWS(node)
 {
  if (node.type === enumAST.TEXT)
  {
-  return !utils.isBlankString(node.text());
+  return !utils.isBlankString(node.nodes.join(""));
  }
- if (linksAST.indexOf(node.type) > -1)
+ return linksImgAST.indexOf(node.type) > -1 || node.nodes.some(someNotWS);
+}
+
+//this = The root node.
+function resolveEach(node)
+{
+ if (Array.isArray(node.nodes))
  {
-  node.attr.href = this.refTable[node.attr.href] ? this.refTable[node.attr.href] : node.attr.href;
-  if (!node.some(someNotWS, this))
-  {
-   node.empty().append(node.attr.href);
-  }
-  return true;
+  node.nodes.forEach(resolveEach, this);
  }
- return linksImgAST.indexOf(node.type) > -1 || node.some(someNotWS, this);
+
+ if (node.type === enumAST.IMG)
+ {
+  resolveSRC.call(this, node);
+ }
+ else if (linksAST.indexOf(node.type) > -1)
+ {
+  resolveURL.call(this, node);
+ }
 }
 
 function resolveURL(node)
 {
  var href = node.attr.href,
-  urlMap = this.refTable;
-
- node.attr.href = utils.hasOwn(urlMap, href) ? urlMap[href] : href;
- if (!node.some(someNotWS, this))
+  refTable = this.refTable;
+ 
+ node.attr.href = utils.hasOwn(refTable, href) ? refTable[href] : href;
+ if (!node.nodes.some(someNotWS))
  {
-  node.empty().append(node.attr.href);
+  node.empty().append(node.attr.href); //Use href as display text.
  }
 }
 
 function resolveSRC(node)
 {
  var src = node.attr.src,
-  urlMap = this.refTable;
-
- node.attr.src = utils.hasOwn(urlMap, src) ? urlMap[src] : src;
+  refTable = this.refTable;
+ 
+ node.attr.src = utils.hasOwn(refTable, src) ? refTable[src] : src;
 }
 
 

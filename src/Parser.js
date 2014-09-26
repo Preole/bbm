@@ -295,6 +295,7 @@ function parsePara(lexTok, forceType)
  {
   return;
  }
+ //TODO: Strip trailing line break tokens from paragraphs.
  
  var paraToks = this.slice(startPos, endPos).filter(accTokens, lexTok.col),
   node = ParserInline(paraToks, this.options);
@@ -313,7 +314,7 @@ function parsePara(lexTok, forceType)
 }
 
 
-function ParseBlock(bbmStr, options)
+function Parser(bbmStr, options)
 {
  var parser = ParserBase(Lexer(bbmStr, options.disallowed), options);
  parser.root = ASTNode(enumAST.ROOT);
@@ -325,7 +326,7 @@ function ParseBlock(bbmStr, options)
  return parser.root;
 }
 
-return ParseBlock;
+return Parser;
 }());
 
 
