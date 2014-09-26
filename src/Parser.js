@@ -315,7 +315,7 @@ function parsePara(lexTok, forceType)
 
 function ParseBlock(bbmStr, options)
 {
- var parser = ParserBase.create(Lexer(bbmStr, options.disallowed), options);
+ var parser = ParserBase(Lexer(bbmStr, options.disallowed), options);
  parser.root = ASTNode(enumAST.ROOT);
  parser.root.refTable = {};
  while (parser.lookAhead())

@@ -184,7 +184,7 @@ function parseCode(lexTok)
 
 function ParseInline(bbmTokens, options)
 {
- return parsePara.call(ParserBase.create(bbmTokens, options), []);
+ return parsePara.call(ParserBase(bbmTokens, options), []);
 }
 
 return ParseInline;

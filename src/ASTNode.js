@@ -155,10 +155,9 @@ function toJSON()
 }
 
 
-
 function ASTNode(type, attr)
 {
- var obj = ASTNode.prototype.isPrototypeOf(this) ? this : new ASTNode;
+ var obj = (this instanceof ASTNode) ? this : new ASTNode;
  obj.type = type || "";
  obj.parent = null;
  if (type !== ENUM.TEXT)

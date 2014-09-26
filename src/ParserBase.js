@@ -3,31 +3,9 @@ module.exports = (function (){
 
 var utils = require("./utils.js"),
 ASTNode = require("./ASTNode.js"),
-enumAST = ASTNode.types,
-ParserBase =
-{
- create : create,
- lookAt : lookAt,
- lookAhead : lookAhead,
- lookAheadT : lookAheadT,
- shift : shift,
- shiftUntil : shiftUntil,
- shiftUntilPast : shiftUntilPast,
- slice : slice,
- sliceText : sliceText
-};
+enumAST = ASTNode.types;
 
 
-
-function create(tokens, options)
-{
- var obj = Object.create(this);
- obj.tokens = tokens || []; //Array of LexToken
- obj.currPos = 0; //Current token index
- obj.currlvl = 0; //Current nesting level
- obj.options = options;
- return obj;
-}
 
 function lookAt(index)
 {
@@ -89,5 +67,34 @@ function doSliceText(token)
  return token.lexeme;
 }
 
+
+
+function ParserBase(tokens, options)
+{
+ var obj = (this instanceof ParserBase) ? this : new ParserBase;
+ obj.tokens = tokens || []; //Array of LexToken
+ obj.currPos = 0; //Current token index
+ obj.currlvl = 0; //Current nesting level
+ obj.options = options;
+ return obj;
+}
+
+utils.extend(ParserBase,
+{
+ prototype :
+ {
+  lookAt : lookAt,
+  lookAhead : lookAhead,
+  lookAheadT : lookAheadT,
+  shift : shift,
+  shiftUntil : shiftUntil,
+  shiftUntilPast : shiftUntilPast,
+  slice : slice,
+  sliceText : sliceText
+ }
+});
+
+
 return ParserBase;
 }());
+

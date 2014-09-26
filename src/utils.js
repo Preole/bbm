@@ -3,7 +3,7 @@ module.exports = (function (){
 
 function isObject(obj)
 {
- return Object.prototype.isPrototypeOf(Object);
+ return obj instanceof Object || typeof obj === "object";
 }
 
 function isString(obj)
