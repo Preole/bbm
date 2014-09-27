@@ -105,12 +105,14 @@ Examples with HTML Escaping and URL encoding considered:
 ```
 
 
+### Remove the syntax BlockStop ###
+
+The syntax "BlockStop" has been removed, which can be readily substituted 
+with a single escaped space, creating an empty paragraph, then removed in 
+the semantic analysis stage.
+
+"""
+\\
+"""
 
 
-
-Changes Under Consideration
----------------------------
-
-- Remove the syntax "BlockStop", which can be readily substituted with 
-  a single escaped space, creating an empty paragraph, then removed in 
-  the semantic analysis stage.
