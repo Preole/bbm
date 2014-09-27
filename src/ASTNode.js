@@ -43,7 +43,6 @@ ENUM =
  TEXT : "TEXT"
 },
 
-ENUM_EMPTY = [ENUM.HR, ENUM.CLASS, ENUM.ID, ENUM.LINK_IMG],
 MAP_APPEND =
 {
  TRSEP : appendTable,
@@ -205,14 +204,8 @@ function ASTNode(type, attr)
  var obj = (this instanceof ASTNode) ? this : new ASTNode;
  obj.type = type || "";
  obj.parent = null;
- if (type !== ENUM.TEXT)
- {
-  obj.attr = utils.isObject(attr) ? attr : {};
- }
- if (ENUM_EMPTY.indexOf(type) === -1)
- {
-  obj.nodes = [];
- } 
+ obj.attr = utils.isObject(attr) ? attr : {};
+ obj.nodes = [];
  return obj;
 }
 
