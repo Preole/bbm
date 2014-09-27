@@ -2,42 +2,40 @@ module.exports = (function (){
 "use strict";
 
 var utils = require("./utils.js"),
-AST = require("./ASTNode").ENUM,
+ASTNode = require("./ASTNode"),
+AST = ASTNode.ENUM,
 
 SYMTABLE = {},
 AST_LONEPARA = [AST.DD, AST.LI, AST.TH, AST.TD, AST.BLOCKQUOTE],
-AST_ALONE = [AST.PRE, AST.TD, AST.TH],
 AST_LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI, AST.LINK_IMG],
-AST_INLINE = AST_LINKS.concat([
- AST.DEL,
- AST.INS,
- AST.UNDER,
- AST.SUB,
- AST.SUP,
- AST.EM,
- AST.BOLD,
- AST.CODE,
- AST.TEXT
-]);
+AST_ALONE = AST_LINKS.concat([AST.PRE, AST.TD, AST.TH, AST.HR]);
 
 
-//Remove empty block elements, post-order traversal.
-function reduceBlock(acc, node, index, sibs)
+
+function isNotBlank(node)
 {
- var first = node.first(), isPre = node.type === AST.PRE;
- 
- if (first && AST_INLINE.indexOf(first.type) > -1)
+ return !node.nodes.every(utils.isBlankString) ||
+  AST_LINKS.indexOf(node.type) > -1;
+}
+
+function isNode(node)
+{
+ return (node instanceof ASTNode);
+}
+
+
+//Remove empty block elements, in-order traversal
+function prune(acc, node, index, sibs)
+{
+ if (node.nodes.every(isNode))
  {
-  node.nodes = (isPre || node.nodes.some(someNotWS)) ? node.nodes : [];
- }
- else if (Array.isArray(node.nodes) && node.nodes.length > 0)
- {
-  node.nodes = node.nodes.reduce(reduceBlock, []);
+  node.nodes = node.nodes.reduce(prune, []);
+  node.nodes = node.nodes.some(isNotBlank) ? node.nodes : [];
  }
 
  if (node.type === AST.TABLE)
  {
-  node.nodes = node.nodes.reduce(reduceTR, []);
+  node.nodes = node.nodes.filter(pruneTR);
  }
  else if (node.type === AST.DL)
  {
@@ -59,37 +57,34 @@ function reduceBlock(acc, node, index, sibs)
  return acc;
 }
 
-function reduceTR(acc, rowNode)
+function pruneTR(rowNode, index, sibs)
 {
- var gCol = acc[0] ? acc[0].nodes.length : rowNode.nodes.length;
-  rCol = rowNode.nodes.length;
-  
- if (rCol <= 0)
+ var gCol = sibs[0].nodes.length;
+ 
+ if (rowNode.nodes.length <= 0)
  {
-  return acc;
+  return false;
  }
- else if (rCol > gCol)
+ while (rowNode.nodes.length > gCol)
  {
-  rowNode.nodes = rowNode.nodes.slice(0, gCol);
+  rowNode.nodes.pop();
  }
- else if (rCol < gCol)
+ while (rowNode.nodes.length < gCol)
  {
-  rowNode.nodes = rowNode.nodes.concat(createCells(gCol - rCol));
+  rowNode.append(ASTNode(AST.TD));
  }
- acc.push(rowNode);
- return acc;
+ return true;
 }
 
 function pruneDL(node)
 {
- var first = node.first();
- while (first && first.type === AST.DD)
+ var ht = null;
+ while ((ht = node.first()) && ht.type === AST.DD)
  {
   node.nodes.shift();
  }
  
- var last = node.last();
- while (last && last.type === AST.DT)
+ while ((ht = node.last()) && ht.type === AST.DT)
  {
   node.nodes.pop();
  }
@@ -97,6 +92,11 @@ function pruneDL(node)
 
 function pruneIDClass(node, next)
 {
+ if (!isNode(next))
+ {
+  return;
+ }
+ 
  if (node.attr["class"])
  {
   if (!utils.isString(next.attr["class"]))
@@ -123,38 +123,23 @@ function pruneLonePara(node)
  }
 }
 
-function createCells(cellCount)
-{
- var cells = Array(cellCount);
- cells.forEach(function (val, index, array){
-  array[index] = ASTNode(AST.TD);
- });
- return cells;
-}
 
 
-
-function someNotWS(node)
-{
- if (node.type === AST.TEXT)
- {
-  return !utils.isBlankString(node.nodes.join(""));
- }
- return AST_LINKS.indexOf(node.type) > -1 || node.nodes.some(someNotWS);
-}
 
 //this = The root node.
 function resolveEach(node)
 {
- if (node.type !== AST.TEXT && Array.isArray(node.nodes))
+ if (!isNode(node))
  {
-  node.nodes.forEach(resolveEach, this);
+  return;
  }
- else if (node.type === AST.IMG)
+ 
+ node.nodes.forEach(resolveEach, this);
+ if (node.type === AST.IMG)
  {
   resolveSRC.call(this, node);
  }
- else if (AST_LINKS.indexOf(node.type) > -1)
+ if (AST_LINKS.indexOf(node.type) > -1)
  {
   resolveURL.call(this, node);
  }
@@ -166,7 +151,7 @@ function resolveURL(node)
   refTable = this.refTable || SYMTABLE;
  
  node.attr.href = utils.hasOwn(refTable, href) ? refTable[href] : href;
- if (!node.nodes.some(someNotWS))
+ if (node.nodes.length === 0)
  {
   node.empty().append(node.attr.href); //Use href as display text.
  }
@@ -183,7 +168,7 @@ function resolveSRC(node)
 
 function Analyzer(node)
 {
- node.nodes = node.nodes.reduce(reduceBlock, []);
+ node.nodes = node.nodes.reduce(prune, []);
  node.nodes.forEach(resolveEach, node);
  return node;
 }

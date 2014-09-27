@@ -77,7 +77,6 @@ function appendTable(node)
 
  if (isRow)
  {
-  
   node.type = ENUM.TR;
   appendSimple.call(last, node);
  }

@@ -20,7 +20,7 @@ function isNumber(obj)
 
 function isBlankString(str)
 {
- return /^\s*$/.test(str);
+ return isString(str) && /^\s*$/.test(str);
 }
 
 function hasOwn(obj, key)

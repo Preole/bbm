@@ -154,7 +154,7 @@ function parseImg(lexTok)
  var startPos = this.currPos,
   endPos = this.shiftUntilPast(untilAngle) - 1,
   src = this.sliceText(startPos, endPos).trim(),
-  alt = "";
+  alt = src;
 
  if (utils.isBlankString(src))
  {
