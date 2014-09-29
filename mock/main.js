@@ -2,7 +2,12 @@
 
 var fs = require("fs"),
  BBM = require("../src/BBM.js"),
- fsOptR = {encoding : "utf-8"};
+ fsOptR = {encoding : "utf-8"},
+ tree = BBM(fs.readFileSync("./input.txt", fsOptR));
+ 
+console.log(tree);
 
-var input = fs.readFileSync("./input.txt", fsOptR);
-console.log(JSON.stringify(BBM(input), null, " "));
+function traverse(node)
+{
+
+}

@@ -181,10 +181,7 @@ function last()
 
 function empty()
 {
- if (Array.isArray(this.nodes))
- {
-  this.nodes = [];
- }
+ this.nodes = [];
  return this;
 }
 
@@ -198,11 +195,19 @@ function val(value)
  return this.value;
 }
 
-function toJSON()
+function each(callback, thisArg)
 {
- var obj = utils.extend({}, this);
- delete obj.parent;
- return obj;
+ callback.call(thisArg, this);
+ this.nodes.forEach(function (node){
+  node.each(callback, thisArg);
+ });
+ return this;
+}
+
+function reduce(callback, thisArg)
+{
+ this.each(callback, thisArg);
+ return thisArg;
 }
 
 
@@ -219,6 +224,13 @@ function ASTNode(type, attr)
  return obj;
 }
 
+function toJSON()
+{
+ var obj = utils.extend({}, this);
+ delete obj.parent;
+ return obj;
+}
+
 module.exports = utils.extend(ASTNode,
 {
  ENUM : ENUM,
@@ -229,6 +241,8 @@ module.exports = utils.extend(ASTNode,
   last : last,
   empty : empty,
   val : val,
+  each : each,
+  reduce : reduce,
   toJSON : toJSON
  }
 });

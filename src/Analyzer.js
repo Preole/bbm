@@ -128,11 +128,6 @@ function pruneLonePara(node)
 //this = The root node.
 function resolveEach(node)
 {
- if (!isNode(node))
- {
-  return;
- }
- 
  node.nodes.forEach(resolveEach, this);
  if (node.type === AST.IMG)
  {
@@ -152,7 +147,7 @@ function resolveURL(node)
  node.attr.href = utils.hasOwn(refTable, href) ? refTable[href] : href;
  if (node.nodes.length === 0)
  {
-  node.empty().append(node.attr.href); //Use href as display text.
+  node.append(node.attr.href); //Use href as display text.
  }
 }
 

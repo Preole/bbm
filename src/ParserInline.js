@@ -2,7 +2,8 @@
 "use strict";
 
 var utils = require("./utils.js"),
-LEX = require("./Lexer.js").ENUM,
+Lexer = require("./Lexer.js"),
+LEX = Lexer.ENUM,
 ASTNode = require("./ASTNode.js"),
 AST = require("./ASTNode.js").ENUM,
 ParserBase = require("./ParserBase.js"),
@@ -177,9 +178,10 @@ function parseCode(lexTok)
  return node.append(this.sliceText(startPos, endPos));
 }
 
-function ParseInline(bbmTokens, options)
+function ParseInline(tokens, options)
 {
- return parsePara.call(ParserBase(bbmTokens, options), []);
+ var toks = utils.isString(tokens) ? Lexer(tokens, options.disallowed) : tokens;
+ return parsePara.call(ParserBase(toks, options), []);
 }
 
 
