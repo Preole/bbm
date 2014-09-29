@@ -26,7 +26,9 @@ ENUM =
  TD : "TD",
  HR : "HR",
  TR : "TR",
- TRSEP : "TRSEP", //Private
+ TH_TMP : "TH_TMP", //Private
+ TD_TMP : "TD_TMP", //Private
+ TR_TMP : "TR_TMP", //Private
  TABLE : "TABLE",
  LINK_INT : "LINK_INT",
  LINK_EXT : "LINK_EXT",
@@ -45,9 +47,9 @@ ENUM =
 
 MAP_APPEND =
 {
- TRSEP : appendTable,
- TH : appendTable,
- TD : appendTable,
+ TR_TMP : appendTable,
+ TH_TMP : appendTable,
+ TD_TMP : appendTable,
  DT : appendDL,
  DD : appendDL,
  UL_LI : appendULOL,
@@ -63,7 +65,7 @@ Private Methods : Append
 
 function appendTable(node)
 {
- var last = this.last(), isRow = node.type === ENUM.TRSEP;
+ var last = this.last(), isRow = node.type === ENUM.TR_TMP;
  if (!(last && last.type === ENUM.TABLE))
  {
   if (isRow) {return;}
@@ -82,6 +84,7 @@ function appendTable(node)
  }
  else
  {
+  node.type = node.type === ENUM.TD_TMP ? ENUM.TD : ENUM.TH;
   appendSimple.call(last.last(), node);
  }
 }
@@ -124,9 +127,9 @@ function appendText(text)
  }
 }
 
-function appendNode(node, noAuto)
+function appendNode(node)
 {
- if (MAP_APPEND[node.type] && !noAuto)
+ if (MAP_APPEND[node.type])
  {
   MAP_APPEND[node.type].call(this, node);
  }
@@ -149,12 +152,7 @@ Public Methods
 --------------
 */
 
-/**
- * @private
- * Internal use only by the parser: Automatically corrects DL, TABLE, 
- * OL, UL structures as nodes are appended.
- */
-function _append(nodeText, noAuto)
+function append(nodeText)
 {
  if (utils.isString(nodeText) && nodeText.length > 0)
  {
@@ -162,18 +160,13 @@ function _append(nodeText, noAuto)
  }
  else if (nodeText instanceof ASTNode)
  {
-  appendNode.call(this, nodeText, noAuto);
+  appendNode.call(this, nodeText);
  }
  else if (Array.isArray(nodeText))
  {
   nodeText.forEach(this.append, this);
  }
  return this;
-}
-
-function append(nodeText)
-{
- return this._append(nodeText, true);
 }
 
 function first()
@@ -231,7 +224,6 @@ module.exports = utils.extend(ASTNode,
  ENUM : ENUM,
  prototype :
  {
-  _append : _append,
   append : append,
   first : first,
   last : last,

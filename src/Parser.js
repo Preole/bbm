@@ -33,9 +33,10 @@ lexMapBlock =
 },
 lexListASTMap =
 {
- TH : AST.TH,
- TD : AST.TD,
+ TH : AST.TH_TMP,
+ TD : AST.TD_TMP,
  GT : AST.BLOCKQUOTE,
+ DT : AST.DT,
  DD : AST.DD,
  OL : AST.OL_LI,
  UL : AST.UL_LI
@@ -169,7 +170,7 @@ function parseList(lexTok)
   
  while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
  {
-  node._append(parseBlock.call(this, true));
+  node.append(parseBlock.call(this, true));
  }
  return node;
 }
@@ -177,7 +178,7 @@ function parseList(lexTok)
 function parseHRTR(lexTok)
 {
  this.shiftUntilPast(untilNL);
- return ASTNode(lexTok.type === LEX.HR ? AST.HR : AST.TRSEP);
+ return ASTNode(lexTok.type === LEX.HR ? AST.HR : AST.TR_TMP);
 }
 
 function parseDiv(lexTok)
@@ -193,7 +194,7 @@ function parseDiv(lexTok)
   {
    break;
   }
-  node._append(parseBlock.call(this));
+  node.append(parseBlock.call(this));
  }
  this.shiftUntilPast(untilNL);
  return node;
@@ -207,7 +208,7 @@ function parsePre(lexTok)
 
  if (lexTok.type === LEX.PRE && text.length > 0)
  {
-  return ASTNode(AST.PRE)._append(text);
+  return ASTNode(AST.PRE).append(text);
  }
 }
 
@@ -222,7 +223,7 @@ function parseATX(lexTok)
  {
   var node = ASTNode(AST.HEADER);
   node.level = hLen;
-  node._append(text);
+  node.append(text);
   return node;
  }
 }
@@ -308,7 +309,7 @@ function Parser(bbmStr, options)
  parser.root.options = parser.options;
  while (parser.peek())
  {
-  parser.root._append(parseBlock.call(parser));
+  parser.root.append(parseBlock.call(parser));
  }
  return Analyzer(parser.root);
 }
