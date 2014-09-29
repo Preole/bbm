@@ -124,9 +124,9 @@ function appendText(text)
  }
 }
 
-function appendNode(node)
+function appendNode(node, noAuto)
 {
- if (MAP_APPEND[node.type])
+ if (MAP_APPEND[node.type] && !noAuto)
  {
   MAP_APPEND[node.type].call(this, node);
  }
@@ -148,7 +148,13 @@ function appendSimple(node)
 Public Methods
 --------------
 */
-function append(nodeText)
+
+/**
+ * @private
+ * Internal use only by the parser: Automatically corrects DL, TABLE, 
+ * OL, UL structures as nodes are appended.
+ */
+function _append(nodeText, noAuto)
 {
  if (utils.isString(nodeText) && nodeText.length > 0)
  {
@@ -156,13 +162,18 @@ function append(nodeText)
  }
  else if (nodeText instanceof ASTNode)
  {
-  appendNode.call(this, nodeText);
+  appendNode.call(this, nodeText, noAuto);
  }
  else if (Array.isArray(nodeText))
  {
   nodeText.forEach(this.append, this);
  }
  return this;
+}
+
+function append(nodeText)
+{
+ return this._append(nodeText, true);
 }
 
 function first()
@@ -220,6 +231,7 @@ module.exports = utils.extend(ASTNode,
  ENUM : ENUM,
  prototype :
  {
+  _append : _append,
   append : append,
   first : first,
   last : last,

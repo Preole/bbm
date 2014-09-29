@@ -40,33 +40,33 @@ fmtStartEndMap =
 };
 
  
-function untilCode(token, tokStart)
+function untilCode(tok, tokStart)
 {
- return (token.type === LEX.CODE || token.type === LEX.PRE) &&
+ return (tok.type === LEX.CODE || tok.type === LEX.PRE) &&
   (tokStart.type === LEX.CODE || tokStart.type === LEX.PRE) &&
-  token.lexeme === tokStart.lexeme;
+  tok.lexeme === tokStart.lexeme;
 }
 
-function untilBracket(token)
+function untilBracket(tok)
 {
- return token.type === LEX.BRACKET_R;
+ return tok.type === LEX.BRACKET_R;
 }
 
-function untilAngle(token)
+function untilAngle(tok)
 {
- return token.type === LEX.GT;
+ return tok.type === LEX.GT;
 }
 
-function untilLinkCont(token)
+function untilLinkCont(tok)
 {
- return token.type === LEX.LINK_CONT || 
-  token.type !== LEX.WS ||
-  token.type !== LEX.NL;
+ return tok.type === LEX.LINK_CONT || 
+  tok.type !== LEX.WS ||
+  tok.type !== LEX.NL;
 }
 
-function untilInline(token)
+function untilInline(tok)
 {
- return token.type === LEX.BRACKET_R || fmtASTMap[token.type]; 
+ return tok.type === LEX.BRACKET_R || fmtASTMap[tok.type]; 
 }
 
 function parsePara(fStack, premade)
@@ -76,36 +76,36 @@ function parsePara(fStack, premade)
   txtStart = this.currPos,
   hasBracket = fStack.indexOf(LEX.BRACKET_R) > -1,
   fIndex = -1,
-  token = null;
+  tok = null;
   
- while ((token = this.peekAt(this.shiftUntil(untilInline))))
+ while ((tok = this.peekAt(this.shiftUntil(untilInline))))
  {
-  fIndex = fStack.indexOf(token.type);
+  fIndex = fStack.indexOf(tok.type);
   if (txtStart < this.currPos) //Collect text.
   {
-   node.append(this.sliceText(txtStart, this.currPos));
+   node._append(this.sliceText(txtStart, this.currPos));
   }
   if (txtStart <= this.currPos) //Break Infinite Loop, Skip past token.
   {
    txtStart = this.shift();
   }
   
-  if (token.type === LEX.CODE || token.type === LEX.PRE)
+  if (tok.type === LEX.CODE || tok.type === LEX.PRE)
   {
-   node.append(parseCode.call(this, token));
+   node._append(parseCode.call(this, tok));
   }
-  else if (token.type === LEX.LINK_IMG)
+  else if (tok.type === LEX.LINK_IMG)
   {
-   node.append(parseImg.call(this, token));
+   node._append(parseImg.call(this, tok));
   }
-  else if (!hasBracket && linksLex.indexOf(token.type) !== -1)
+  else if (!hasBracket && linksLex.indexOf(tok.type) !== -1)
   {
-   node.append(parseLink.call(this, token, fStack));
+   node._append(parseLink.call(this, tok, fStack));
   }
-  else if (fIndex === -1 && isNotAbuse && fmtStartEndMap[token.type])
+  else if (fIndex === -1 && isNotAbuse && fmtStartEndMap[tok.type])
   {
-   fStack.push(fmtStartEndMap[token.type]);
-   node.append(parsePara.call(this, fStack, ASTNode(fmtASTMap[token.type])));
+   fStack.push(fmtStartEndMap[tok.type]);
+   node._append(parsePara.call(this, fStack, ASTNode(fmtASTMap[tok.type])));
    fStack.pop();
   }
   
@@ -118,7 +118,7 @@ function parsePara(fStack, premade)
  
  if (txtStart < this.currPos)
  {
-  node.append(this.sliceText(txtStart, this.currPos + (fIndex > -1 ? -1 : 0)));
+  node._append(this.sliceText(txtStart, this.currPos + (fIndex > -1 ? -1 : 0)));
  }
  
  return node;
@@ -174,7 +174,7 @@ function parseCode(lexTok)
   startPos = this.currPos,
   endPos = this.shiftUntilPast(untilCode, lexTok) - 1;
 
- return node.append(this.sliceText(startPos, endPos));
+ return node._append(this.sliceText(startPos, endPos));
 }
 
 function ParseInline(bbmTokens, options)

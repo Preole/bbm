@@ -70,7 +70,7 @@ function pruneTR(rowNode, index, sibs)
  }
  while (rowNode.nodes.length < gCol)
  {
-  rowNode.append(ASTNode(AST.TD)); //TODO: Bug: Creates extra table due to the way append works.
+  rowNode._append(ASTNode(AST.TD), true);
  }
  return true;
 }
@@ -118,7 +118,7 @@ function pruneLonePara(node)
  if (nodeCount === 1 && first.type === AST.P)
  {
   node.attr = first.attr;
-  node.empty().append(first.nodes);
+  node.empty()._append(first.nodes);
  }
 }
 
@@ -152,7 +152,7 @@ function resolveURL(node)
  node.attr.href = utils.hasOwn(refTable, href) ? refTable[href] : href;
  if (node.nodes.length === 0)
  {
-  node.empty().append(node.attr.href); //Use href as display text.
+  node.empty()._append(node.attr.href); //Use href as display text.
  }
 }
 

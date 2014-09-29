@@ -169,7 +169,7 @@ function parseList(lexTok)
   
  while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
  {
-  node.append(parseBlock.call(this, true));
+  node._append(parseBlock.call(this, true));
  }
  return node;
 }
@@ -193,7 +193,7 @@ function parseDiv(lexTok)
   {
    break;
   }
-  node.append(parseBlock.call(this));
+  node._append(parseBlock.call(this));
  }
  this.shiftUntilPast(untilNL);
  return node;
@@ -207,7 +207,7 @@ function parsePre(lexTok)
 
  if (lexTok.type === LEX.PRE && text.length > 0)
  {
-  return ASTNode(AST.PRE).append(text);
+  return ASTNode(AST.PRE)._append(text);
  }
 }
 
@@ -222,7 +222,7 @@ function parseATX(lexTok)
  {
   var node = ASTNode(AST.HEADER);
   node.level = hLen;
-  node.append(text);
+  node._append(text);
   return node;
  }
 }
@@ -308,7 +308,7 @@ function Parser(bbmStr, options)
  parser.root.options = parser.options;
  while (parser.peek())
  {
-  parser.root.append(parseBlock.call(parser));
+  parser.root._append(parseBlock.call(parser));
  }
  return Analyzer(parser.root);
 }
