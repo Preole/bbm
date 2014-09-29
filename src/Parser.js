@@ -305,7 +305,7 @@ function Parser(bbmStr, options)
  var parser = ParserBase(Lexer(bbmStr, options.disallowed), options);
  parser.root = ASTNode(AST.ROOT);
  parser.root.refTable = {};
- parser.root.options = options;
+ parser.root.options = parser.options;
  while (parser.peek())
  {
   parser.root.append(parseBlock.call(parser));

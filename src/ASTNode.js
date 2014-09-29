@@ -116,14 +116,11 @@ function appendText(text)
  var last = this.last();
  if (last && last.type === ENUM.TEXT)
  {
-  last.nodes[0] += text;
+  last.value = last.value ? last.value + text : text;
  }
  else
  {
-  last = ASTNode(ENUM.TEXT);
-  last.nodes.push(text);
-  this.nodes.push(last);
-  last.parent = this;
+  appendSimple.call(this, ASTNode(ENUM.TEXT).val(text));
  }
 }
 
@@ -187,6 +184,16 @@ function empty()
  return this;
 }
 
+function val(value)
+{
+ if (utils.isString(value))
+ {
+  this.value = value;
+  return this;
+ }
+ return this.value;
+}
+
 function toJSON()
 {
  var obj = utils.extend({}, this);
@@ -217,6 +224,7 @@ utils.extend(ASTNode,
   first : first,
   last : last,
   empty : empty,
+  val : val,
   toJSON : toJSON
  }
 });

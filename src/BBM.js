@@ -2,9 +2,6 @@ module.exports = (function (){
 "use strict";
 
 var utils = require("./utils.js"),
-Parser = require("./Parser.js"),
-Lexer = require("./Lexer.js"),
-ASTNode = require("./ASTNode.js"),
 defOpt =
 {
  disallowed : [],
@@ -28,6 +25,15 @@ TODO: Add Mapping between target name and actual generated output.
 */
 function BBM(bbmStr, options)
 {
+ return parseBBM.call(null, bbmStr, options);
+}
+
+/*
+TODO: Returns a tree.
+*/
+function parseBBM(bbmStr, options)
+{
+ var Parser = require("./Parser.js");
  return Parser(bbmStr, utils.extend({}, currOpt, options));
 }
 
@@ -37,9 +43,7 @@ function setOpt(options)
 }
 
 return utils.extend(BBM, {
- Lexer : Lexer,
- Parser : Parser,
- ASTNode : ASTNode,
+ parseBBM : parseBBM,
  setOpt : setOpt,
  currOpt : currOpt
 });

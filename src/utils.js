@@ -33,7 +33,7 @@ function isFunction(obj)
 
 function isBlankString(str)
 {
- return isString(str) && /^\s*$/.test(str);
+ return /^\s*$/.test(str);
 }
 
 function hasOwn(obj, key)
@@ -61,7 +61,7 @@ function extend(obj)
  return toObj;
 }
 
-module.exports {
+module.exports = {
  isNull : isNull,
  isObject : isObject,
  isString : isString,

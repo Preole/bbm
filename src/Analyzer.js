@@ -8,14 +8,13 @@ AST = ASTNode.ENUM,
 SYMTABLE = {},
 AST_LONEPARA = [AST.DD, AST.LI, AST.TH, AST.TD, AST.BLOCKQUOTE],
 AST_LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI, AST.LINK_IMG],
-AST_ALONE = AST_LINKS.concat([AST.PRE, AST.TD, AST.TH, AST.HR]);
+AST_ALONE = AST_LINKS.concat([AST.PRE, AST.TD, AST.TH, AST.HR, AST.TEXT]);
 
 
 
 function isNotBlank(node)
 {
- return !node.nodes.every(utils.isBlankString) ||
-  AST_LINKS.indexOf(node.type) > -1;
+ return !utils.isBlankString(node.value) || AST_LINKS.indexOf(node.type) > -1;
 }
 
 function isNode(node)
@@ -24,10 +23,10 @@ function isNode(node)
 }
 
 
-//Remove empty block elements, in-order traversal
+//Remove empty block elements, post-order traversal
 function prune(acc, node, index, sibs)
 {
- if (node.nodes.every(isNode))
+ if (node.nodes.length > 0)
  {
   node.nodes = node.nodes.reduce(prune, []);
   node.nodes = node.nodes.some(isNotBlank) ? node.nodes : [];
@@ -71,7 +70,7 @@ function pruneTR(rowNode, index, sibs)
  }
  while (rowNode.nodes.length < gCol)
  {
-  rowNode.append(ASTNode(AST.TD));
+  rowNode.append(ASTNode(AST.TD)); //TODO: Bug: Creates extra table due to the way append works.
  }
  return true;
 }
