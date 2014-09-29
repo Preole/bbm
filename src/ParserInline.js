@@ -1,5 +1,4 @@
-
-module.exports = (function (){
+(function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -178,12 +177,12 @@ function parseCode(lexTok)
  return node.append(this.sliceText(startPos, endPos));
 }
 
-
-
 function ParseInline(bbmTokens, options)
 {
  return parsePara.call(ParserBase(bbmTokens, options), []);
 }
 
-return ParseInline;
+
+
+module.exports = ParseInline;
 }());

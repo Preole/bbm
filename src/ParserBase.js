@@ -1,4 +1,4 @@
-module.exports = (function (){
+(function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -105,7 +105,7 @@ function ParserBase(tokens, options)
  return obj;
 }
 
-utils.extend(ParserBase,
+module.exports = utils.extend(ParserBase,
 {
  prototype :
  {
@@ -120,7 +120,5 @@ utils.extend(ParserBase,
  }
 });
 
-
-return ParserBase;
 }());
 

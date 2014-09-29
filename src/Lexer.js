@@ -1,4 +1,4 @@
-module.exports = (function (){
+(function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -164,9 +164,7 @@ function Lexer(strInput, disallowed)
 }
 
 
-
-Lexer.ENUM = ENUM;
-return Lexer;
+module.exports = utils.extend(Lexer, {ENUM : ENUM});
 }());
 
 

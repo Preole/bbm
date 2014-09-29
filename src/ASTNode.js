@@ -1,6 +1,6 @@
 
 //TODO: AST Manipulation API.
-module.exports = (function (){
+(function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -215,7 +215,7 @@ function ASTNode(type, attr)
  return obj;
 }
 
-utils.extend(ASTNode,
+module.exports = utils.extend(ASTNode,
 {
  ENUM : ENUM,
  prototype :
@@ -229,7 +229,6 @@ utils.extend(ASTNode,
  }
 });
 
-return ASTNode;
 }());
 
 

@@ -1,4 +1,4 @@
-module.exports = (function (){
+(function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -172,8 +172,7 @@ function Analyzer(node)
  return node;
 }
 
-return Analyzer;
-
+module.exports = Analyzer;
 }());
 
 

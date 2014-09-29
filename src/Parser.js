@@ -1,4 +1,4 @@
-module.exports = (function (){
+(function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -313,7 +313,8 @@ function Parser(bbmStr, options)
  return Analyzer(parser.root);
 }
 
-return Parser;
+
+module.exports = Parser;
 }());
 
 

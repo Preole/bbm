@@ -1,4 +1,4 @@
-module.exports = (function (){
+(function (){
 "use strict";
 
 var utils = require("./utils.js"),
@@ -42,7 +42,8 @@ function setOpt(options)
  return utils.extend(currOpt, options);
 }
 
-return utils.extend(BBM, {
+module.exports = utils.extend(BBM,
+{
  parseBBM : parseBBM,
  setOpt : setOpt,
  currOpt : currOpt
