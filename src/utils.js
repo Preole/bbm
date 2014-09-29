@@ -1,21 +1,34 @@
-module.exports = (function (){
+(function (){
 "use strict";
 
-var toString = Object.prototype.toString;
+function toString(obj)
+{
+ return Object.prototype.toString.call(obj);
+}
+
+function isNull(obj)
+{
+ return obj === null;
+}
 
 function isObject(obj)
 {
- return obj instanceof Object || typeof obj === "object";
+ return obj instanceof Object || (typeof obj === "object" && !isNull(obj));
 }
 
 function isString(obj)
 {
- return typeof obj === "string" || toString.call(obj) === "[object String]";
+ return typeof obj === "string" || toString(obj) === "[object String]";
 }
 
 function isNumber(obj)
 {
- return typeof obj === "number" || toString.call(obj) === "[object Number]";
+ return typeof obj === "number" || toString(obj) === "[object Number]";
+}
+
+function isFunction(obj)
+{
+ return typeof obj === "function" || toString(obj) === "[object Function]";
 }
 
 function isBlankString(str)
@@ -48,12 +61,15 @@ function extend(obj)
  return toObj;
 }
 
-return {
+module.exports {
+ isNull : isNull,
  isObject : isObject,
  isString : isString,
  isNumber : isNumber,
+ isFunction : isFunction,
  isBlankString : isBlankString,
  hasOwn : hasOwn,
  extend : extend
 };
+
 }());

@@ -31,16 +31,17 @@ function BBM(bbmStr, options)
  return Parser(bbmStr, utils.extend({}, currOpt, options));
 }
 
-function setOptions(options)
+function setOpt(options)
 {
- utils.extend(currOpt, options);
+ return utils.extend(currOpt, options);
 }
 
 return utils.extend(BBM, {
  Lexer : Lexer,
  Parser : Parser,
  ASTNode : ASTNode,
- setOptions : setOptions
+ setOpt : setOpt,
+ currOpt : currOpt
 });
 
 }());
