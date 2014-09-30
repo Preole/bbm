@@ -2,6 +2,7 @@
 "use strict";
 
 var utils = require("./utils.js"),
+Parser = require("./Parser.js"),
 defOpt =
 {
  disallowed : [],
@@ -33,7 +34,6 @@ TODO: Returns a tree.
 */
 function parseBBM(bbmStr, options)
 {
- var Parser = require("./Parser.js");
  return Parser(bbmStr, utils.extend({}, currOpt, options));
 }
 

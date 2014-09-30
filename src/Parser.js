@@ -11,7 +11,6 @@ ParserBase = require("./ParserBase.js"),
 Analyzer = require("./Analyzer.js"),
 
 EOF = {},
-RE_NL_TAIL = /[\v\f\n]$|\r\n?$/,
 lexMapBlock =
 {
  TH : parseListPre,
@@ -204,7 +203,7 @@ function parsePre(lexTok)
 {
  var startPos = this.shiftUntilPast(untilNL),
   endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-  text = this.sliceText(startPos, endPos, lexTok.col).replace(RE_NL_TAIL, "");
+  text = utils.rmNLTail(this.sliceText(startPos, endPos, lexTok.col));
 
  if (lexTok.type === LEX.PRE && text.length > 0)
  {

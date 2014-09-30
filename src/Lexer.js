@@ -4,8 +4,8 @@
 var utils = require("./utils.js"),
 
 STREX = {
- WS : "[ \\t\\u2000-\\u200d\\u205f\\u1680\\u237d\\u2420\\u2422\\u2423\\u3000]",
- EOL : "(?=[\\v\\f\\n]|\\r\\n?|$)"
+ WS : "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]",
+ EOL : "(?=[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?|$)"
 },
 
 RULES = (function (){
