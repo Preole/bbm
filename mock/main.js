@@ -5,7 +5,7 @@ var fs = require("fs"),
  fsOptR = {encoding : "utf-8"},
  tree = BBM(fs.readFileSync("./input.txt", fsOptR));
  
-console.log(tree);
+console.log(tree.toString());
 
 function traverse(node)
 {

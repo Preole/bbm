@@ -231,6 +231,12 @@ function toJSON()
  return obj;
 }
 
+function toString()
+{
+ return JSON.stringify(this, null, " ");
+}
+
+
 module.exports = utils.extend(ASTNode,
 {
  ENUM : ENUM,
@@ -243,7 +249,9 @@ module.exports = utils.extend(ASTNode,
   val : val,
   each : each,
   reduce : reduce,
-  toJSON : toJSON
+  toJSON : toJSON,
+  toString : toString,
+  valueOf : toString
  }
 });
 

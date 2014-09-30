@@ -62,7 +62,7 @@ function rmNL(str)
 
 function rmNLTail(str)
 {
- return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+$/ "");
+ return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+$/, "");
 }
 
 function rmCTRL(str)

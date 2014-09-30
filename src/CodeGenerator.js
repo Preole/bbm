@@ -54,7 +54,7 @@ function printXHTML(node)
 
 function printIndent(level)
 {
- //TODO: Repeat some white space.
+ return utils.repeatString(" ", Number(level) || 0);
 }
 
 
