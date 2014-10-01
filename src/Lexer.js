@@ -2,34 +2,32 @@
 "use strict";
 
 var utils = require("./utils.js"),
-
-STREX = {
- WS : "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]",
- EOL : "(?=[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?|$)"
-},
+WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]",
+NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?",
+EOL = "(?=" + NL + "|$)",
 
 RULES = (function (){
 return [
  Rule("ESCAPE"   , "\\\\[\\S\\s]"),
- Rule("TH"       , "!!" + STREX.WS),
- Rule("TD"       , "\\|\\|" + STREX.WS),
- Rule("TRSEP"    , "\\|[=]+" + STREX.EOL),
- Rule("ATX_END"  , "=+" + STREX.EOL),
+ Rule("TH"       , "!!" + WS),
+ Rule("TD"       , "\\|\\|" + WS),
+ Rule("TRSEP"    , "\\|[=]+" + EOL),
+ Rule("ATX_END"  , "=+" + EOL),
  Rule("ATX"      , "=+"),
- Rule("HR"       , "---[\\-]+" + STREX.EOL),
- Rule("COMMENT"  , "///[/]+" + STREX.EOL),
- Rule("CLASS"    , "\\.\\." + STREX.WS),
- Rule("ID"       , "\\." + STREX.WS),
+ Rule("HR"       , "---[\\-]+" + EOL),
+ Rule("COMMENT"  , "///[/]+" + EOL),
+ Rule("CLASS"    , "\\.\\." + WS),
+ Rule("ID"       , "\\." + WS),
  Rule("GT"       , ">"),
  Rule("REF"      , ":{"),
  Rule("REF_END"  , "}:"),
- Rule("DD"       , ":" + STREX.WS),
- Rule("DT"       , ";" + STREX.WS),
- Rule("OL"       , "[0-9]+\\." + STREX.WS),
- Rule("OL"       , "#\\." + STREX.WS),
- Rule("DIV"      , "\\*\\*\\*[*]+" + STREX.EOL),
- Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + STREX.WS),
- Rule("PRE"      , "\\\"\\\"[\\\"]+" + STREX.EOL),
+ Rule("DD"       , ":" + WS),
+ Rule("DT"       , ";" + WS),
+ Rule("OL"       , "[0-9]+\\." + WS),
+ Rule("OL"       , "#\\." + WS),
+ Rule("DIV"      , "\\*\\*\\*[*]+" + EOL),
+ Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS),
+ Rule("PRE"      , "\\\"\\\"[\\\"]+" + EOL),
  Rule("CODE"     , "\\\"\\\"[\\\"]+"),
  Rule("DEL"      , "{--"),
  Rule("DEL_END"  , "--}"),
@@ -46,14 +44,14 @@ return [
  Rule("LINK_INT" , "#\\["),
  Rule("LINK_CONT", "\\-\\["),
  Rule("BRACKET_R", "\\]"),
- Rule("NL"       , "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?"),
- Rule("WS"       , STREX.WS + "+")
+ Rule("NL"       , NL),
+ Rule("WS"       , WS + "+")
 ];
 }()),
 
 ENUM = RULES.reduce(reduceRulesTypes, {TEXT : "TEXT"}),
-RENL = new RegExp(/[\v\f\n\u0085\u2028\u2029]|\r\n?/),
-REGEX = new RegExp(RULES.map(mapRules).join("|"), "g");
+REGEX = new RegExp(RULES.map(mapRules).join("|"), "g"),
+RENL = new RegExp(NL);
 
 
 
