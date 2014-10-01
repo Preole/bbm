@@ -91,15 +91,6 @@ function updateLinesCols(token, index, tokens)
  token.col = nlCount > 0 ? 0 : prevTok.col + prevTok.lexeme.length;
 }
 
-//Remove leading backslash on escape tokens.
-function updateEscape(token, index)
-{
- if (token.type === ENUM.ESCAPE)
- {
-  token.lexeme = token.lexeme.slice(1);
- }
-}
-
 //Treat prohibited token types as plain text.
 function updateDisallowed(token)
 {
@@ -153,7 +144,6 @@ function Lexer(strInput, disallowed)
   tokens.push(LexToken(strInput.slice(lastPos), ENUM.TEXT));
  }
  
- tokens.forEach(updateEscape);
  tokens.forEach(updateLinesCols);
  if (Array.isArray(disallowed) && disallowed.length > 0)
  {
