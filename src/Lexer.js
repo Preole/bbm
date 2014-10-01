@@ -46,13 +46,13 @@ return [
  Rule("LINK_INT" , "#\\["),
  Rule("LINK_CONT", "\\-\\["),
  Rule("BRACKET_R", "\\]"),
- Rule("NL"       , "[\\v\\f\\n]|\\r\\n?"),
+ Rule("NL"       , "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?"),
  Rule("WS"       , STREX.WS + "+")
 ];
 }()),
 
 ENUM = RULES.reduce(reduceRulesTypes, {TEXT : "TEXT"}),
-RENL = /[\v\f\n]|\r\n?/,
+RENL = new RegExp(/[\v\f\n\u0085\u2028\u2029]|\r\n?/),
 REGEX = new RegExp(RULES.map(mapRules).join("|"), "g");
 
 
