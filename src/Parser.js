@@ -8,7 +8,6 @@ ASTNode = require("./ASTNode.js"),
 AST = ASTNode.ENUM,
 ParserInline = require("./ParserInline.js"),
 ParserBase = require("./ParserBase.js"),
-Analyzer = require("./Analyzer.js"),
 
 EOF = {},
 lexMapBlock =
@@ -311,7 +310,7 @@ function Parser(bbmStr, options)
  {
   parser.root.append(parseBlock.call(parser));
  }
- return Analyzer(parser.root);
+ return parser.root;
 }
 
 module.exports = Parser;

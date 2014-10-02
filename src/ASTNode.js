@@ -51,7 +51,7 @@ ENUM =
 Method: Append
 --------------
 */
-
+EMPTY = {},
 MAP_APPEND =
 {
  TR_TMP : appendTable,
@@ -142,29 +142,26 @@ function appendNode(node)
 
 function appendAfterLabel(node)
 {
- var prev = this.last(),
-  pAttr = prev.attr || {},
-  nAttr = node.attr || {};
-
+ var prev = this.last(), nAttr = node.attr || EMPTY;
  if (!(prev && (prev.type === ENUM.ID || prev.type === ENUM.CLASS)))
  {
   return;
  }
  
- if (pAttr.id)
+ if (prev.attr.id)
  {
-  nAttr.id = pAttr.id;
+  nAttr.id = prev.attr.id;
  }
- else if (pAttr["class"])
+ else if (prev.attr["class"])
  {
   nAttr["class"] = utils.isString(nAttr["class"]) ? nAttr["class"] : "";
-  nAttr["class"] = nAttr["class"] + " " + last.attr["class"];
+  nAttr["class"] = nAttr["class"] + " " + prev.attr["class"];
  }
 }
 
 function appendSimple(node)
 {
- appendAfterClassID.call(this, node);
+ appendAfterLabel.call(this, node);
  this.nodes.push(node);
 }
 
