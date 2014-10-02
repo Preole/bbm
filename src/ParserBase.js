@@ -2,7 +2,8 @@
 "use strict";
 
 var utils = require("./utils.js"),
-LEX = require("./Lexer.js").ENUM;
+Lexer = require("./Lexer.js"),
+LEX = Lexer.ENUM;
 
 /*
 Private methods
@@ -93,12 +94,21 @@ function sliceText(fromPos, toPos, minCol)
  return this.slice(fromPos, toPos, minCol).map(doSliceText).join("");
 }
 
+function each(callback, thisArg)
+{
+ this.tokens.forEach(function (token, index, tokens){
+  callback.call(thisArg, token, index, tokens);
+ });
+ return this;
+}
 
 
+//TODO: Rename/Write as a Array<LexToken> wrapper.
+//TODO: Rewrite constructor to avoid Lexing twice.
 function ParserBase(tokens, options)
 {
  var obj = (this instanceof ParserBase) ? this : new ParserBase;
- obj.tokens = tokens || []; //Array of LexToken
+ obj.tokens = utils.isString(tokens) ? Lexer(tokens) : tokens;
  obj.currPos = 0; //Current token index
  obj.currlvl = 0; //Current nesting level
  obj.options = options || {};
@@ -109,6 +119,7 @@ module.exports = utils.extend(ParserBase,
 {
  prototype :
  {
+  each : each,
   peekAt : peekAt,
   peek : peek,
   peekT : peekT,

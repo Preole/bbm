@@ -45,6 +45,13 @@ ENUM =
  TEXT : "TEXT"
 },
 
+
+ 
+/*
+Method: Append
+--------------
+*/
+
 MAP_APPEND =
 {
  TR_TMP : appendTable,
@@ -57,12 +64,6 @@ MAP_APPEND =
  LI : appendULOL,
 };
 
- 
-/*
-Private Methods : Append
-------------------------
-*/
-
 function appendTable(node)
 {
  var last = this.last(), isRow = node.type === ENUM.TR_TMP;
@@ -72,7 +73,7 @@ function appendTable(node)
   last = ASTNode(ENUM.TABLE);
   appendSimple.call(this, last);
  }
- if (last.nodes.length <= 0)
+ if (last.size() <= 0)
  {
   appendSimple.call(last, ASTNode(ENUM.TR));
  }
@@ -139,22 +140,45 @@ function appendNode(node)
  }
 }
 
-function appendSimple(node)
+function appendAfterLabel(node)
 {
- this.nodes.push(node);
- node.parent = this;
+ var prev = this.last(),
+  pAttr = prev.attr || {},
+  nAttr = node.attr || {};
+
+ if (!(prev && (prev.type === ENUM.ID || prev.type === ENUM.CLASS)))
+ {
+  return;
+ }
+ 
+ if (pAttr.id)
+ {
+  nAttr.id = pAttr.id;
+ }
+ else if (pAttr["class"])
+ {
+  nAttr["class"] = utils.isString(nAttr["class"]) ? nAttr["class"] : "";
+  nAttr["class"] = nAttr["class"] + " " + last.attr["class"];
+ }
 }
 
-
-
-/*
-Public Methods
---------------
-*/
+function appendSimple(node)
+{
+ appendAfterClassID.call(this, node);
+ this.nodes.push(node);
+}
 
 function append(nodeText)
 {
- if (utils.isString(nodeText) && nodeText.length > 0)
+ if (arguments.length > 1)
+ {
+  utils.toArray(arguments).forEach(this.append, this);
+ }
+ else if (Array.isArray(nodeText))
+ {
+  nodeText.forEach(this.append, this);
+ }
+ else if (utils.isString(nodeText) && nodeText.length > 0)
  {
   appendText.call(this, nodeText);
  }
@@ -162,11 +186,24 @@ function append(nodeText)
  {
   appendNode.call(this, nodeText);
  }
- else if (Array.isArray(nodeText))
- {
-  nodeText.forEach(this.append, this);
- }
  return this;
+}
+
+
+
+function size()
+{
+ return this.nodes.length;
+}
+
+function pop()
+{
+ return this.nodes.pop();
+}
+
+function shift()
+{
+ return this.nodes.shift();
 }
 
 function first()
@@ -185,6 +222,12 @@ function empty()
  return this;
 }
 
+
+
+/**
+ * Sets the node's value, which can be anything. Currently, TEXT node
+ * uses this to store the text it needs to serialize.
+ */
 function val(value)
 {
  if (utils.isString(value))
@@ -195,45 +238,126 @@ function val(value)
  return this.value;
 }
 
+/**
+ * Flat forEach: Executes callback once for each direct child this node
+ * contains.
+ */
 function each(callback, thisArg)
 {
- callback.call(thisArg, this);
- this.nodes.forEach(function (node){
-  node.each(callback, thisArg);
+ if (Array.isArray(this.nodes))
+ {
+  this.nodes.forEach(function (node, index, sibs){
+   callback.call(thisArg, node, index, sibs);
+  });
+ }
+ return this;
+}
+
+/**
+ * Flat filter: As .each(), except remove nodes that return a falsy value.
+ */
+function filter(callback, thisArg)
+{
+ if (Array.isArray(this.nodes))
+ {
+  this.nodes = this.nodes.filter(function (node, index, sibs){
+   return callback.call(thisArg, node, index, sibs);
+  });
+ }
+ return this;
+}
+
+
+/**
+ * Traverses the abstract syntax tree in pre-order, executing callback 
+ * once per node. Returns the starting node.
+ */
+function preEach(callback, thisArg)
+{
+ return preEachDo.call(this, callback, thisArg, []);
+}
+
+function preEachDo(callback, thisArg, stack)
+{
+ callback.call(thisArg, this, stack);
+ this.each(function (node){
+  stack.push(node);
+  preEachDo.call(node, callback, thisArg, stack);
+  stack.pop(node);
  });
  return this;
 }
 
-function reduce(callback, thisArg)
+
+/**
+ * As preEach, except it returns the accumulator instead.
+ */
+function preReduce(callback, acc, thisArg)
 {
- this.each(callback, thisArg);
- return thisArg;
+ return preReduceDo.call(this, callback, acc, thisArg, []);
+}
+
+function preReduceDo(callback, acc, thisArg, stack)
+{
+ acc = callback.call(thisArg, acc, this, stack);
+ this.each(function (node){
+  stack.push(node);
+  acc = postReduceDo.call(node, callback, acc, thisArg, stack);
+  stack.pop(node);
+ });
+ return acc;
+}
+
+
+/**
+ * As preEach, except it traverses the tree in post-order.
+ */
+function postEach(callback, thisArg)
+{
+ return postEachDo.call(this, callback, thisArg, []);
+}
+
+function postEachDo(callback, thisArg, stack)
+{
+ this.each(function (node){
+  stack.push(node);
+  postEachDo.call(node, callback, thisArg, stack);
+  stack.pop(node);
+ });
+ callback.call(thisArg, this, stack);
+ return this;
+}
+
+
+/**
+ * As preReduce, except it accumulates the value in post-order.
+ */
+function postReduce(callback, acc, thisArg)
+{
+ return postReduceDo.call(this, callback, acc, thisArg, []);
+}
+
+function postReduceDo(callback, acc, thisArg, stack)
+{
+ this.each(function (node){
+  stack.push(node);
+  acc = postReduceDo.call(node, callback, acc, thisArg, stack);
+  stack.pop(node);
+ });
+ acc = callback.call(thisArg, acc, this, stack);
+ return acc;
 }
 
 
 
-
-
+//TODO: Rewrite constructor to avoid double creation.
 function ASTNode(type, attr)
 {
  var obj = (this instanceof ASTNode) ? this : new ASTNode;
  obj.type = type || "";
- obj.parent = null;
  obj.attr = utils.isObject(attr) ? attr : {};
  obj.nodes = [];
  return obj;
-}
-
-function toJSON()
-{
- var obj = utils.extend({}, this);
- delete obj.parent;
- return obj;
-}
-
-function toString()
-{
- return JSON.stringify(this, null, " ");
 }
 
 
@@ -243,15 +367,19 @@ module.exports = utils.extend(ASTNode,
  prototype :
  {
   append : append,
+  size : size,
+  pop : pop,
+  shift : shift,
   first : first,
   last : last,
   empty : empty,
   val : val,
   each : each,
-  reduce : reduce,
-  toJSON : toJSON,
-  toString : toString,
-  valueOf : toString
+  filter : filter,
+  preEach : preEach,
+  preReduce : preReduce,
+  postEach : postEach,
+  postReduce : postReduce
  }
 });
 

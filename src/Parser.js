@@ -220,9 +220,9 @@ function parseATX(lexTok)
 
  if (!utils.isBlankString(text))
  {
-  var node = ASTNode(AST.HEADER);
+  var node = ASTNode(AST.HEADER).append(text);
   node.level = hLen;
-  node.append(text);
+  node.offset = 0;
   return node;
  }
 }
@@ -294,12 +294,13 @@ function parsePara(lexTok, forceType)
  {
   node.type = AST.HEADER;
   node.level = endTok.type === LEX.HR ? 2 : 1;
+  node.offset = 0;
  }
  
  return node;
 }
 
-
+//TODO: Skip Lexer step: Turn ParserBase into LexTokens.
 function Parser(bbmStr, options)
 {
  var parser = ParserBase(Lexer(bbmStr, options.disallowed), options);
@@ -313,8 +314,13 @@ function Parser(bbmStr, options)
  return Analyzer(parser.root);
 }
 
-
 module.exports = Parser;
-}());
 
+//TODO: Inject (Expose) Parsing engine into AST and its prototype.
+ASTNode.prototype.bbm = function (bbmStr, options)
+{
+ return this.empty().append(Parser(bbmStr, options));
+};
+
+}());
 

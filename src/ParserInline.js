@@ -178,13 +178,17 @@ function parseCode(lexTok)
  return node.append(this.sliceText(startPos, endPos));
 }
 
-function ParseInline(tokens, options)
+//TODO: Skip Lexer step: Turn ParserBase into LexTokens.
+function ParserInline(tokens, options)
 {
  var toks = utils.isString(tokens) ? Lexer(tokens, options.disallowed) : tokens;
  return parsePara.call(ParserBase(toks, options), []);
 }
 
-
-
-module.exports = ParseInline;
+//TODO: Inject inline parser into ASTNode and its prototype.
+module.exports = ParserInline;
+ASTNode.prototype.bbmInline = function (bbmStr, options)
+{
+ return this.empty().append(ParserInline(bbmStr, options));
+};
 }());
