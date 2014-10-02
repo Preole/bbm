@@ -350,14 +350,17 @@ function postReduceDo(callback, acc, thisArg, stack)
 
 
 
-//TODO: Rewrite constructor to avoid double creation.
 function ASTNode(type, attr)
 {
- var obj = (this instanceof ASTNode) ? this : new ASTNode;
- obj.type = type || "";
- obj.attr = utils.isObject(attr) ? attr : {};
- obj.nodes = [];
- return obj;
+ if (!(this instanceof ASTNode))
+ {
+  return new ASTNode(type, attr);
+ }
+ 
+ this.type = type || "";
+ this.attr = utils.isObject(attr) ? attr : {};
+ this.nodes = [];
+ return this;
 }
 
 

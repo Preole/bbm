@@ -103,16 +103,18 @@ function each(callback, thisArg)
 }
 
 
-//TODO: Rename/Write as a Array<LexToken> wrapper.
-//TODO: Rewrite constructor to avoid Lexing twice.
+//TODO: Refactor as a Array<LexToken> wrapper.
 function ParserBase(tokens, options)
 {
- var obj = (this instanceof ParserBase) ? this : new ParserBase;
- obj.tokens = utils.isString(tokens) ? Lexer(tokens) : tokens;
- obj.currPos = 0; //Current token index
- obj.currlvl = 0; //Current nesting level
- obj.options = options || {};
- return obj;
+ if (!(this instanceof ParserBase))
+ {
+  return new ParserBase(tokens, options);
+ }
+ this.tokens = utils.isString(tokens) ? Lexer(tokens) : tokens;
+ this.currPos = 0; //Current token index
+ this.currlvl = 0; //Current nesting level
+ this.options = options || {};
+ return this;
 }
 
 module.exports = utils.extend(ParserBase,
