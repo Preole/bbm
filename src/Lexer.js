@@ -58,7 +58,7 @@ return [
 ];
 }()),
 
-ENUM = RULES.reduce(reduceRulesTypes, {TEXT : "TEXT"}),
+ENUM = RULES.reduce(_reduceRulesTypes, {TEXT : "TEXT"}),
 REGEX = new RegExp(RULES.map(_mapRules).join("|"), "g");
 
 function _Rule(name, pattern)
@@ -134,7 +134,7 @@ function _slice(tok, index, tokens)
  var minCol = Number(this) || 0,
   prev = tokens[index - 1];
 
- if (tok.type === LEX.WS && (!prev || prev.type === LEX.NL))
+ if (tok.type === ENUM.WS && (!prev || prev.type === ENUM.NL))
  {
   tok.lexeme = tok.lexeme.slice(minCol);
  }
@@ -151,7 +151,7 @@ Private methods: Iteration
 --------------------------
 */
 
-function _updateEscape(token)
+function _updateEscapes(token)
 {
  if (token.type === ENUM.ESCAPE && token.lexeme.length > 1)
  {
@@ -213,8 +213,8 @@ function isLineStart()
   prev2 = this.peek(-2);
   
  return !prev1 || 
-  prev1.type === LEX.NL || 
-  prev1.type === LEX.WS && (!prev2 || prev2.type === LEX.NL);
+  prev1.type === ENUM.NL || 
+  prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
 }
 
 function isLineEnd()
@@ -223,8 +223,8 @@ function isLineEnd()
   next = this.peek(1);
   
  return !now || 
-  now.type === LEX.NL ||
-  now.type === LEX.WS && (!next || next.type === LEX.NL);
+  now.type === ENUM.NL ||
+  now.type === ENUM.WS && (!next || next.type === ENUM.NL);
 }
 
 function isMatchDelim(start)

@@ -107,7 +107,7 @@ function parseBlock(ignoreLine)
   node = null;
   
  this.currlvl += 1;
- if (func && isNotAbuse && (ignoreLine || isLineStart.call(this)))
+ if (func && isNotAbuse && (ignoreLine || this.isLineStart()))
  {
   node = func.call(this, tok);
  }
