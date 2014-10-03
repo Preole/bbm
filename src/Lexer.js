@@ -252,7 +252,7 @@ function shift()
 
 function shiftUntil(callback)
 {
- var params = Array.prototype.slice.call(arguments, 1),
+ var params = __.toArray(arguments, 1),
   token = this.peek();
   
  while (token && !callback.apply(this, [token].concat(params)))

@@ -170,7 +170,7 @@ function append(nodeText)
 {
  if (arguments.length > 1)
  {
-  Array.prototype.slice.call(arguments).forEach(this.append, this);
+  __.toArray(arguments).forEach(this.append, this);
  }
  else if (Array.isArray(nodeText))
  {

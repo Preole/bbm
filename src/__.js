@@ -6,9 +6,9 @@ function toString(obj)
  return Object.prototype.toString.call(obj);
 }
 
-function toArray(obj)
+function toArray(obj, startPos)
 {
- return Array.prototype.slice.call(obj);
+ return Array.prototype.slice.call(obj, Number(startPos) || 0);
 }
 
 function isNull(obj)
