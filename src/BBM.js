@@ -2,6 +2,7 @@
 "use strict";
 
 var __ = require("./__.js"),
+ASTNode = require("./ASTNode.js"),
 Parser = require("./Parser.js"),
 defOpt =
 {
@@ -25,27 +26,27 @@ TODO: Add Mapping between target name and actual generated output.
 */
 function BBM(bbmStr, options)
 {
- return parseBBM.call(null, bbmStr, options);
-}
+ /*
+ Many cases...
+ 1: BBM is a set of ASTNodes. Given a string and some parsing options, create a BBM object.
+ 2: Add .toHTML to the node set.
+ */
 
-/*
-TODO: Returns a tree.
-*/
-function parseBBM(bbmStr, options)
-{
  return Parser(bbmStr, __.extend({}, currOpt, options));
 }
 
 function setOpt(options)
 {
- return __.extend(currOpt, options);
+ if (arguments.length > 0)
+ {
+  return __.extend(currOpt, options);
+ }
+ return currOpt;
 }
 
 module.exports = __.extend(BBM,
 {
- parseBBM : parseBBM,
- setOpt : setOpt,
- currOpt : currOpt
+ setOpt : setOpt
 });
 
 }());
