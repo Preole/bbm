@@ -817,9 +817,9 @@ EOF
 End of input stream. When encountered, terminate all parsing immediately.
  
 ESCAPE
- | (?<=\\\\)[\S\s]
+ | (?<=\\\\) ~(WS | NL)
  ;
-Turns **any** character immediately after the single backslash into the 
-default TEXT token, discarding the preceding backslash.
+Turns non-whitespace character immediately after the single backslash 
+into the default TEXT token, discarding the preceding backslash.
 """
 

@@ -13,11 +13,10 @@ WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]",
 NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?",
 EOL = "(?=" + NL + "|$)",
 EMPTY = _LexToken(),
-RENL = new RegExp(NL),
 
 RULES = (function (){
 return [
- _Rule("ESCAPE"   , "\\\\[\\S\\s]"),
+ _Rule("ESCAPE"   , "\\\\[\\S]"),
  _Rule("TH"       , "!!" + WS),
  _Rule("TD"       , "\\|\\|" + WS),
  _Rule("TRSEP"    , "\\|[=]+" + EOL),
@@ -59,6 +58,7 @@ return [
 }()),
 
 ENUM = RULES.reduce(_reduceRulesTypes, {TEXT : "TEXT"}),
+RENL = new RegExp(NL),
 REGEX = new RegExp(RULES.map(_mapRules).join("|"), "g");
 
 function _Rule(name, pattern)
@@ -247,12 +247,6 @@ Public Methods: shift
 function shift()
 {
  this.currPos += 1;
- return this.currPos;
-}
-
-function shiftTo(index)
-{
- this.currPos = (Number(index) || 0);
  return this.currPos;
 }
 
