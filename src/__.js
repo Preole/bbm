@@ -6,11 +6,6 @@ function toString(obj)
  return Object.prototype.toString.call(obj);
 }
 
-function toArray(obj)
-{
- Array.prototype.slice.call(obj);
-}
-
 function isNull(obj)
 {
  return obj === null;
@@ -124,7 +119,6 @@ function extend(obj)
 
 module.exports = {
  toString : toString,
- toArray : toArray,
  isNull : isNull,
  isObject : isObject,
  isString : isString,

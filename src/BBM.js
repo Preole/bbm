@@ -1,11 +1,10 @@
 (function (){
 "use strict";
 
-var utils = require("./utils.js"),
+var __ = require("./__.js"),
 Parser = require("./Parser.js"),
 defOpt =
 {
- disallowed : [],
  maxBlocks : 8,
  maxSpans : 8,
  
@@ -18,7 +17,7 @@ defOpt =
  target : "html",
  headerOffset : 0
 },
-currOpt = utils.extend({}, defOpt);
+currOpt = __.extend({}, defOpt);
 
 
 /*
@@ -34,15 +33,15 @@ TODO: Returns a tree.
 */
 function parseBBM(bbmStr, options)
 {
- return Parser(bbmStr, utils.extend({}, currOpt, options));
+ return Parser(bbmStr, __.extend({}, currOpt, options));
 }
 
 function setOpt(options)
 {
- return utils.extend(currOpt, options);
+ return __.extend(currOpt, options);
 }
 
-module.exports = utils.extend(BBM,
+module.exports = __.extend(BBM,
 {
  parseBBM : parseBBM,
  setOpt : setOpt,

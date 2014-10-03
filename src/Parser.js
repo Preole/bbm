@@ -1,13 +1,12 @@
 (function (){
 "use strict";
 
-var utils = require("./utils.js"),
+var __ = require("./__.js"),
 Lexer = require("./Lexer.js"),
 LEX = Lexer.ENUM,
 ASTNode = require("./ASTNode.js"),
 AST = ASTNode.ENUM,
 ParserInline = require("./ParserInline.js"),
-ParserBase = require("./ParserBase.js"),
 
 EOF = {},
 lexMapBlock =
@@ -56,7 +55,7 @@ function untilPre(token, tokStart)
  return token.type === tokStart.type &&
   token.col === tokStart.col &&
   token.lexeme === tokStart.lexeme &&
-  isLineStart.call(this);
+  this.isLineStart();
 }
 
 function untilNL(token)
@@ -76,39 +75,13 @@ function untilATXEnd(token)
 
 function untilParaEnd(token, minCol)
 {
- return isLineStart.call(this) && (
-  isLineEnd.call(this) ||
+ return this.isLineStart() && (
+  this.isLineEnd() ||
   lexListParaDelim.indexOf(token.type) !== -1 ||
   lexListWSNL.indexOf(token.type) === -1 && token.col < minCol
  );
 }
 
-function isLineStart()
-{
- var prev1 = this.peek(-1),
-  prev2 = this.peek(-2);
-  
- return !prev1 || 
-  prev1.type === LEX.NL || 
-  prev1.type === LEX.WS && (!prev2 || prev2.type === LEX.NL);
-}
-
-function isLineEnd()
-{
- var now = this.peek(),
-  next = this.peek(1);
-  
- return !now || 
-  now.type === LEX.NL ||
-  now.type === LEX.WS && (!next || next.type === LEX.NL);
-}
-
-function isDivMatch(start, now)
-{
- return start.type === now.type && 
-  start.lexeme.length === now.lexeme.length &&
-  start.col === now.col && isLineStart.call(this);
-}
 
 function popUntil(tokens)
 {
@@ -130,7 +103,7 @@ function parseBlock(ignoreLine)
 {
  var tok = this.peekAt(this.shiftUntil(untilNotWSNL)),
   func = tok ? lexMapBlock[tok.type] : null,
-  isNotAbuse = this.currlvl < (this.options.maxBlocks || 8),
+  isNotAbuse = this.currlvl < (Number(this.options.maxBlocks) || 8),
   node = null;
   
  this.currlvl += 1;
@@ -149,7 +122,7 @@ function parseBlock(ignoreLine)
 function parseListPre(lexTok)
 {
  this.shift();
- if (isLineEnd.call(this))
+ if (this.isLineEnd())
  {
   return;
  }
@@ -188,7 +161,7 @@ function parseDiv(lexTok)
  this.shiftUntilPast(untilNL);
  while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
  {
-  if (isDivMatch.call(this, lexTok, tok))
+  if (this.isMatchDelim(lexTok))
   {
    break;
   }
@@ -202,7 +175,7 @@ function parsePre(lexTok)
 {
  var startPos = this.shiftUntilPast(untilNL),
   endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
-  text = utils.rmNLTail(this.sliceText(startPos, endPos, lexTok.col));
+  text = __.rmNLTail(this.sliceText(startPos, endPos, lexTok.col));
 
  if (lexTok.type === LEX.PRE && text.length > 0)
  {
@@ -217,7 +190,7 @@ function parseATX(lexTok)
   endPos = this.shiftUntilPast(untilATXEnd) - 1,
   text = this.sliceText(startPos, endPos).trim();
 
- if (!utils.isBlankString(text))
+ if (!__.isBlankString(text))
  {
   var node = ASTNode(AST.HEADER).append(text);
   node.level = hLen;
@@ -302,15 +275,14 @@ function parsePara(lexTok, forceType)
 //TODO: Skip Lexer step: Turn ParserBase into LexTokens.
 function Parser(bbmStr, options)
 {
- var parser = ParserBase(Lexer(bbmStr, options.disallowed), options);
- parser.root = ASTNode(AST.ROOT);
- parser.root.refTable = {};
- parser.root.options = parser.options;
- while (parser.peek())
+ var lexer = Lexer(bbmStr, options);
+ lexer.root = ASTNode(AST.ROOT);
+ lexer.root.refTable = {};
+ while (lexer.peek())
  {
-  parser.root.append(parseBlock.call(parser));
+  lexer.root.append(parseBlock.call(lexer));
  }
- return parser.root;
+ return lexer.root;
 }
 
 module.exports = Parser;

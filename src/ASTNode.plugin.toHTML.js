@@ -1,8 +1,9 @@
 (function (){
 "use strict";
 
-var utils = require("./utils.js"),
-AST = require("./ASTNode.js").ENUM,
+var __ = require("./__.js"),
+ASTNode = require("./ASTNode.js"),
+AST = ASTNode.ENUM,
 EMPTY = {},
 XHTML = [AST.HR, AST.LINK_IMG],
 INLINES =
@@ -69,7 +70,7 @@ function printXHTML(node, xFlag)
 
 function printIndent(level)
 {
- return utils.repeatString(" ", Number(level) || 0);
+ return __.repeatString(" ", Number(level) || 0);
 }
 
 function printHeader(node)
@@ -81,14 +82,14 @@ function printHeader(node)
 //TODO: Formalize options for the HTML processor.
 function printAttr(node)
 {
- var res = " ", attr = utils.isObject(node.attr) ? node.attr : EMPTY;
+ var res = " ", attr = __.isObject(node.attr) ? node.attr : EMPTY;
  for (var key in attr)
  {
-  if (utils.hasOwn(attr, key))
+  if (__.hasOwn(attr, key))
   {
-   res += utils.escapeATTR(key).substring(0, 2048)
+   res += __.escapeATTR(key).substring(0, 2048)
     + "=\"" 
-    + utils.escapeATTR(attr[key]).substring(0, 2048)
+    + __.escapeATTR(attr[key]).substring(0, 2048)
     + "\"";
   }
  }
@@ -105,7 +106,7 @@ function printTagName(node)
   printHeader(node) : 
   MAP_HTML[node.type];
 
- return utils.escapeATTR(tagName || "");
+ return __.escapeATTR(tagName || "");
 }
 
 function printTagOpen(node, stack)
@@ -141,7 +142,7 @@ function printTagClose(node, stack)
 //TODO: Account for indentation and NL removal: str.replace(NL, NL + Spaces);
 function printText(node, stack)
 {
- return utils.escapeHTML(node.value); 
+ return __.escapeHTML(node.val()); 
 }
 
 /*
@@ -151,12 +152,11 @@ TODO: Steps before outputting HTML:
 - Remove NL from TEXT nodes (Unless it's inside a PRE block)
 - Resolve URL references.
 - Determine header offsets.
-- Strip excessive characters from attributes.
-- 
+- Strip excessive characters from attributes. 
 */
 function printRecurse(accu, node, stack)
 {
- if (utils.isString(node.value))
+ if (node.type === AST.TEXT)
  {
   accu += printText.call(this, node, stack);
  }

@@ -3,7 +3,7 @@
 (function (){
 "use strict";
 
-var utils = require("./utils.js"),
+var __ = require("./__.js"),
 ENUM =
 {
  ROOT : "ROOT",
@@ -51,6 +51,7 @@ ENUM =
 Method: Append
 --------------
 */
+
 EMPTY = {},
 MAP_APPEND =
 {
@@ -120,7 +121,7 @@ function appendText(text)
  var last = this.last();
  if (last && last.type === ENUM.TEXT)
  {
-  last.value = last.value ? last.value + text : text;
+  last.val(last.val() ? last.val() + text : text);
  }
  else
  {
@@ -154,7 +155,7 @@ function appendAfterLabel(node)
  }
  else if (prev.attr["class"])
  {
-  nAttr["class"] = utils.isString(nAttr["class"]) ? nAttr["class"] : "";
+  nAttr["class"] = __.isString(nAttr["class"]) ? nAttr["class"] : "";
   nAttr["class"] = nAttr["class"] + " " + prev.attr["class"];
  }
 }
@@ -169,13 +170,13 @@ function append(nodeText)
 {
  if (arguments.length > 1)
  {
-  utils.toArray(arguments).forEach(this.append, this);
+  Array.prototype.slice.call(arguments).forEach(this.append, this);
  }
  else if (Array.isArray(nodeText))
  {
   nodeText.forEach(this.append, this);
  }
- else if (utils.isString(nodeText) && nodeText.length > 0)
+ else if (__.isString(nodeText) && nodeText.length > 0)
  {
   appendText.call(this, nodeText);
  }
@@ -222,14 +223,13 @@ function empty()
 
 
 /**
- * Sets the node's value, which can be anything. Currently, TEXT node
- * uses this to store the text it needs to serialize.
+ * Sets the node's string value.
  */
 function val(value)
 {
- if (utils.isString(value))
+ if (__.isString(value) || __.isNumber(value))
  {
-  this.value = value;
+  this.value = String(value);
   return this;
  }
  return this.value;
@@ -355,13 +355,13 @@ function ASTNode(type, attr)
  }
  
  this.type = type || "";
- this.attr = utils.isObject(attr) ? attr : {};
+ this.attr = __.isObject(attr) ? attr : {};
  this.nodes = [];
  return this;
 }
 
 
-module.exports = utils.extend(ASTNode,
+module.exports = __.extend(ASTNode,
 {
  ENUM : ENUM,
  prototype :

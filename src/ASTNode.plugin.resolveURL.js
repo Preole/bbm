@@ -1,7 +1,7 @@
 (function (){
 "use strict";
 
-var utils = require("./utils.js"),
+var __ = require("./__.js"),
 ASTNode = require("./ASTNode.js"),
 AST = ASTNode.ENUM,
 LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI],
@@ -11,21 +11,21 @@ SYMTABLE = {};
 function resolveHREF(node)
 {
  var href = node.attr.href,
-  refTable = utils.isObject(this.refTable) ? this.refTable : SYMTABLE;
+  refTable = __.isObject(this.refTable) ? this.refTable : SYMTABLE;
  
- node.attr.href = utils.hasOwn(refTable, href) ? refTable[href] : href;
- if (node.length() === 0)
+ node.attr.href = __.hasOwn(refTable, href) ? refTable[href] : href;
+ if (node.size() === 0)
  {
-  node.append(node.attr.href); //Use href as display text.
+  node.append(node.attr.href);
  }
 }
 
 function resolveIMG(node)
 {
  var src = node.attr.src,
-  refTable = utils.isObject(this.refTable) ? this.refTable : SYMTABLE;
+  refTable = __.isObject(this.refTable) ? this.refTable : SYMTABLE;
  
- node.attr.src = utils.hasOwn(refTable, src) ? refTable[src] : src;
+ node.attr.src = __.hasOwn(refTable, src) ? refTable[src] : src;
 }
 
 function recurseURL(currNode)

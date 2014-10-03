@@ -1,10 +1,9 @@
 (function (){
 "use strict";
 
-var utils = require("./utils.js"),
+var __ = require("./__.js"),
 ASTNode = require("./ASTNode.js"),
 AST = ASTNode.ENUM,
-AST_LONEPARA = [AST.DD, AST.LI, AST.TH, AST.TD, AST.BLOCKQUOTE],
 AST_ALONE =
 [
  AST.PRE,
@@ -22,7 +21,7 @@ AST_ALONE =
 
 function isNotBlank(node)
 {
- return !utils.isBlankString(utils.isString(node.value) ? node.value : "")
+ return !__.isBlankString(__.isString(node.val()) ? node.val() : "")
   || node.size() > 0
   || AST_ALONE.indexOf(node.type) > -1;
 }
@@ -30,30 +29,6 @@ function isNotBlank(node)
 function isNodeKept(node)
 {
  return AST_ALONE.indexOf(node.type) > -1 || node.size() > 0;
-}
-
-
-function recurseBlank(node)
-{
- if (!node.some(isNotBlank))
- {
-  node.empty();
- }
-
- if (node.type === AST.TABLE)
- {
-  recurseTR(node);
- }
- else if (node.type === AST.DL)
- {
-  recurseDL(node);
- }
- else if (AST_LONEPARA.indexOf(node.type) > -1)
- {
-  recurseLonePara(node);
- }
- 
- node.filter(isNodeKept);
 }
 
 function recurseTR(node)
@@ -91,13 +66,23 @@ function recurseDL(node)
  }
 }
 
-function recurseLonePara(node)
+function recurseBlank(node)
 {
- var first = node.first();
- if (node.size() === 1 && first.type === AST.P)
+ if (!node.some(isNotBlank))
  {
-  node.empty().append(first.nodes);
+  node.empty();
  }
+
+ if (node.type === AST.TABLE)
+ {
+  recurseTR(node);
+ }
+ else if (node.type === AST.DL)
+ {
+  recurseDL(node);
+ }
+ 
+ node.filter(isNodeKept);
 }
 
 

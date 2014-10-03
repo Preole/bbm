@@ -1,12 +1,11 @@
 (function (){
 "use strict";
 
-var utils = require("./utils.js"),
+var __ = require("./__.js"),
 Lexer = require("./Lexer.js"),
 LEX = Lexer.ENUM,
 ASTNode = require("./ASTNode.js"),
 AST = require("./ASTNode.js").ENUM,
-ParserBase = require("./ParserBase.js"),
 
 linkCont = [LEX.WS, LEX.NL, LEX.LINK_CONT],
 linksLex = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT],
@@ -73,7 +72,7 @@ function untilInline(tok)
 function parsePara(fStack, premade)
 {
  var node = premade || ASTNode(AST.P),
-  isNotAbuse = fStack.length < (this.options.maxSpans || 8),
+  isNotAbuse = fStack.length < (Number(this.options.maxSpans) || 8),
   txtStart = this.currPos,
   hasBracket = fStack.indexOf(LEX.BRACKET_R) > -1,
   fIndex = -1,
@@ -132,7 +131,7 @@ function parseLink(lexTok, fStack)
   endPos = this.shiftUntilPast(callback) - 1,
   href = this.sliceText(startPos, endPos).trim();
 
- if (utils.isBlankString(href))
+ if (__.isBlankString(href))
  {
   return;
  }
@@ -156,7 +155,7 @@ function parseImg(lexTok)
   src = this.sliceText(startPos, endPos).trim(),
   alt = src;
 
- if (utils.isBlankString(src))
+ if (__.isBlankString(src))
  {
   return;
  }
@@ -181,8 +180,7 @@ function parseCode(lexTok)
 //TODO: Skip Lexer step: Turn ParserBase into LexTokens.
 function ParserInline(tokens, options)
 {
- var toks = utils.isString(tokens) ? Lexer(tokens, options.disallowed) : tokens;
- return parsePara.call(ParserBase(toks, options), []);
+ return parsePara.call(Lexer(tokens, options), []);
 }
 
 //TODO: Inject inline parser into ASTNode and its prototype.
