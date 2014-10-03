@@ -6,6 +6,11 @@ function toString(obj)
  return Object.prototype.toString.call(obj);
 }
 
+function toArray(obj)
+{
+ return Array.prototype.slice.call(obj);
+}
+
 function isNull(obj)
 {
  return obj === null;
@@ -97,13 +102,13 @@ function hasOwn(obj, key)
  return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-function extend(obj)
+function extend()
 {
- var otherObjs = Array.prototype.slice.call(arguments).filter(isObject),
-  toObj = isObject(otherObjs[0]) ? otherObjs[0] : {};
+ var otherObjs = toArray(arguments).filter(isObject),
+  toObj = isObject(this) ? this : isObject(otherObjs[0]) ? otherObjs[0] : {};
   
- otherObjs.forEach(function (fromObj, index){
-  if (isObject(fromObj) && index > 0)
+ otherObjs.forEach(function (fromObj){
+  if (isObject(fromObj) && fromObj !== toObj)
   {
    for (var key in fromObj)
    {
@@ -119,6 +124,7 @@ function extend(obj)
 
 module.exports = {
  toString : toString,
+ toArray : toArray,
  isNull : isNull,
  isObject : isObject,
  isString : isString,
