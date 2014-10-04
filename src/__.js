@@ -97,7 +97,7 @@ function escapeURI(str)
 }
 
 
-function hasOwn(obj, key)
+function has(obj, key)
 {
  return Object.prototype.hasOwnProperty.call(obj, key);
 }
@@ -112,7 +112,7 @@ function extend()
   {
    for (var key in fromObj)
    {
-    if (hasOwn(fromObj, key))
+    if (has(fromObj, key))
     {
      toObj[key] = fromObj[key];
     }
@@ -139,7 +139,7 @@ module.exports = {
  escapeHTML : escapeHTML,
  escapeATTR : escapeATTR,
  escapeURI : escapeURI,
- hasOwn : hasOwn,
+ has : has,
  extend : extend
 };
 

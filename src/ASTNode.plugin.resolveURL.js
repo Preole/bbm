@@ -13,7 +13,7 @@ function resolveHREF(node)
  var href = node.attr.href,
   refTable = __.isObject(this.refTable) ? this.refTable : SYMTABLE;
  
- node.attr.href = __.hasOwn(refTable, href) ? refTable[href] : href;
+ node.attr.href = __.has(refTable, href) ? refTable[href] : href;
  if (node.size() === 0)
  {
   node.append(node.attr.href);
@@ -25,7 +25,7 @@ function resolveIMG(node)
  var src = node.attr.src,
   refTable = __.isObject(this.refTable) ? this.refTable : SYMTABLE;
  
- node.attr.src = __.hasOwn(refTable, src) ? refTable[src] : src;
+ node.attr.src = __.has(refTable, src) ? refTable[src] : src;
 }
 
 function recurseURL(currNode)

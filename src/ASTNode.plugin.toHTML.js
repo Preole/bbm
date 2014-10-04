@@ -85,7 +85,7 @@ function printAttr(node)
  var res = " ", attr = __.isObject(node.attr) ? node.attr : EMPTY;
  for (var key in attr)
  {
-  if (__.hasOwn(attr, key))
+  if (__.has(attr, key))
   {
    res += __.escapeATTR(key).substring(0, 2048)
     + "=\"" 

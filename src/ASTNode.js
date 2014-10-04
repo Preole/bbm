@@ -232,10 +232,10 @@ function val(value)
 {
  if (__.isString(value) || __.isNumber(value))
  {
-  this.value = String(value);
+  this.nodeValue = String(value);
   return this;
  }
- return this.value;
+ return this.nodeValue;
 }
 
 /**
