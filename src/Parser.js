@@ -264,9 +264,9 @@ function Parser(bbmStr, options)
  return lexer.root;
 }
 
-module.exports = Parser;
-
 //TODO: Inject (Expose) Parsing engine into AST and its prototype.
+module.exports = Parser;
+ASTNode.parse = Parser;
 ASTNode.prototype.bbm = function (bbmStr, options)
 {
  return this.empty().append(Parser(bbmStr, options));
