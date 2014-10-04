@@ -352,15 +352,11 @@ function postReduceDo(callback, acc, thisArg, stack)
 
 function ASTNode(type, attr)
 {
- if (!(this instanceof ASTNode))
- {
-  return new ASTNode(type, attr);
- }
- 
- this.type = type || "";
- this.attr = __.isObject(attr) ? attr : {};
- this.nodes = [];
- return this;
+ var obj = Object.create(ASTNode.prototype);
+ obj.type = type || "";
+ obj.attr = __.isObject(attr) ? attr : {};
+ obj.nodes = [];
+ return obj;
 }
 
 

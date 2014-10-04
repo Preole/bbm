@@ -347,22 +347,18 @@ Public Method: Constructor
 
 function Lexer(tokens, options, minCol)
 {
- if (!(this instanceof Lexer))
- {
-  return new Lexer(tokens, options, minCol);
- }
- 
- this.tokens = __.isString(tokens) ? _Lexer(tokens) : tokens;
- this.currPos = 0; //Current token index
- this.currlvl = 0; //Current nesting level
- this.options = __.isObject(options) ? options : {};
- this.minCol = Number(minCol) || 0;
+ var obj = Object.create(Lexer.prototype);
+ obj.tokens = __.isString(tokens) ? _Lexer(tokens) : tokens;
+ obj.currPos = 0;
+ obj.currlvl = 0;
+ obj.options = __.isObject(options) ? options : {};
+ obj.minCol = Number(minCol) || 0;
  
  if (__.isString(tokens))
  {
-  this.each(_updateLines).each(_updateEscapes);
+  obj.each(_updateLines).each(_updateEscapes);
  }
- return this;
+ return obj;
 }
 
 module.exports = __.extend(Lexer,
