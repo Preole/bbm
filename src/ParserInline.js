@@ -177,7 +177,6 @@ function parseCode(lexTok)
  return node.append(this.sliceText(startPos, endPos));
 }
 
-//TODO: Skip Lexer step: Turn ParserBase into LexTokens.
 function ParserInline(tokens, options)
 {
  return parsePara.call(Lexer(tokens, options), []);

@@ -185,12 +185,12 @@ Public Methods: peek
 
 function peekAt(index)
 {
- return this.tokens[index || this.currPos];
+ return this.tokens[Number(index) || this.currPos];
 }
 
 function peek(offset)
 {
- return this.tokens[this.currPos + (offset || 0)];
+ return this.tokens[this.currPos + (Number(offset) || 0)];
 }
 
 function peekT(type, offset)
@@ -207,34 +207,35 @@ Public Methods: peek extras
 ---------------------------
 */
 
-function isLineStart()
+function isLineStart(offset)
 {
- var prev1 = this.peek(-1),
-  prev2 = this.peek(-2);
+ var off = Number(offset) || 0,
+  prev1 = this.peek(off - 1),
+  prev2 = this.peek(off - 2);
   
  return !prev1 || 
   prev1.type === ENUM.NL || 
   prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
 }
 
-function isLineEnd()
+function isLineEnd(offset)
 {
- var now = this.peek(),
-  next = this.peek(1);
+ var off = Number(offset) || 0,
+  now = this.peek(off),
+  next = this.peek(off + 1);
   
  return !now || 
   now.type === ENUM.NL ||
   now.type === ENUM.WS && (!next || next.type === ENUM.NL);
 }
 
-function isMatchDelim(start)
+function isMatchDelim(sTok)
 {
  var now = (this.peek() || EMPTY);
- return start.type === now.type && 
-  start.lexeme.length === now.lexeme.length &&
-  start.col === now.col && this.isLineStart();
+ return sTok.type === now.type && 
+  sTok.lexeme.length === now.lexeme.length &&
+  sTok.col === now.col && this.isLineStart();
 }
-
 
 
 
@@ -253,12 +254,11 @@ function shift()
 function shiftUntil(callback)
 {
  var params = __.toArray(arguments, 1),
-  token = this.peek();
-  
- while (token && !callback.apply(this, [token].concat(params)))
+  token = null;
+ 
+ while ((token = this.peek()) && !callback.apply(this, [token].concat(params)))
  {
   this.shift();
-  token = this.peek();
  }
  return this.currPos;
 }
