@@ -86,7 +86,7 @@ function untilParaEnd(token, minCol)
 
 function parseBlock()
 {
- var tok = this.peekAt(this.shiftUntil(untilNotWSNL)),
+ var tok = this.peekAt(this.nextUntil(untilNotWSNL)),
   func = tok ? lexMapBlock[tok.type] : null,
   isNotAbuse = this.currlvl < (Number(this.options.maxBlocks) || 8),
   node = null;
@@ -106,12 +106,12 @@ function parseBlock()
 
 function parseListPre(lexTok)
 {
- this.shift();
+ this.next();
  if (this.isLineEnd())
  {
   return;
  }
- this.shiftUntil(untilNotWSNL);
+ this.nextUntil(untilNotWSNL);
  
  return lexTok.type === LEX.DT ? 
   parsePara.call(this, (this.peek() || EOF), AST._DT) : 
@@ -124,7 +124,7 @@ function parseList(lexTok)
   col = lexTok.col + lexTok.lexeme.length,
   tok = null;
   
- while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
+ while ((tok = this.peekAt(this.nextUntil(untilNotWSNL))) && tok.col >= col)
  {
   node.append(parseBlock.call(this));
  }
@@ -133,7 +133,7 @@ function parseList(lexTok)
 
 function parseHRTR(lexTok)
 {
- this.shiftUntilPast(untilNL);
+ this.nextUntilPast(untilNL);
  return ASTNode(lexTok.type === LEX.HR ? AST.HR : AST._TR);
 }
 
@@ -143,8 +143,8 @@ function parseDiv(lexTok)
   col = lexTok.col,
   tok = null;
 
- this.shiftUntilPast(untilNL);
- while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
+ this.nextUntilPast(untilNL);
+ while ((tok = this.peekAt(this.nextUntil(untilNotWSNL))) && tok.col >= col)
  {
   if (this.isMatchDelim(lexTok))
   {
@@ -152,14 +152,14 @@ function parseDiv(lexTok)
   }
   node.append(parseBlock.call(this));
  }
- this.shiftUntilPast(untilNL);
+ this.nextUntilPast(untilNL);
  return node;
 }
 
 function parsePre(lexTok)
 {
- var startPos = this.shiftUntilPast(untilNL),
-  endPos = this.shiftUntilPast(untilPre, lexTok) - 1,
+ var startPos = this.nextUntilPast(untilNL),
+  endPos = this.nextUntilPast(untilPre, lexTok) - 1,
   text = __.rmNLTail(this.sliceText(startPos, endPos, lexTok.col));
 
  if (lexTok.type === LEX.PRE && text.length > 0)
@@ -171,8 +171,8 @@ function parsePre(lexTok)
 function parseATX(lexTok)
 {
  var hLen = lexTok.lexeme.length,
-  startPos = this.shift(),
-  endPos = this.shiftUntilPast(untilATXEnd) - 1,
+  startPos = this.next(),
+  endPos = this.nextUntilPast(untilATXEnd) - 1,
   text = this.sliceText(startPos, endPos).trim();
 
  if (!__.isBlankString(text))
@@ -188,7 +188,7 @@ function parseLabel(lexTok)
 {
  var nodeType = lexTok.type === LEX.ID ? AST._ID : AST._CLASS,
   startPos = this.currPos + 1,
-  endPos = this.shiftUntilPast(untilNL) - 1,
+  endPos = this.nextUntilPast(untilNL) - 1,
   idClass = this.sliceText(startPos, endPos).trim();
   
  if (idClass.length <= 0)
@@ -210,8 +210,8 @@ function parseLabel(lexTok)
 
 function parseRef(lexTok)
 {
- var id = this.sliceText(this.shift(), this.shiftUntil(untilRefEnd)).trim(),
-  url = this.sliceText(this.currPos + 1, this.shiftUntil(untilNL)).trim();
+ var id = this.sliceText(this.next(), this.nextUntil(untilRefEnd)).trim(),
+  url = this.sliceText(this.currPos + 1, this.nextUntil(untilNL)).trim();
 
  if (url.length > 0 && id.length > 0)
  {
@@ -224,12 +224,12 @@ function parsePara(lexTok, forceType)
 {
  var minCol = Number(__.isObject(lexTok) ? lexTok.col : 0) || 0,
   startPos = this.currPos,
-  endPos = this.shiftUntil(untilParaEnd, minCol),
+  endPos = this.nextUntil(untilParaEnd, minCol),
   endTok = this.peek() || EOF;
   
  if (startPos >= endPos || lexListWSNL.indexOf(endTok.type) !== -1)
  {
-  this.shift();
+  this.next();
  }
  if (startPos >= endPos)
  {

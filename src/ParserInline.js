@@ -83,7 +83,7 @@ function parsePara(fStack, premade)
   fIndex = -1,
   tok = null;
   
- while ((tok = this.peekAt(this.shiftUntil(untilInline))))
+ while ((tok = this.peekAt(this.nextUntil(untilInline))))
  {
   fIndex = fStack.indexOf(tok.type);
   if (txtStart < this.currPos) //Collect text.
@@ -92,7 +92,7 @@ function parsePara(fStack, premade)
   }
   if (txtStart <= this.currPos) //Break Infinite Loop, Skip past token.
   {
-   txtStart = this.shift();
+   txtStart = this.next();
   }
   
   if (tok.type === LEX.CODE || tok.type === LEX.PRE)
@@ -133,7 +133,7 @@ function parseLink(lexTok, fStack)
 {
  var callback = lexTok.type === LEX.LINK_INT ? untilBracket : untilAngle,
   startPos = this.currPos,
-  endPos = this.shiftUntilPast(callback) - 1,
+  endPos = this.nextUntilPast(callback) - 1,
   href = this.sliceText(startPos, endPos).trim();
 
  if (__.isBlankString(href))
@@ -142,10 +142,10 @@ function parseLink(lexTok, fStack)
  }
  var node = ASTNode(fmtASTMap[lexTok.type], {href : href});
  
- this.shiftUntil(untilLinkCont);
+ this.nextUntil(untilLinkCont);
  if (this.peekT(LEX.LINK_CONT))
  {
-  this.shift();
+  this.next();
   fStack.push(LEX.BRACKET_R);
   parsePara.call(this, fStack, node);
   fStack.pop();
@@ -156,7 +156,7 @@ function parseLink(lexTok, fStack)
 function parseImg(lexTok)
 {
  var startPos = this.currPos,
-  endPos = this.shiftUntilPast(untilAngle) - 1,
+  endPos = this.nextUntilPast(untilAngle) - 1,
   src = this.sliceText(startPos, endPos).trim(),
   alt = src;
 
@@ -164,11 +164,11 @@ function parseImg(lexTok)
  {
   return;
  }
- this.shiftUntil(untilLinkCont);
+ this.nextUntil(untilLinkCont);
  
  if (this.peekT(LEX.LINK_CONT))
  {
-  alt = this.sliceText(this.shift(), this.shiftUntilPast(untilBracket) - 1);
+  alt = this.sliceText(this.next(), this.nextUntilPast(untilBracket) - 1);
  }
  return ASTNode(AST.LINK_IMG, {src : src, alt : alt.trim()});
 }
@@ -177,7 +177,7 @@ function parseCode(lexTok)
 {
  var node = ASTNode(AST.CODE),
   startPos = this.currPos,
-  endPos = this.shiftUntilPast(untilCode, lexTok) - 1;
+  endPos = this.nextUntilPast(untilCode, lexTok) - 1;
 
  return node.append(this.sliceText(startPos, endPos));
 }

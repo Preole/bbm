@@ -234,30 +234,30 @@ function isMatchDelim(sTok)
 
 
 /*
-Public Methods: shift
+Public Methods: next
 ---------------------
 */
 
-function shift()
+function next()
 {
  this.currPos += 1;
  return this.currPos;
 }
 
-function shiftUntil(callback)
+function nextUntil(callback)
 {
  var params = __.toArray(arguments, 1), token = null;
  while ((token = this.peek()) && !callback.apply(this, [token].concat(params)))
  {
-  this.shift();
+  this.next();
  }
  return this.currPos;
 }
 
-function shiftUntilPast(callback)
+function nextUntilPast(callback)
 {
- this.shiftUntil.apply(this, arguments);
- return this.shift();
+ this.nextUntil.apply(this, arguments);
+ return this.next();
 }
 
 /*
@@ -382,9 +382,9 @@ module.exports = __.extend(Lexer,
   isLineStart : isLineStart,
   isLineEnd : isLineEnd,
   isMatchDelim : isMatchDelim,
-  shift : shift,
-  shiftUntil : shiftUntil,
-  shiftUntilPast : shiftUntilPast,
+  next : next,
+  nextUntil : nextUntil,
+  nextUntilPast : nextUntilPast,
   slice : slice,
   sliceText : sliceText
  }
