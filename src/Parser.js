@@ -30,13 +30,13 @@ lexMapBlock =
 },
 lexListASTMap =
 {
- TH : AST.TH_TMP,
- TD : AST.TD_TMP,
+ TH : AST._TH,
+ TD : AST._TD,
  GT : AST.BLOCKQUOTE,
- DT : AST.DT,
- DD : AST.DD,
- OL : AST.OL_LI,
- UL : AST.UL_LI
+ DT : AST._DT,
+ DD : AST._DD,
+ OL : AST._LI_OL,
+ UL : AST._LI_UL
 },
 lexListWSNL = [LEX.WS, LEX.NL],
 lexListParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV],
@@ -99,7 +99,7 @@ function popUntil(tokens)
 
 
 
-function parseBlock(ignoreLine)
+function parseBlock()
 {
  var tok = this.peekAt(this.shiftUntil(untilNotWSNL)),
   func = tok ? lexMapBlock[tok.type] : null,
@@ -107,7 +107,7 @@ function parseBlock(ignoreLine)
   node = null;
   
  this.currlvl += 1;
- if (func && isNotAbuse && (ignoreLine || this.isLineStart()))
+ if (func && isNotAbuse)
  {
   node = func.call(this, tok);
  }
@@ -129,7 +129,7 @@ function parseListPre(lexTok)
  this.shiftUntil(untilNotWSNL);
  
  return lexTok.type === LEX.DT ? 
-  parsePara.call(this, this.peek(), AST.DT) : 
+  parsePara.call(this, (this.peek() || EOF), AST._DT) : 
   parseList.call(this, lexTok);
 }
 
@@ -141,7 +141,7 @@ function parseList(lexTok)
   
  while ((tok = this.peekAt(this.shiftUntil(untilNotWSNL))) && tok.col >= col)
  {
-  node.append(parseBlock.call(this, true));
+  node.append(parseBlock.call(this));
  }
  return node;
 }
@@ -149,7 +149,7 @@ function parseList(lexTok)
 function parseHRTR(lexTok)
 {
  this.shiftUntilPast(untilNL);
- return ASTNode(lexTok.type === LEX.HR ? AST.HR : AST.TR_TMP);
+ return ASTNode(lexTok.type === LEX.HR ? AST.HR : AST._TR);
 }
 
 function parseDiv(lexTok)
@@ -201,7 +201,7 @@ function parseATX(lexTok)
 
 function parseLabel(lexTok)
 {
- var nodeType = lexTok.type === LEX.ID ? AST.ID : AST.CLASS,
+ var nodeType = lexTok.type === LEX.ID ? AST._ID : AST._CLASS,
   startPos = this.currPos + 1,
   endPos = this.shiftUntilPast(untilNL) - 1,
   idClass = this.sliceText(startPos, endPos).trim();
@@ -212,7 +212,7 @@ function parseLabel(lexTok)
  }
  
  var node = ASTNode(nodeType);
- if (nodeType === AST.ID)
+ if (nodeType === AST._ID)
  {
   node.attr.id = idClass;
  }
@@ -237,11 +237,6 @@ function parseRef(lexTok)
 
 function parsePara(lexTok, forceType)
 {
- if (!lexTok)
- {
-  return;
- }
-
  var startPos = this.currPos,
   endPos = this.shiftUntil(untilParaEnd, lexTok.col),
   endTok = this.peek() || EOF;

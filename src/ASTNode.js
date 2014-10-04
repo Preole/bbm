@@ -6,15 +6,21 @@
 var __ = require("./__.js"),
 ENUM =
 {
+ _DT : "_DT",
+ _DD : "_DD",
+ _TH : "_TH",
+ _TD : "_TD",
+ _TR : "_TR",
+ _LI_UL : "_LI_UL",
+ _LI_OL : "_LI_OL",
+ _ID : "_ID",
+ _CLASS : "_CLASS",
+ 
  ROOT : "ROOT",
  P : "P",
  BLOCKQUOTE : "BLOCKQUOTE",
  PRE : "PRE",
  DIV : "DIV",
- ID : "ID", //Private
- CLASS : "CLASS", //Private
- UL_LI : "UL_LI", //Private
- OL_LI : "OL_LI", //Private
  LI : "LI",
  UL : "UL",
  OL : "OL",
@@ -26,9 +32,6 @@ ENUM =
  TD : "TD",
  HR : "HR",
  TR : "TR",
- TH_TMP : "TH_TMP", //Private
- TD_TMP : "TD_TMP", //Private
- TR_TMP : "TR_TMP", //Private
  TABLE : "TABLE",
  LINK_INT : "LINK_INT",
  LINK_EXT : "LINK_EXT",
@@ -55,19 +58,18 @@ Method: Append
 EMPTY = {},
 MAP_APPEND =
 {
- TR_TMP : appendTable,
- TH_TMP : appendTable,
- TD_TMP : appendTable,
- DT : appendDL,
- DD : appendDL,
- UL_LI : appendULOL,
- OL_LI : appendULOL,
- LI : appendULOL,
+ _TR : appendTable,
+ _TH : appendTable,
+ _TD : appendTable,
+ _DT : appendDL,
+ _DD : appendDL,
+ _LI_UL : appendULOL,
+ _LI_OL : appendULOL
 };
 
 function appendTable(node)
 {
- var last = this.last(), isRow = node.type === ENUM.TR_TMP;
+ var last = this.last(), isRow = node.type === ENUM._TR;
  if (!(last && last.type === ENUM.TABLE))
  {
   if (isRow) {return;}
@@ -86,7 +88,7 @@ function appendTable(node)
  }
  else
  {
-  node.type = node.type === ENUM.TD_TMP ? ENUM.TD : ENUM.TH;
+  node.type = node.type === ENUM._TD ? ENUM.TD : ENUM.TH;
   appendSimple.call(last.last(), node);
  }
 }
@@ -100,11 +102,12 @@ function appendDL(node)
   appendSimple.call(this, last);
  }
  appendSimple.call(last, node);
+ node.type = node.type === ENUM._DT ? ENUM.DT : ENUM.DD;
 }
 
 function appendULOL(node)
 {
- var listType = node.type === ENUM.OL_LI ? ENUM.OL : ENUM.UL,
+ var listType = node.type === ENUM._LI_OL ? ENUM.OL : ENUM.UL,
   last = this.last();
   
  if (!(last && last.type === listType))
@@ -144,7 +147,7 @@ function appendNode(node)
 function appendAfterLabel(node)
 {
  var prev = this.last(), nAttr = node.attr || EMPTY;
- if (!(prev && (prev.type === ENUM.ID || prev.type === ENUM.CLASS)))
+ if (!(prev && (prev.type === ENUM._ID || prev.type === ENUM._CLASS)))
  {
   return;
  }
@@ -156,7 +159,7 @@ function appendAfterLabel(node)
  else if (prev.attr["class"])
  {
   nAttr["class"] = __.isString(nAttr["class"]) ? nAttr["class"] : "";
-  nAttr["class"] = nAttr["class"] + " " + prev.attr["class"];
+  nAttr["class"] = (nAttr["class"] + " " + prev.attr["class"]).trim();
  }
 }
 
