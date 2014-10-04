@@ -83,21 +83,6 @@ function untilParaEnd(token, minCol)
 }
 
 
-function popUntil(tokens)
-{
- var token = null;
- while (token = tokens.pop())
- {
-  if (untilNotWSNL(token))
-  {
-   tokens.push(token);
-   break;
-  }
- }
- return tokens;
-}
-
-
 
 function parseBlock()
 {
@@ -237,8 +222,9 @@ function parseRef(lexTok)
 
 function parsePara(lexTok, forceType)
 {
- var startPos = this.currPos,
-  endPos = this.shiftUntil(untilParaEnd, lexTok.col),
+ var minCol = Number(__.isObject(lexTok) ? lexTok.col : 0) || 0,
+  startPos = this.currPos,
+  endPos = this.shiftUntil(untilParaEnd, minCol),
   endTok = this.peek() || EOF;
   
  if (startPos >= endPos || lexListWSNL.indexOf(endTok.type) !== -1)
@@ -249,15 +235,13 @@ function parsePara(lexTok, forceType)
  {
   return;
  }
- 
- var paraToks = popUntil(this.slice(startPos, endPos, lexTok.col)),
-  node = ParserInline(paraToks, this.options);
-  
- if (node && forceType)
+
+ var node = ParserInline(this.slice(startPos, endPos, minCol));
+ if (forceType)
  {
   node.type = forceType;
  }
- else if (node && lexListSetext.indexOf(endTok.type) !== -1)
+ else if (lexListSetext.indexOf(endTok.type) !== -1)
  {
   node.type = AST.HEADER;
   node.level = endTok.type === LEX.HR ? 2 : 1;
@@ -267,7 +251,7 @@ function parsePara(lexTok, forceType)
  return node;
 }
 
-//TODO: Skip Lexer step: Turn ParserBase into LexTokens.
+
 function Parser(bbmStr, options)
 {
  var lexer = Lexer(bbmStr, options);

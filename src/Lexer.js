@@ -125,24 +125,17 @@ function _Lexer(strInput)
 
 
 /*
-Private methods: slice & sliceText
-----------------------------------
+Private methods: sliceText
+--------------------------
 */
-
-function _slice(tok, index, tokens)
-{
- var minCol = Number(this) || 0,
-  prev = tokens[index - 1];
-
- if (tok.type === ENUM.WS && (!prev || prev.type === ENUM.NL))
- {
-  tok.lexeme = tok.lexeme.slice(minCol);
- }
- return tok.lexeme.length > 0;
-}
 
 function _sliceText(tok, index, tokens)
 {
+ var minCol = this, prev = tokens[index - 1];
+ if (minCol > 0 && tok.type === ENUM.WS && (!prev || prev.type === ENUM.NL))
+ {
+  return tok.lexeme.slice(minCol);
+ }
  return tok.lexeme;
 }
 
@@ -253,9 +246,7 @@ function shift()
 
 function shiftUntil(callback)
 {
- var params = __.toArray(arguments, 1),
-  token = null;
- 
+ var params = __.toArray(arguments, 1), token = null;
  while ((token = this.peek()) && !callback.apply(this, [token].concat(params)))
  {
   this.shift();
@@ -269,7 +260,42 @@ function shiftUntilPast(callback)
  return this.shift();
 }
 
+/*
+Public Methods: pop
+-------------------
+*/
 
+function pop()
+{
+ this.tokens.pop();
+ return this;
+}
+
+function popUntil(callback)
+{
+ var params = __.toArray(arguments, 1), token = null; 
+ while ((token = this.last()) && !callback.apply(this, [token].concat(params)))
+ {
+  this.pop();
+ }
+ return this;
+}
+
+
+/*
+Public Methods: last, first
+---------------------------
+*/
+
+function last()
+{
+ return this.tokens[this.tokens.length - 1];
+}
+
+function first()
+{
+ return this.tokens[0];
+}
 
 
 
@@ -281,17 +307,12 @@ Public Methods: slice
 
 function slice(fromPos, toPos, minCol)
 {
- var tokens = this.tokens.slice(fromPos, toPos);
- if (__.isNumber(minCol) && minCol > 0)
- {
-  tokens = tokens.filter(_slice, minCol);
- }
- return tokens;
+ return Lexer(this.tokens.slice(fromPos, toPos), this.options, minCol);
 }
 
-function sliceText(fromPos, toPos, minCol)
+function sliceText(fromPos, toPos)
 {
- return this.slice(fromPos, toPos, minCol).map(_sliceText).join("");
+ return this.tokens.slice(fromPos, toPos).map(_sliceText, this.minCol).join("");
 }
 
 
@@ -323,17 +344,24 @@ Public Method: Constructor
 --------------------------
 */
 
-function Lexer(tokens, options)
+function Lexer(tokens, options, minCol)
 {
  if (!(this instanceof Lexer))
  {
-  return new Lexer(tokens, options);
+  return new Lexer(tokens, options, minCol);
  }
+ 
  this.tokens = __.isString(tokens) ? _Lexer(tokens) : tokens;
  this.currPos = 0; //Current token index
  this.currlvl = 0; //Current nesting level
  this.options = __.isObject(options) ? options : {};
- return this.each(_updateLines).each(_updateEscapes);
+ this.minCol = Number(minCol) || 0;
+ 
+ if (__.isString(tokens))
+ {
+  this.each(_updateLines).each(_updateEscapes);
+ }
+ return this;
 }
 
 module.exports = __.extend(Lexer,
@@ -342,6 +370,10 @@ module.exports = __.extend(Lexer,
  REGEX : REGEX,
  prototype :
  {
+  pop : pop,
+  popUntil : popUntil,
+  first : first,
+  last : last,
   each : each,
   reduce : reduce,
   peekAt : peekAt,

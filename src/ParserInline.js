@@ -7,6 +7,7 @@ LEX = Lexer.ENUM,
 ASTNode = require("./ASTNode.js"),
 AST = require("./ASTNode.js").ENUM,
 
+listWSNL = [LEX.WS, LEX.NL],
 linkCont = [LEX.WS, LEX.NL, LEX.LINK_CONT],
 linksLex = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT],
 fmtASTMap =
@@ -39,6 +40,10 @@ fmtStartEndMap =
  UNDER : LEX.UNDER
 };
 
+function untilNotWSNL(token)
+{
+ return listWSNL.indexOf(token.type) === -1;
+}
  
 function untilCode(tok, tokStart)
 {
@@ -177,12 +182,12 @@ function parseCode(lexTok)
  return node.append(this.sliceText(startPos, endPos));
 }
 
-function ParserInline(tokens, options)
+function ParserInline(bbmStr, options)
 {
- return parsePara.call(Lexer(tokens, options), []);
+ var lexer = bbmStr instanceof Lexer ? bbmStr : Lexer(bbmStr, options);
+ return parsePara.call(lexer.popUntil(untilNotWSNL), []);
 }
 
-//TODO: Inject inline parser into ASTNode and its prototype.
 module.exports = ParserInline;
 ASTNode.prototype.bbmInline = function (bbmStr, options)
 {
