@@ -235,7 +235,7 @@ function isMatchDelim(sTok)
 
 /*
 Public Methods: next
----------------------
+--------------------
 */
 
 function next()
@@ -310,9 +310,10 @@ function slice(fromPos, toPos, minCol)
  return Lexer(this.tokens.slice(fromPos, toPos), this.options, minCol);
 }
 
-function sliceText(fromPos, toPos)
+function sliceText(fromPos, toPos, minCol)
 {
- return this.tokens.slice(fromPos, toPos).map(_sliceText, this.minCol).join("");
+ var col = Number(minCol) || Number(this.minCol) || 0;
+ return this.tokens.slice(fromPos, toPos).map(_sliceText, col).join("");
 }
 
 

@@ -190,7 +190,7 @@ function ParserInline(bbmStr, options)
 
 module.exports = ParserInline;
 ASTNode.parseInline = ParserInline;
-ASTNode.prototype.bbmInline = function (bbmStr, options)
+ASTNode.prototype.parseInline = function (bbmStr, options)
 {
  return this.empty().append(ParserInline(bbmStr, options));
 };
