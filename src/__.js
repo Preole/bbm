@@ -105,7 +105,7 @@ function hasOwn(obj, key)
 function extend()
 {
  var otherObjs = toArray(arguments).filter(isObject),
-  toObj = isObject(this) ? this : isObject(otherObjs[0]) ? otherObjs[0] : {};
+  toObj = isObject(otherObjs[0]) ? otherObjs[0] : {};
   
  otherObjs.forEach(function (fromObj){
   if (isObject(fromObj) && fromObj !== toObj)
