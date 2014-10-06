@@ -166,6 +166,7 @@ function parsePre(lexTok)
  {
   return ASTNode(AST.PRE).append(text);
  }
+ return ASTNode(AST.COMMENT).append(text);
 }
 
 function parseATX(lexTok)

@@ -6,9 +6,10 @@ function toString(obj)
  return Object.prototype.toString.call(obj);
 }
 
-function toArray(obj, startPos)
+function toArray(obj, sPos, ePos)
 {
- return Array.prototype.slice.call(obj, Number(startPos) || 0);
+ var start = Number(sPos) || 0, end = Number(ePos) || 0;
+ return Array.prototype.slice.call(obj, start, end);
 }
 
 function isNull(obj)
@@ -18,7 +19,7 @@ function isNull(obj)
 
 function isObject(obj)
 {
- return obj instanceof Object || (typeof obj === "object" && !isNull(obj));
+ return isFunction(obj) || (typeof obj === "object" && !isNull(obj));
 }
 
 function isString(obj)
