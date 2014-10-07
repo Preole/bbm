@@ -353,7 +353,7 @@ function postReduceDo(callback, acc, thisArg, stack)
 function ASTNode(type, attr)
 {
  var obj = Object.create(ASTNode.prototype);
- obj.type = type || "";
+ obj.type = (__.isString(type) ? type : "").toLocaleUpperCase();
  obj.attr = __.isObject(attr) ? attr : {};
  obj.nodes = [];
  return obj;

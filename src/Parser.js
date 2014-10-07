@@ -268,7 +268,7 @@ function Parser(bbmStr, options)
 //TODO: Inject (Expose) Parsing engine into AST and its prototype.
 module.exports = Parser;
 ASTNode.parse = Parser;
-ASTNode.prototype.parseInline = function (bbmStr, options)
+ASTNode.prototype.parse = function (bbmStr, options)
 {
  return this.empty().append(Parser(bbmStr, options));
 };
