@@ -13,7 +13,7 @@ __aUnshift = __aProto.unshift;
 //
 /*
 TODO: Regarding the table structure... 
-1. Special append + Filtering. (Current: Bit too coupled)
+1. Special append + Filtering. (Current: Bit too coupled...)
 2. Full filtering... One big step? Or in two small steps?
 3. Modify compiler to create such a structure (Too complicated).
 
@@ -131,17 +131,9 @@ function insertAfter(target)
  */
 function empty()
 {
- this._nodes = this._nodes.filter(_empty, this);
- return this;
+ return this.filterChild();
 }
 
-function _empty(node, index, sibs)
-{
- if (node._parent === this)
- {
-  node._parent = null;
- }
-}
 
 /**
  * @desc Replace this node with arbitrary content.
@@ -174,23 +166,52 @@ function splice(from, count)
 }
 
 /**
- * Gets or sets the text value of this node.
+ * TODO: Distinguish text nodes from other node types.
  */
-function text(valueOf)
+function text(value)
 {
- if (this._type === ENUM.TEXT && (__.isString(value) || __.isNumber(value)))
- {
-  this._value = String(value);
- }
- else if (arguments.length === 0)
+ if (arguments.length === 0)
  {
   return this._value;
+ }
+ if (this.type() === ENUM.TEXT)
+ {
+  this._value = String(value);
  }
  return this;
 }
 
+//TODO: no-op on 0 parameters. Good or bad?
+function attr(key, val)
+{
+ var argLen = arguments.length;
+ if (argLen === 1)
+ {
+  if (TODO.isString(key) || TODO.isNumber(key))
+  {
+   return TODO.get(this._attr, key); //Get direct properties.
+  }
+  else if (TODO.isObject(key))
+  {
+   this._attr = key;
+  }
+ }
+ if (argLen > 1)
+ {
+  this._attr[String(key)] = String(val);
+ }
+ return this;
+}
 
-
+function type(newType)
+{
+ if (arguments.length === 0)
+ {
+  return this._type;
+ }
+ this._type = String(newType).toLocaleUpperCase();
+ return this;
+}
 
 
 
@@ -208,7 +229,9 @@ BBM.fn.extend({
  empty : empty,
  replaceWith : replaceWith,
  splice : splice,
- text : text
+ text : text,
+ attr : attr,
+ type : type
 });
 
 }());

@@ -3,6 +3,7 @@
 
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
+DUMMY = BBM("TODODummyNodeCreation"),
 SWITCH =
 {
  _DT : _pruneDL,
@@ -14,55 +15,69 @@ SWITCH =
  _LI_OL : _pruneOL
 };
 
+
 function _pruneTable(prev, node)
 {
- var prevNode = (/*prev._type ===  ? prev : BBM(BBM.ENUM.TABLE)*/),
-  isRow = node._type === ENUM._TR;
- 
- if (last.size() <= 0 && isRow)
+ var isRow = node.type() === ENUM._TR,
+  cellType = node.type() === ENUM._TD ? ENUM.TD : ENUM.TH,
+  pNode = prev.type() === ENUM.TABLE ? prev : BBM(ENUM.TABLE).append(ENUM.TR);
+
+ if (!isRow)
  {
-  appendSimple.call(last, ASTNode(ENUM.TR));
+  pNode.last().append(cellType);
  }
- prevNode.append(node);
- return prevNode;
+ else if (pNode.last().size() > 0)
+ {
+  pNode.append(BBM(ENUM.TR));
+ }
+ return pNode;
 }
 
 function _pruneUL(prev, node)
 {
- var prevNode = (/*isLastUL ? prev : BBM(ENUM.UL)*/);
- prevNode.append(node);
- node._type = ENUM.LI;
- return prevNode;
+ var pNode = prev.type() === ENUM.UL ? prev : BBM(ENUM.UL);
+ return pNode.append(node.type(ENUM.LI));
 }
 
 function _pruneOL(prev, node)
 {
- var prevNode = (/*isLastOL ? prev : BBM(ENUM.OL)*/);
- return prevNode;
+ var pNode = prev.type() === ENUM.OL ? prev : BBM(ENUM.OL);
+ return pNode.append(node.type(ENUM.LI));
 }
 
 function _pruneDL(prev, node)
 {
- var prevNode = (/*isLastDL ? prev : BBM(ENUM.DL)*/);
- return prevNode;
+ var pNode = prev.type() === ENUM.DL ? prev : BBM(ENUM.DL);
+ return pNode.append(node.type() === ENUM._DD ? ENUM.DD : ENUM.DT);
 }
 
-function _pruneSwitch(nodes, node)
+function _pruneSwitch(/*TODO*/, node)
 {
- var prev = nodes[nodes.length - 1] || TODODummyNode, res = node;
- if (TODO.has(SWITCH, node_.type))
+ //TODO: Determine the accumulator. The node object itself? An empty array?
+ var prev = /*TODO*/.last() || TODODummyNode;
+ var res = node;
+ 
+ 
+ if (TODO.has(SWITCH, node.type()))
  {
-  res = SWITCH[node_.type](prev, node); //If special node type, merge node into previous.
+  res = SWITCH[node_.type](prev, node); 
  }
  if (TODO.isNode(res) && res !== prev)
  {
-  nodes.push(res);
+  /*
+  TODO: Mapping/Resolution.
+  */
  }
+}
+
+function _prunable(node)
+{
+ return TODO.has(SWITCH, node.type());
 }
 
 function _pruneList(node)
 {
- if (/*TODO.indexOf(node._type) > -1*/)
+ if (node.some(_prunable))
  {
   node.mapChild(_pruneSwitch);
  }

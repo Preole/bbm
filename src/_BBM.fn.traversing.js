@@ -6,6 +6,18 @@ var BBM = require("./BBM.js");
 
 
 /**
+ * Default filtering: Remove all children and nullify their parent pointers.
+ */
+function _filterChild(node, index, sibs)
+{
+ if (node._parent === this)
+ {
+  node._parent = null;
+ }
+}
+
+
+/**
  * @desc Returns the pointer to the node's children Array.
  * If a shallow copy is desired: node.children().slice().yourFunction.
  */
@@ -42,6 +54,8 @@ function parent()
  * @desc Returns the node's parents chain contained in an Array. 
  * Returns an empty Array if the node has no parent. The nodes returned 
  * are in ascending order by their distance from the current node.
+ *
+ * [parent, grandparent, ... , root];
  */
 function parents()
 {
@@ -55,12 +69,12 @@ function parents()
 
 
 /**
- * @desc Iterates on the node's children... Side effects will be nasty!
+ * @desc Iterates on the node's children. No side effects!
  */
 function eachChild(callback, thisArg)
 {
  var that = (arguments.length > 1 ? thisArg : this);
- this._nodes.forEach(callback, that); 
+ this._nodes.slice().forEach(callback, that); 
  return this;
 }
 
@@ -70,8 +84,18 @@ function eachChild(callback, thisArg)
  */
 function mapChild(callback, thisArg)
 {
- var that = (arguments.length > 1 ? thisArg : this), nodes = [];
- this._nodes = this._nodes.reduce(function (acc, node, index, arr){
+ var that = (arguments.length > 1 ? thisArg : this);
+ 
+ this.empty().eachChild(function (node, index, arr){
+  callback.call(that, this, node, index, arr);
+ });
+ /*
+ this._nodes
+ this.eachChild()
+ */
+ 
+ 
+ this._nodes.forEach(function (node, index, arr){
   callback.call(that, nodes, node, index, arr);
   return nodes;
  });
@@ -81,8 +105,10 @@ function mapChild(callback, thisArg)
 
 function filterChild(callback, thisArg)
 {
- var that = (arguments.length > 1 ? thisArg : this);
- this._nodes = this._nodes.filter(callback, that);
+ var that = (arguments.length > 1 ? thisArg : this),
+  func = TODO.isFunction(callback) ? callback : _filterChild;
+  
+ 
  return this;
 }
 
@@ -90,6 +116,12 @@ function everyChild(callback, thisArg)
 {
  var that = (arguments.length > 1 ? thisArg : this);
  return this._nodes.every(callback, that);
+}
+
+function someChild(callback, thisArg)
+{
+ var that = (arguments.length > 1 ? thisArg : this);
+ return this._nodes.some(callback, that);
 }
 
 
