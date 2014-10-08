@@ -14,7 +14,7 @@ __aUnshift = __aProto.unshift;
 /*
 TODO: Regarding the table structure... 
 1. Special append + Filtering. (Current: Bit too coupled...)
-2. Full filtering... One big step? Or in two small steps?
+2. Full filtering... One big step? Or in two small steps? (Guess this is the way)
 3. Modify compiler to create such a structure (Too complicated).
 
 TODO: Privacy convention:
@@ -38,30 +38,305 @@ function __filterInserts(value, index, array)
  return TODO.isNode(val);
 }
 
-function __reduceDuplicate(newArr, node)
+/**
+ * Default filtering: Remove all children and nullify their parent pointers.
+ */
+function _filterChild(node, index, sibs)
 {
- if (newArr.indexOf(node) === -1)
+ if (node._parent === this)
  {
-  newArr.push(node);
+  node._parent = null;
  }
- return newArr;
+}
+
+
+/**
+ * @desc Returns a shallow copy of the node's children Array.
+ */
+function children()
+{
+ return this._nodes.slice();
+}
+
+
+/**
+ * @desc If this node has parent, then return the parent's 
+ * children Array. Returns a new empty Array if this node 
+ * has no parent.
+ * @dec verifyParent
+ */
+function siblings()
+{
+ if (this.index() > -1)
+ {
+  return this._parent.children();
+ }
+ return [];
+}
+
+/**
+ * TODO: Use null object or decorator pattern.
+ */
+function parent()
+{
+ return this._parent;
+}
+
+/**
+ * @desc Returns the node's parents chain contained in an Array. 
+ * Returns an empty Array if the node has no parent. The nodes returned 
+ * are in ascending order by their distance from the current node.
+ *
+ * [parent, grandparent, ... , root];
+ */
+function parents()
+{
+ var list = [], par = this._parent;
+ while (par = this._parent)
+ {
+  list.push(par);
+ }
+ return list;
+}
+
+
+/**
+ * @desc Iterates on the node's children. No side effects!
+ */
+function eachChild(callback, thisArg)
+{
+ var that = (arguments.length > 1 ? thisArg : this);
+ this.children().forEach(callback, that); 
+ return this;
+}
+
+/**
+ * @desc Performs one-to-X mapping (Projection) of the node's children 
+ * into a new list.
+ */
+function mapChild(callback, thisArg)
+{
+ var that = (arguments.length > 1 ? thisArg : this),
+  func = TODO.isFunction(callback) ? callback : _TODORemovePointer,
+  removedNodes = [],
+  keptNodes = [];
+  
+ this.eachChild(function (node, index, sibs){
+  var res = callback.call(that, node, index, sibs);
+  /*
+  TODO
+  */
+ });
+ 
+ //Flatten, filter duplicates, filter non-nodes, set their pointer to this.
+ //For each node that's 
+ /*
+ TODO: Keep track of parent pointers.
+ */
+ return this;
+}
+
+function everyChild(callback, thisArg)
+{
+ var that = (arguments.length > 1 ? thisArg : this);
+ return this.children().every(callback, that);
+}
+
+function someChild(callback, thisArg)
+{
+ var that = (arguments.length > 1 ? thisArg : this);
+ return this.children().some(callback, that);
 }
 
 
 
 /**
- * @desc Swaps the current node with another node.
+ * @desc Depth-first pre-order traversal. Returns itself.
  */
-function swap(target)
+function eachPre(callback, thisArg)
 {
- if (TODO.isNode(target))
+ var that = (arguments.length > 1 ? thisArg : this);
+ return _eachPre.call(this, callback, that, []);
+}
+
+function _eachPre(callback, thisArg, stack)
+{
+ callback.call(thisArg, this, stack);
+ this._nodes.forEach(function (node){
+  stack.push(node);
+  _eachPre.call(node, callback, thisArg, stack);
+  stack.pop(node);
+ });
+ return this;
+}
+
+
+/**
+ * @desc As eachPre, but returns the accumulator instead.
+ */
+function reducePre(callback, acc, thisArg)
+{
+ var that = (arguments.length > 2 ? thisArg : this);
+ return _reducePre.call(this, callback, acc, that, []);
+}
+
+function _reducePre(callback, acc, thisArg, stack)
+{
+ acc = callback.call(thisArg, acc, this, stack);
+ this._nodes.forEach(function (node){
+  stack.push(node);
+  acc = reducePre.call(node, callback, acc, thisArg, stack);
+  stack.pop(node);
+ });
+ return acc;
+}
+
+
+/**
+ * @desc Depth-first post-order traversal. Returns itself.
+ */
+function eachPost(callback, thisArg)
+{
+ var that = (arguments.length > 1 ? thisArg : this);
+ return _eachPost.call(this, callback, that, []);
+}
+
+function _eachPost(callback, thisArg, stack)
+{
+ this._nodes.forEach(function (node){
+  stack.push(node);
+  _eachPost.call(node, callback, thisArg, stack);
+  stack.pop(node);
+ });
+ callback.call(thisArg, this, stack);
+ return this;
+}
+
+
+/**
+ * As reducePre, except it accumulates the value in post-order.
+ */
+function reducePost(callback, acc, thisArg)
+{
+ return _reducePost.call(this, callback, acc, thisArg, []);
+}
+
+function _reducePost(callback, acc, thisArg, stack)
+{
+ this._nodes.forEach(function (node){
+  stack.push(node);
+  acc = _reducePost.call(node, callback, acc, thisArg, stack);
+  stack.pop(node);
+ });
+ acc = callback.call(thisArg, acc, this, stack);
+ return acc;
+}
+
+
+/**
+ * @desc Wrapper for Array.prototype.splice. Low level method for
+ * carrying out the actual insertion & deletion.
+ */
+function splice(from, count)
+{
+ var newElems = toArray(arguments, 2).filter(_TODOProcessArg),
+  oldElems = __.splice.apply(this._nodes, [from, count].concat(newElems));
+  
+ newElems.forEach(_TODOSetPointers); //New elements point at this node.
+ oldElems.forEach(_TODORemovePointers); //Old elements no longer have parents.
+ return this;
+}
+
+/*
+TODO: get(index), last(), first()
+*/
+
+/**
+ * @desc Wrapper for Array.prototype.indexOf;
+ */
+function indexOf(node)
+{
+ return this._nodes.indexOf(node);
+}
+
+/**
+ * @desc Return this node's relative index (0-based) with its siblings.
+ * Returns -1 if no parent, or this node is actually not a child of its 
+ * parent pointer.
+ */
+function index()
+{
+ return Number(this._parent && this._parent.indexOf(this)) || -1;
+}
+
+/**
+ * @desc Returns the size of the node list, including holes.
+ */
+function size()
+{
+ return this._nodes.length;
+}
+
+
+
+/**
+ * TODO: Distinguish text nodes from other node types.
+ */
+function text(value)
+{
+ if (arguments.length === 0)
  {
-  this.before(TMP);
-  target.before(this);
-  TMP.replaceWith(target);
+  return this._value;
+ }
+ if (this.type() === ENUM.TEXT)
+ {
+  this._value = String(value);
  }
  return this;
 }
+
+//TODO: no-op on 0 parameters. Good or bad?
+function attr(key, val)
+{
+ var argLen = arguments.length;
+ if (argLen === 1)
+ {
+  if (TODO.isString(key) || TODO.isNumber(key))
+  {
+   return TODO.get(this._attr, key); //Get direct properties.
+  }
+  else if (TODO.isObject(key))
+  {
+   this._attr = key;
+  }
+ }
+ if (argLen > 1)
+ {
+  this._attr[String(key)] = String(val);
+ }
+ return this;
+}
+
+function type(newType)
+{
+ if (arguments.length === 0)
+ {
+  return this._type;
+ }
+ this._type = String(newType).toLocaleUpperCase();
+ return this;
+}
+
+
+
+
+
+
+/*
+Manipulation Addons
+-------------------
+*/
+
 
 /**
  * @desc Content at the end of this node's children Array.
@@ -125,13 +400,12 @@ function insertAfter(target)
  return this;
 }
 
-
 /**
  * @desc Empties this node's children Array.
  */
 function empty()
 {
- return this.filterChild();
+ return this.mapChild();
 }
 
 
@@ -151,65 +425,17 @@ function replaceWith()
  return this;
 }
 
-
-
-
 /**
- * @desc Wrapper for Array.prototype.splice. Low level method for
- * carrying out the actual insertion & deletion.
+ * @desc Swaps the current node with another node.
  */
-function splice(from, count)
+function swap(target)
 {
- var newElems = toArray(arguments, 2).filter(_TODOProcessArg);
- __.splice.apply(this._nodes, [from, count].concat(newElems));
- return this;
-}
-
-/**
- * TODO: Distinguish text nodes from other node types.
- */
-function text(value)
-{
- if (arguments.length === 0)
+ if (TODO.isNode(target) && target.parent() && this.parent())
  {
-  return this._value;
+  this.before(TMP);
+  target.before(this);
+  TMP.replaceWith(target);
  }
- if (this.type() === ENUM.TEXT)
- {
-  this._value = String(value);
- }
- return this;
-}
-
-//TODO: no-op on 0 parameters. Good or bad?
-function attr(key, val)
-{
- var argLen = arguments.length;
- if (argLen === 1)
- {
-  if (TODO.isString(key) || TODO.isNumber(key))
-  {
-   return TODO.get(this._attr, key); //Get direct properties.
-  }
-  else if (TODO.isObject(key))
-  {
-   this._attr = key;
-  }
- }
- if (argLen > 1)
- {
-  this._attr[String(key)] = String(val);
- }
- return this;
-}
-
-function type(newType)
-{
- if (arguments.length === 0)
- {
-  return this._type;
- }
- this._type = String(newType).toLocaleUpperCase();
  return this;
 }
 

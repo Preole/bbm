@@ -1,6 +1,17 @@
 (function (){
 "use strict";
 
+function __uniq(acc, val)
+{
+ if (acc.indexOf(val) === -1)
+ {
+  acc.push(val);
+ }
+ return acc;
+}
+
+
+
 function toString(obj)
 {
  return Object.prototype.toString.call(obj);
@@ -10,6 +21,11 @@ function toArray(obj, sPos, ePos)
 {
  var start = Number(sPos) || 0, end = Number(ePos) || 0;
  return Array.prototype.slice.call(obj, start, end);
+}
+
+function uniq(array)
+{
+ return array.reduce(__uniq, []);
 }
 
 function isNull(obj)
@@ -126,6 +142,7 @@ function extend()
 module.exports = {
  toString : toString,
  toArray : toArray,
+ uniq : uniq,
  isNull : isNull,
  isObject : isObject,
  isString : isString,

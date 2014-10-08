@@ -1,5 +1,7 @@
 (function (){
 "use strict";
+//TODO: Resolve IDs and Classes.
+
 
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
@@ -77,7 +79,7 @@ function _prunable(node)
 
 function _pruneList(node)
 {
- if (node.some(_prunable))
+ if (node.someChild(_prunable))
  {
   node.mapChild(_pruneSwitch);
  }
@@ -90,10 +92,8 @@ function pruneList()
 
 
 BBM.fn.extend({
- 
+ //TODO: Extension.
 });
-
-
 }());
 
 
