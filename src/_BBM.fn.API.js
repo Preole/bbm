@@ -50,29 +50,6 @@ function _filterChild(node, index, sibs)
 }
 
 
-/**
- * @desc Returns a shallow copy of the node's children Array.
- */
-function children()
-{
- return this._nodes.slice();
-}
-
-
-/**
- * @desc If this node has parent, then return the parent's 
- * children Array. Returns a new empty Array if this node 
- * has no parent.
- * @dec verifyParent
- */
-function siblings()
-{
- if (this.index() > -1)
- {
-  return this._parent.children();
- }
- return [];
-}
 
 /**
  * TODO: Use null object or decorator pattern.
@@ -99,10 +76,6 @@ function parents()
  return list;
 }
 
-
-/**
- * @desc Iterates on the node's children. No side effects!
- */
 function eachChild(callback, thisArg)
 {
  var that = (arguments.length > 1 ? thisArg : this);
@@ -110,30 +83,10 @@ function eachChild(callback, thisArg)
  return this;
 }
 
-/**
- * @desc Performs one-to-X mapping (Projection) of the node's children 
- * into a new list.
- */
 function mapChild(callback, thisArg)
 {
- var that = (arguments.length > 1 ? thisArg : this),
-  func = TODO.isFunction(callback) ? callback : _TODORemovePointer,
-  removedNodes = [],
-  keptNodes = [];
-  
- this.eachChild(function (node, index, sibs){
-  var res = callback.call(that, node, index, sibs);
-  /*
-  TODO
-  */
- });
- 
- //Flatten, filter duplicates, filter non-nodes, set their pointer to this.
- //For each node that's 
- /*
- TODO: Keep track of parent pointers.
- */
- return this;
+ var that = (arguments.length > 1 ? thisArg : this);
+ return this.children().map(callback, that);
 }
 
 function everyChild(callback, thisArg)
@@ -146,6 +99,26 @@ function someChild(callback, thisArg)
 {
  var that = (arguments.length > 1 ? thisArg : this);
  return this.children().some(callback, that);
+}
+
+/**
+ * TODO: Better name?
+ * @desc Re-builds the node's children 
+ */
+function reduceChild(callback, thisArg)
+{
+ var that = (arguments.length > 1 ? thisArg : this);
+ var nodes = this.children(); //Keep a copy of the current children list.
+ 
+ //Empty this node, remove their pointers.
+ this.empty();
+ 
+ //Rebuild the children list from scratch.
+ nodes.forEach(function (node, index, sibs){
+  callback.call(that, this, node, index, sibs);
+ });
+ 
+ return this;
 }
 
 
@@ -247,9 +220,28 @@ function splice(from, count)
  return this;
 }
 
-/*
-TODO: get(index), last(), first()
-*/
+
+/**
+ * @desc Returns a shallow copy of the node's children Array.
+ */
+function children()
+{
+ return this._nodes.slice();
+}
+
+
+/**
+ * @desc Returns a shallow copy of the parent's children array.
+ * @dec verifyParent
+ */
+function siblings()
+{
+ if (this._parent)
+ {
+  return this._parent.children();
+ }
+ return [];
+}
 
 /**
  * @desc Wrapper for Array.prototype.indexOf;
@@ -266,7 +258,7 @@ function indexOf(node)
  */
 function index()
 {
- return Number(this._parent && this._parent.indexOf(this)) || -1;
+ return this.siblings().indexOf(this);
 }
 
 /**
@@ -275,6 +267,21 @@ function index()
 function size()
 {
  return this._nodes.length;
+}
+
+function last()
+{
+ return this._nodes[this._nodes.length - 1];
+}
+
+function first()
+{
+ return this._nodes[0];
+}
+
+function get(index)
+{
+ return this._nodes[index];
 }
 
 
@@ -379,7 +386,7 @@ function insertBefore(target)
 }
 
 /**
- * @desc Insert content as the node's next siblings.
+ * @desc Insert content as the node's next sibling.
  */
 function after()
 {
@@ -405,7 +412,7 @@ function insertAfter(target)
  */
 function empty()
 {
- return this.mapChild();
+ return this.splice(0, this.size());
 }
 
 

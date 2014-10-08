@@ -14,9 +14,19 @@ SWITCH =
  _TD : _pruneTable,
  _TR : _pruneTable,
  _LI_UL : _pruneUL,
- _LI_OL : _pruneOL
+ _LI_OL : _pruneOL,
+ _ID : _pruneID,
+ _CLASS : _pruneClass
 };
 
+
+function _pruneID(prev, node)
+{
+}
+
+function _pruneClass(prev, node)
+{
+}
 
 function _pruneTable(prev, node)
 {
@@ -53,10 +63,10 @@ function _pruneDL(prev, node)
  return pNode.append(node.type() === ENUM._DD ? ENUM.DD : ENUM.DT);
 }
 
-function _pruneSwitch(/*TODO*/, node)
+function _pruneSwitch(parent, node)
 {
  //TODO: Determine the accumulator. The node object itself? An empty array?
- var prev = /*TODO*/.last() || TODODummyNode;
+ var prev = parent.last() || TODODummyNode;
  var res = node;
  
  
@@ -81,7 +91,8 @@ function _pruneList(node)
 {
  if (node.someChild(_prunable))
  {
-  node.mapChild(_pruneSwitch);
+  //TODO: New accumulator.
+  node.reduceChild(_pruneSwitch);
  }
 }
 
