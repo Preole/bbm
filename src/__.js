@@ -1,6 +1,9 @@
 (function (){
 "use strict";
 
+var __aConcat = Array.prototype.concat;
+
+
 function __uniq(acc, val)
 {
  if (acc.indexOf(val) === -1)
@@ -10,8 +13,6 @@ function __uniq(acc, val)
  return acc;
 }
 
-
-
 function toString(obj)
 {
  return Object.prototype.toString.call(obj);
@@ -19,13 +20,26 @@ function toString(obj)
 
 function toArray(obj, sPos, ePos)
 {
- var start = Number(sPos) || 0, end = Number(ePos) || 0;
- return Array.prototype.slice.call(obj, start, end);
+ return Array.prototype.slice.call(obj, sPos, ePos);
 }
 
-function uniq(array)
+function uniq(arr)
 {
- return array.reduce(__uniq, []);
+ return (Array.isArray(arr) ? arr : toArray(arr)).reduce(__uniq, []);
+}
+
+function flatten(arr, shallow)
+{
+ var res = Array.isArray(arr) ? arr : toArray(arr);
+ if (shallow)
+ {
+  return __aConcat.apply([], res);
+ }
+ while (Array.prototype.some.call(res, Array.isArray))
+ {
+  res = __aConcat.apply([], res);
+ }
+ return res;
 }
 
 function isNull(obj)
@@ -119,6 +133,11 @@ function has(obj, key)
  return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
+function get(obj, key)
+{
+ return has(obj, key) ? obj[key] : void(0);
+}
+
 function extend()
 {
  var otherObjs = toArray(arguments).filter(isObject),
@@ -143,6 +162,8 @@ module.exports = {
  toString : toString,
  toArray : toArray,
  uniq : uniq,
+ unique : uniq,
+ flatten : flatten,
  isNull : isNull,
  isObject : isObject,
  isString : isString,
@@ -158,6 +179,7 @@ module.exports = {
  escapeATTR : escapeATTR,
  escapeURI : escapeURI,
  has : has,
+ get : get,
  extend : extend
 };
 

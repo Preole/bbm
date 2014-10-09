@@ -1,7 +1,5 @@
 (function (){
 "use strict";
-//TODO: Resolve IDs and Classes.
-
 
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
@@ -14,18 +12,31 @@ SWITCH =
  _TD : _pruneTable,
  _TR : _pruneTable,
  _LI_UL : _pruneUL,
- _LI_OL : _pruneOL,
- _ID : _pruneID,
- _CLASS : _pruneClass
-};
+ _LI_OL : _pruneOL
+},
+IDCLASS = {_ID : _pruneID, _CLASS : _pruneClass},
+PRUNABLE = [
+ ENUM._DT,
+ ENUM._DD,
+ ENUM._TH,
+ ENUM._TD,
+ ENUM._TR,
+ ENUM._LI_OL,
+ ENUM._LI_UL,
+ ENUM._ID,
+ ENUM._CLASS
+];
 
 
 function _pruneID(prev, node)
 {
+ return node.attr("id", prev.attr("id"));
 }
 
 function _pruneClass(prev, node)
 {
+ var nClass = (node.attr("class") || " ");
+ return node.attr("class", (prev.attr("class") + " " + nClass).trim());
 }
 
 function _pruneTable(prev, node)
@@ -63,42 +74,43 @@ function _pruneDL(prev, node)
  return pNode.append(node.type() === ENUM._DD ? ENUM.DD : ENUM.DT);
 }
 
-function _pruneSwitch(parent, node)
+function _pruneSwitch(node)
 {
- //TODO: Determine the accumulator. The node object itself? An empty array?
- var prev = parent.last() || TODODummyNode;
- var res = node;
+ var prev = this.last() || TODODummyNode,
+  nType = node.type(),
+  pType = prev.type(),
+  res = node;
  
- 
- if (TODO.has(SWITCH, node.type()))
+ if (TODO.has(SWITCH, nType))
  {
-  res = SWITCH[node_.type](prev, node); 
+  res = SWITCH[nType](prev, node); 
+ }
+ if (TODO.has(IDCLASS, pType))
+ {
+  res = IDCLASS[pType](prev, res);
  }
  if (TODO.isNode(res) && res !== prev)
  {
-  /*
-  TODO: Mapping/Resolution.
-  */
+  this.append(res);
  }
 }
 
 function _prunable(node)
 {
- return TODO.has(SWITCH, node.type());
+ return PRUNABLE.indexOf(node.type()) > -1;
 }
 
 function _pruneList(node)
 {
- if (node.someChild(_prunable))
+ if (node.children().some(_prunable))
  {
-  //TODO: New accumulator.
-  node.reduceChild(_pruneSwitch);
+  node.mapChild(_pruneSwitch);
  }
 }
 
 function pruneList()
 {
- return this.postEach(_pruneList);
+ return this.eachPost(_pruneList);
 }
 
 

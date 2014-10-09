@@ -3,39 +3,29 @@
 
 var BBM = require("./BBM.js"),
 __TMP = ASTNode("TODO: Temporary Node Type"),
-__aProto = Array.prototype,
-__aSplice = __aProto.splice,
-__aPush = __aProto.push,
-__aUnshift = __aProto.unshift;
+__aSplice = Array.prototype.splice,
 
 
-//require("./BBM.fn.traversing.js");
-//
 /*
-TODO: Regarding the table structure... 
-1. Special append + Filtering. (Current: Bit too coupled...)
-2. Full filtering... One big step? Or in two small steps? (Guess this is the way)
-3. Modify compiler to create such a structure (Too complicated).
-
 TODO: Privacy convention:
 
-1. "__" Two underscores for private static variables.
+1. "__" Two underscores for private static variables and methods.
 2. "_" One underscore for private instance variables.
 */
 
 function __filterInserts(value, index, array)
 {
  var val = value;
- if (TODO.isString(val) && val.length > 0)
+ if (BBM.isString(val) && val.length > 0)
  {
   val = TODO.textNode(val);
   array[index] = val;
  }
- if (TODO.isNode(val))
+ if (BBM.isNode(val))
  {
   //Update parent pointers: val._parent = this;
  }
- return TODO.isNode(val);
+ return BBM.isNode(val);
 }
 
 /**
@@ -50,6 +40,31 @@ function _filterChild(node, index, sibs)
 }
 
 
+
+
+
+
+
+
+/*
+Basic Accessor Methods
+----------------------
+*/
+
+
+/**
+ * @desc Low level method for carrying out the actual insertion & deletion.
+ */
+function splice(from, count)
+{
+ //Filter non-elements, remove them from their belonging sub-tree.
+ var elems = toArray(arguments, 2).filter(_TODOProcessArg),
+  args = [from, count].concat(elems);
+  
+ //For each element removed in this tree, remove their parent pointers.
+ __aSplice.apply(this._nodes, args).forEach(_TODORemovePointers);
+ return this;
+}
 
 /**
  * TODO: Use null object or decorator pattern.
@@ -76,48 +91,220 @@ function parents()
  return list;
 }
 
-function eachChild(callback, thisArg)
-{
- var that = (arguments.length > 1 ? thisArg : this);
- this.children().forEach(callback, that); 
- return this;
-}
 
-function mapChild(callback, thisArg)
-{
- var that = (arguments.length > 1 ? thisArg : this);
- return this.children().map(callback, that);
-}
 
-function everyChild(callback, thisArg)
+/**
+ * @desc Returns a shallow or hard copy of the node's children Array.
+ */
+function children()
 {
- var that = (arguments.length > 1 ? thisArg : this);
- return this.children().every(callback, that);
-}
-
-function someChild(callback, thisArg)
-{
- var that = (arguments.length > 1 ? thisArg : this);
- return this.children().some(callback, that);
+ return this._nodes;
 }
 
 /**
- * TODO: Better name?
- * @desc Re-builds the node's children 
+ * @desc Returns a shallow copy of the parent's children array.
+ * @dec verifyParent
  */
-function reduceChild(callback, thisArg)
+function siblings()
 {
- var that = (arguments.length > 1 ? thisArg : this);
- var nodes = this.children(); //Keep a copy of the current children list.
- 
- //Empty this node, remove their pointers.
- this.empty();
- 
- //Rebuild the children list from scratch.
- nodes.forEach(function (node, index, sibs){
-  callback.call(that, this, node, index, sibs);
+ if (this._parent)
+ {
+  return this._parent.children();
+ }
+ return [];
+}
+
+/**
+ * @desc Wrapper for Array.prototype.indexOf;
+ */
+function indexOf(node)
+{
+ return this._nodes.indexOf(node);
+}
+
+/**
+ * @desc Return this node's relative index (0-based) with its siblings.
+ * Returns -1 if no parent, or this node is actually not a child of its 
+ * parent pointer.
+ */
+function index()
+{
+ return this.siblings().indexOf(this);
+}
+
+/**
+ * @desc Returns the size of the node list, including holes.
+ */
+function size()
+{
+ return this._nodes.length;
+}
+
+function last()
+{
+ return this._nodes[this._nodes.length - 1];
+}
+
+function first()
+{
+ return this._nodes[0];
+}
+
+function get(index)
+{
+ return this._nodes[index];
+}
+
+
+/**
+ * @desc Content at the end of this node's children Array.
+ */
+function append()
+{
+ return this.splice(this.size(), 0, BBM.toArray(arguments).filter(_TODOProcessArg));
+}
+
+/**
+ * @desc Content at the beginning of this node's children Array.
+ */
+function prepend()
+{
+ return this.splice(0, 0, BBM.toArray(arguments).filter(_TODOProcessArg));
+}
+
+/**
+ * @desc Insert content as the node's previous sibling.
+ */
+function before()
+{
+ var pos = this.index();
+ if (pos > -1)
+ {
+  splice.apply(this._parent, [pos, 0].concat(BBM.toArray(arguments)));
+ }
+ return this;
+}
+
+/**
+ * @desc Insert the node as the target's previous sibling.
+ */
+function insertBefore(target)
+{
+ if (BBM.isNode(target))
+ {
+  target.before(this);
+ }
+ return this;
+}
+
+/**
+ * @desc Insert content as the node's next sibling.
+ */
+function after()
+{
+ var pos = this.index();
+ if (pos > -1)
+ {
+  splice.apply(this._parent, [pos + 1, 0].concat(BBM.toArray(arguments)));
+ }
+ return this;
+}
+
+/**
+ * @desc Insert the node as the target's next sibling.
+ */
+function insertAfter(target)
+{
+ if (BBM.isNode(target))
+ {
+  target.after(this);
+ }
+ return this;
+}
+
+/**
+ * @desc Empties this node's children Array.
+ */
+function empty()
+{
+ return this.splice(0, this.size());
+}
+
+
+/**
+ * @desc Replace this node with arbitrary content.
+ * @alt remove, detach: this.replaceWith();
+ * @alt unwrap: this.replaceWith(this.children());
+ */
+function replaceWith()
+{
+ var pos = this.index();
+ if (pos > -1)
+ {
+  splice.apply(this._parent, [pos, 1].concat(BBM.toArray(arguments)));
+  this._parent = null; //Null out parent only if replacement is successful.
+ }
+ return this;
+}
+
+/**
+ * @desc Replace the target with this node.
+ */
+function replace(target)
+{
+ if (BBM.isNode(target))
+ {
+  target.replaceWith(this);
+ }
+ return this;
+}
+
+
+/**
+ * @desc Swaps the current node with another node.
+ */
+function swap(target)
+{
+ if (BBM.isNode(target) && target.parent() && this.parent())
+ {
+  this.before(TMP);
+  target.before(this);
+  TMP.replaceWith(target);
+ }
+ return this;
+}
+
+
+
+
+
+
+
+//Rebuild the node's children Array by returning nodes.
+//TODO: thisArg for mapChild, filterChild; BBM.prototype.clone(), replace
+function mapChild(callback, thisArg)
+{ 
+ var newKids = BBM.flatten(this.children().map(callback, thisArg)),
+  newNode = append.apply(this.clone(), newKids);
+  
+ return newNode.replace(this);
+}
+
+/**
+ * @desc Rebuilds the node's children.
+ */
+function reduceChild(callback)
+{
+ var newNode = this.clone();
+ this.children().forEach(function (node, index, sibs){
+  callback.call(TODO, newNode, node, index, sibs);
  });
- 
+ return newNode.replace(this);
+}
+
+function reverseChild()
+{
+ this.children().reverse();
  return this;
 }
 
@@ -191,7 +378,8 @@ function _eachPost(callback, thisArg, stack)
  */
 function reducePost(callback, acc, thisArg)
 {
- return _reducePost.call(this, callback, acc, thisArg, []);
+ var that = (arguments.length > 2 ? thisArg : this);
+ return _reducePost.call(this, callback, acc, that, []);
 }
 
 function _reducePost(callback, acc, thisArg, stack)
@@ -206,85 +394,10 @@ function _reducePost(callback, acc, thisArg, stack)
 }
 
 
-/**
- * @desc Wrapper for Array.prototype.splice. Low level method for
- * carrying out the actual insertion & deletion.
- */
-function splice(from, count)
-{
- var newElems = toArray(arguments, 2).filter(_TODOProcessArg),
-  oldElems = __.splice.apply(this._nodes, [from, count].concat(newElems));
-  
- newElems.forEach(_TODOSetPointers); //New elements point at this node.
- oldElems.forEach(_TODORemovePointers); //Old elements no longer have parents.
- return this;
-}
-
-
-/**
- * @desc Returns a shallow copy of the node's children Array.
- */
-function children()
-{
- return this._nodes.slice();
-}
-
-
-/**
- * @desc Returns a shallow copy of the parent's children array.
- * @dec verifyParent
- */
-function siblings()
-{
- if (this._parent)
- {
-  return this._parent.children();
- }
- return [];
-}
-
-/**
- * @desc Wrapper for Array.prototype.indexOf;
- */
-function indexOf(node)
-{
- return this._nodes.indexOf(node);
-}
-
-/**
- * @desc Return this node's relative index (0-based) with its siblings.
- * Returns -1 if no parent, or this node is actually not a child of its 
- * parent pointer.
- */
-function index()
-{
- return this.siblings().indexOf(this);
-}
-
-/**
- * @desc Returns the size of the node list, including holes.
- */
-function size()
-{
- return this._nodes.length;
-}
-
-function last()
-{
- return this._nodes[this._nodes.length - 1];
-}
-
-function first()
-{
- return this._nodes[0];
-}
-
-function get(index)
-{
- return this._nodes[index];
-}
-
-
+/*
+Attributes & Properties
+-----------------------
+*/
 
 /**
  * TODO: Distinguish text nodes from other node types.
@@ -308,13 +421,13 @@ function attr(key, val)
  var argLen = arguments.length;
  if (argLen === 1)
  {
-  if (TODO.isString(key) || TODO.isNumber(key))
+  if (BBM.isString(key) || BBM.isNumber(key))
   {
-   return TODO.get(this._attr, key); //Get direct properties.
+   return BBM.get(this._attr, key); //Get direct properties.
   }
-  else if (TODO.isObject(key))
+  else if (BBM.isObject(key))
   {
-   this._attr = key;
+   BBM.extend(this._attr, key);
   }
  }
  if (argLen > 1)
@@ -339,132 +452,8 @@ function type(newType)
 
 
 
-/*
-Manipulation Addons
--------------------
-*/
-
-
-/**
- * @desc Content at the end of this node's children Array.
- */
-function append()
-{
- __aPush.apply(this._nodes, TODO.toArray(arguments).filter(_TODOProcessArg));
- return this;
-}
-
-/**
- * @desc Content at the beginning of this node's children Array.
- */
-function prepend()
-{
- __aUnshift.apply(this._nodes, TODO.toArray(arguments).filter(_TODOProcessArg));
- return this;
-}
-
-/**
- * @desc Insert content as the node's previous sibling.
- */
-function before()
-{
- var pos = this.index();
- if (pos > -1)
- {
-  splice.apply(this._parent, [pos, 0].concat(TODO.toArray(arguments)));
- }
- return this;
-}
-
-/**
- * @desc Insert the node as the target's previous sibling.
- */
-function insertBefore(target)
-{
- target.before(this);
- return this;
-}
-
-/**
- * @desc Insert content as the node's next sibling.
- */
-function after()
-{
- var pos = this.index();
- if (pos > -1)
- {
-  splice.apply(this._parent, [pos + 1, 0].concat(TODO.toArray(arguments)));
- }
- return this;
-}
-
-/**
- * @desc Insert the node as the target's next sibling.
- */
-function insertAfter(target)
-{
- target.after(this);
- return this;
-}
-
-/**
- * @desc Empties this node's children Array.
- */
-function empty()
-{
- return this.splice(0, this.size());
-}
-
-
-/**
- * @desc Replace this node with arbitrary content.
- * @alt remove, detach: this.replaceWith();
- * @alt unwrap: this.replaceWith(this.children());
- */
-function replaceWith()
-{
- var pos = this.index();
- if (pos > -1)
- {
-  splice.apply(this._parent, [pos, 1].concat(TODO.toArray(arguments)));
- }
- this._parent = null;
- return this;
-}
-
-/**
- * @desc Swaps the current node with another node.
- */
-function swap(target)
-{
- if (TODO.isNode(target) && target.parent() && this.parent())
- {
-  this.before(TMP);
-  target.before(this);
-  TMP.replaceWith(target);
- }
- return this;
-}
-
-
-
-
-
-
 BBM.fn.extend({
- swap : swap,
- append : append,
- prepend : prepend,
- before : before,
- after : after,
- insertBefore : insertBefore,
- insertAfter : insertAfter,
- empty : empty,
- replaceWith : replaceWith,
- splice : splice,
- text : text,
- attr : attr,
- type : type
+ TODO
 });
 
 }());

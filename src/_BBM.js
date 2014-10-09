@@ -51,10 +51,15 @@ ENUM =
 function BBM(type, attr)
 {
  var obj = Object.create(BBM.prototype);
- obj.type = (BBM.isString(type) ? type : "").toLocaleUpperCase();
- obj.attr = BBM.isObject(attr) ? attr : {};
- obj.nodes = [];
+ obj._type = (BBM.isString(type) ? type : "").toLocaleUpperCase();
+ obj._attr = BBM.isObject(attr) ? attr : {};
+ obj._nodes = [];
  return obj;
+}
+
+function isNode(target)
+{
+ return (target instanceof BBM); //TODO: More reliability than instanceof
 }
 
 
@@ -62,7 +67,7 @@ function BBM(type, attr)
 //Static variables.
 __.extend(BBM, __);
 BBM.ENUM = BBM.extend({}, ENUM);
-
+BBM.isNode = isNode;
 
 
 //Class methods.
