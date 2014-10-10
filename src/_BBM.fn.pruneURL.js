@@ -3,7 +3,7 @@
 
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
-LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI],
+LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI],
 SYMTABLE = {};
 
 
@@ -43,3 +43,4 @@ function pruneURL()
 BBM.prototype.pruneURL = pruneURL;
 
 }());
+

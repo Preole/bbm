@@ -57,17 +57,22 @@ function BBM(type, attr)
  return obj;
 }
 
+//Check if a given object is an abstract syntax tree node. (BBM)
+//TODO: More reliability than instanceof
 function isNode(target)
 {
- return (target instanceof BBM); //TODO: More reliability than instanceof
+ return (target instanceof BBM); 
 }
 
 
 
 //Static variables.
 __.extend(BBM, __);
-BBM.ENUM = BBM.extend({}, ENUM);
-BBM.isNode = isNode;
+BBM.extend(BBM,
+{
+ ENUM : ENUM,
+ isNode : isNode
+});
 
 
 //Class methods.
@@ -80,3 +85,4 @@ BBM.fn.extend = function (extendObj)
 //Export module
 module.exports = BBM;
 }());
+

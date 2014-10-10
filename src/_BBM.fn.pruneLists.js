@@ -74,24 +74,25 @@ function _pruneDL(prev, node)
  return pNode.append(node.type() === ENUM._DD ? ENUM.DD : ENUM.DT);
 }
 
-function _pruneSwitch(node)
+function _pruneSwitch(newNode, node)
 {
- var prev = this.last() || TODODummyNode,
+ var prev = newNode.last() || DUMMY,
   nType = node.type(),
   pType = prev.type(),
   res = node;
  
- if (TODO.has(SWITCH, nType))
+ if (BBM.has(SWITCH, nType))
  {
   res = SWITCH[nType](prev, node); 
  }
- if (TODO.has(IDCLASS, pType))
+ if (BBM.has(IDCLASS, pType))
  {
   res = IDCLASS[pType](prev, res);
+  prev.remove();
  }
- if (TODO.isNode(res) && res !== prev)
+ if (BBM.isNode(res) && res !== prev)
  {
-  this.append(res);
+  newNode.append(res);
  }
 }
 
@@ -104,7 +105,7 @@ function _pruneList(node)
 {
  if (node.children().some(_prunable))
  {
-  node.mapChild(_pruneSwitch);
+  node.reduceChild(_pruneSwitch);
  }
 }
 
@@ -113,10 +114,7 @@ function pruneList()
  return this.eachPost(_pruneList);
 }
 
-
-BBM.fn.extend({
- //TODO: Extension.
-});
+BBM.prototype.pruneList = pruneList;
 }());
 
 
