@@ -3,7 +3,6 @@
 
 var __aConcat = Array.prototype.concat;
 
-
 function __uniq(acc, val)
 {
  if (acc.indexOf(val) === -1)
@@ -12,6 +11,13 @@ function __uniq(acc, val)
  }
  return acc;
 }
+
+function __isArray(obj)
+{
+ return toString(obj) === "[object Array]";
+}
+
+
 
 function toString(obj)
 {
@@ -25,17 +31,17 @@ function toArray(obj, sPos, ePos)
 
 function uniq(arr)
 {
- return (Array.isArray(arr) ? arr : toArray(arr)).reduce(__uniq, []);
+ return (isArray(arr) ? arr : toArray(arr)).reduce(__uniq, []);
 }
 
 function flatten(arr, shallow)
 {
- var res = Array.isArray(arr) ? arr : toArray(arr);
+ var res = isArray(arr) ? arr : toArray(arr);
  if (shallow)
  {
   return __aConcat.apply([], res);
  }
- while (Array.prototype.some.call(res, Array.isArray))
+ while (res.some(isArray))
  {
   res = __aConcat.apply([], res);
  }
@@ -45,6 +51,12 @@ function flatten(arr, shallow)
 function isNull(obj)
 {
  return obj === null;
+}
+
+function isArray(obj)
+{
+ var isArrayFunc = Array.isArray || __isArrayPrivate;
+ return isArrayFunc(obj);
 }
 
 function isObject(obj)
@@ -166,6 +178,7 @@ module.exports = {
  flatten : flatten,
  isNull : isNull,
  isObject : isObject,
+ isArray : isArray,
  isString : isString,
  isNumber : isNumber,
  isFunction : isFunction,
