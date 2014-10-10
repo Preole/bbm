@@ -28,7 +28,7 @@ lexMapBlock =
  CLASS : parseLabel,
  ID : parseLabel
 },
-lexListASTMap =
+lexMapList =
 {
  TH : AST._TH,
  TD : AST._TD,
@@ -38,16 +38,16 @@ lexListASTMap =
  OL : AST._LI_OL,
  UL : AST._LI_UL
 },
-lexListWSNL = [LEX.WS, LEX.NL],
-lexListParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV],
-lexListSetext = [LEX.HR, LEX.ATX_END],
-lexListRefEnd = [LEX.NL, LEX.REF_END],
-lexListATXEnd = [LEX.NL, LEX.ATX_END];
+lexWSNL = [LEX.WS, LEX.NL],
+lexParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV],
+lexSetext = [LEX.HR, LEX.ATX_END],
+lexRefEnd = [LEX.NL, LEX.REF_END],
+lexATXEnd = [LEX.NL, LEX.ATX_END];
 
 
 function untilNotWSNL(token)
 {
- return lexListWSNL.indexOf(token.type) === -1;
+ return lexWSNL.indexOf(token.type) === -1;
 }
 
 function untilPre(token, tokStart)
@@ -65,20 +65,20 @@ function untilNL(token)
 
 function untilRefEnd(token)
 {
- return lexListRefEnd.indexOf(token.type) !== -1;
+ return lexRefEnd.indexOf(token.type) !== -1;
 }
 
 function untilATXEnd(token)
 {
- return lexListATXEnd.indexOf(token.type) !== -1;
+ return lexATXEnd.indexOf(token.type) !== -1;
 }
 
 function untilParaEnd(token, minCol)
 {
  return this.isLineStart() && (
   this.isLineEnd() ||
-  lexListParaDelim.indexOf(token.type) !== -1 ||
-  lexListWSNL.indexOf(token.type) === -1 && token.col < minCol
+  lexParaDelim.indexOf(token.type) !== -1 ||
+  lexWSNL.indexOf(token.type) === -1 && token.col < minCol
  );
 }
 
@@ -120,7 +120,7 @@ function parseListPre(lexTok)
 
 function parseList(lexTok)
 {
- var node = ASTNode(lexListASTMap[lexTok.type]),
+ var node = ASTNode(lexMapList[lexTok.type]),
   col = lexTok.col + lexTok.lexeme.length,
   tok = null;
   
@@ -228,7 +228,7 @@ function parsePara(lexTok, forceType)
   endPos = this.nextUntil(untilParaEnd, minCol),
   endTok = this.peek() || EOF;
   
- if (startPos >= endPos || lexListWSNL.indexOf(endTok.type) !== -1)
+ if (startPos >= endPos || lexWSNL.indexOf(endTok.type) !== -1)
  {
   this.next();
  }
@@ -242,7 +242,7 @@ function parsePara(lexTok, forceType)
  {
   node.type = forceType;
  }
- else if (lexListSetext.indexOf(endTok.type) !== -1)
+ else if (lexSetext.indexOf(endTok.type) !== -1)
  {
   node.type = AST.HEADER;
   node.level = endTok.type === LEX.HR ? 2 : 1;
