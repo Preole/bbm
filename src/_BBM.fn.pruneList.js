@@ -3,7 +3,7 @@
 
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
-DUMMY = BBM("TODODummyNodeCreation"),
+DUMMY = BBM(ENUM._DUMMY),
 SWITCH =
 {
  _DT : _pruneDL,
@@ -43,7 +43,7 @@ function _pruneTable(prev, node)
 {
  var isRow = node.type() === ENUM._TR,
   cellType = node.type() === ENUM._TD ? ENUM.TD : ENUM.TH,
-  pNode = prev.type() === ENUM.TABLE ? prev : BBM(ENUM.TABLE).append(ENUM.TR);
+  pNode = prev.type() === ENUM.TABLE ? prev : BBM(ENUM.TABLE).append(BBM(ENUM.TR));
 
  if (!isRow)
  {

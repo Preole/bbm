@@ -2,8 +2,8 @@
 "use strict";
 
 var BBM = require("./BBM.js"),
-DUMMY = BBM("TODODummyNodeCreation"),
-ENUM = BBM.ENUM;
+ENUM = BBM.ENUM,
+DUMMY = BBM(ENUM._DUMMY);
 
 
 

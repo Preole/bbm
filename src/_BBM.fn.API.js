@@ -2,7 +2,7 @@
 "use strict";
 
 var BBM = require("./BBM.js"),
-__TMP = ASTNode("TODO: Temporary Node Type"),
+__TMP = ASTNode(BBM.ENUM._DUMMY),
 __aSplice = Array.prototype.splice,
 
 
@@ -274,9 +274,9 @@ function swap(target)
 {
  if (BBM.isNode(target) && target.parent() && this.parent())
  {
-  this.before(TMP);
+  this.before(__TMP);
   target.before(this);
-  TMP.replaceWith(target);
+  __TMP.replaceWith(target);
  }
  return this;
 }
@@ -456,6 +456,7 @@ Attributes & Properties
 -----------------------
 */
 
+//TODO: How to best create a text node?
 function text(value)
 {
  if (arguments.length === 0)
@@ -499,7 +500,6 @@ function type(newType)
  this._type = String(newType).toLocaleUpperCase();
  return this;
 }
-
 
 
 

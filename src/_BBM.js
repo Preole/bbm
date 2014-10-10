@@ -14,6 +14,7 @@ ENUM =
  _LI_OL : "_LI_OL",
  _ID : "_ID",
  _CLASS : "_CLASS",
+ _DUMMY : "_DUMMY",
  
  ROOT : "ROOT",
  P : "P",
@@ -52,8 +53,9 @@ function BBM(type, attr)
 {
  var obj = Object.create(BBM.prototype);
  obj._type = (BBM.isString(type) ? type : "").toLocaleUpperCase();
- obj._attr = BBM.isObject(attr) ? attr : {};
+ obj._attr = {};
  obj._nodes = [];
+ obj._parent = null;
  return obj;
 }
 
