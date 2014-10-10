@@ -49,7 +49,7 @@ ENUM =
 };
 
 //Abstract syntax tree node.
-function BBM(type, attr)
+function BBM(type)
 {
  var obj = Object.create(BBM.prototype);
  obj._type = (BBM.isString(type) ? type : "").toLocaleUpperCase();
@@ -59,13 +59,15 @@ function BBM(type, attr)
  return obj;
 }
 
-//Check if a given object is an abstract syntax tree node. (BBM)
-//TODO: More reliability than instanceof
 function isNode(target)
 {
- return (target instanceof BBM); 
+ return BBM.prototype.isPrototypeOf(target);
 }
 
+function textNode(str)
+{
+ return BBM(ENUM.TEXT).text(String(str));
+}
 
 
 //Static variables.
@@ -73,7 +75,8 @@ __.extend(BBM, __);
 BBM.extend(BBM,
 {
  ENUM : ENUM,
- isNode : isNode
+ isNode : isNode,
+ textNode : textNode
 });
 
 

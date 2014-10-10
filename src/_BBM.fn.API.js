@@ -2,7 +2,6 @@
 "use strict";
 
 var BBM = require("./BBM.js"),
-__TMP = ASTNode(BBM.ENUM._DUMMY),
 __aSplice = Array.prototype.splice,
 
 
@@ -15,30 +14,31 @@ TODO: Privacy convention:
 
 
 /**
- * Create a new node with the same type and attribute map, but without
- * any children or parents.
+ * Create new node with an empty children array and no parent, but clones
+ * everything else.
  */
 function __clone(node)
 {
- return BBM(node._type, BBM.extend({}, BBM._attr));
+ var obj = BBM.extend(Object.create(BBM.prototype), node);
+ obj._nodes = [];
+ obj._attr = BBM.extend({}, obj._attr);
+ obj._parent = null;
+ return obj;
 }
 
-function __filterArgs(node, index, others)
+function __mapArgs(node)
 {
- //TODO: Remove non-node, non-strings; 
- //TODO: Tell node's parent to remove the node.
- //TODO: Point the node to the calling node.
-}
-
-/**
- * Default filtering: Remove all children and nullify their parent pointers.
- */
-function __filterChild(node, index, sibs)
-{
- if (node._parent === this)
+ var res = node;
+ if (BBM.isString(res) || BBM.isNumber(res))
  {
-  node._parent = null;
+  res = BBM.textNode(res);
  }
+ if (BBM.isNode(res))
+ {
+  res.remove();
+  res._parent = this;
+ }
+ return BBM.isNode(res) ? res : void(0);
 }
 
 
@@ -60,11 +60,11 @@ Basic Accessor Methods
 function splice(from, count)
 {
  //Filter non-elements, remove them from their belonging sub-tree.
- var elems = toArray(arguments, 2).filter(_TODOProcessArg);
+ var elems = toArray(arguments, 2).map(__mapArgs, this).filter(BBM.isNode);
  var args = [from, count].concat(elems);
   
- //For each element removed in this tree, remove their parent pointers.
- __aSplice.apply(this.children(), args).forEach(_TODORemovePointers);
+ //Apply removal for each children removed from this node.
+ __aSplice.apply(this.children(), args).forEach(remove, this);
  return this;
 }
 
@@ -73,7 +73,7 @@ function splice(from, count)
  */
 function parent()
 {
- return this._parent || null;
+ return this._parent;
 }
 
 /**
@@ -263,22 +263,6 @@ function replace(target)
 function remove()
 {
  return this.replaceWith();
-}
-
-
-
-/**
- * @desc Swaps the current node with another node.
- */
-function swap(target)
-{
- if (BBM.isNode(target) && target.parent() && this.parent())
- {
-  this.before(__TMP);
-  target.before(this);
-  __TMP.replaceWith(target);
- }
- return this;
 }
 
 
@@ -508,7 +492,7 @@ function type(newType)
 BBM.fn.extend({
  splice : splice,
  parent : parent,
- parents : parent,
+ parents : parents,
  children : children,
  siblings : siblings,
  
@@ -530,7 +514,6 @@ BBM.fn.extend({
  replaceWith : replaceWith,
  replace : replace,
  remove : remove,
- swap : swap,
 
  eachChild : eachChild,
  everyChild : everyChild,
