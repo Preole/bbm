@@ -98,7 +98,7 @@ function _Lexer(strInput)
   lastPos = 0;
  
  regex.lastIndex = 0;
- while (Array.isArray(res = regex.exec(strInput)))
+ while (__.isArray(res = regex.exec(strInput)))
  {
   ruleObj = RULES[res.indexOf(res[0], 1) - 1];
 
@@ -176,11 +176,6 @@ Public Methods: peek
 --------------------
 */
 
-function peekAt(index)
-{
- return this.tokens[Number(index) || this.currPos];
-}
-
 function peek(offset)
 {
  return this.tokens[this.currPos + (Number(offset) || 0)];
@@ -193,6 +188,11 @@ function peekT(type, offset)
  {
   return type === token.type;
  }
+}
+
+function peekUntil(callback, extras)
+{
+ return this.tokens[this.nextUntil(callback, extras)];
 }
 
 /*
@@ -244,19 +244,19 @@ function next()
  return this.currPos;
 }
 
-function nextUntil(callback)
+function nextUntil(callback, extras)
 {
- var params = __.toArray(arguments, 1), token = null;
- while ((token = this.peek()) && !callback.apply(this, [token].concat(params)))
+ var token = null;
+ while ((token = this.peek()) && !callback.call(this, token, extras))
  {
   this.next();
  }
  return this.currPos;
 }
 
-function nextUntilPast(callback)
+function nextUntilPast(callback, extras)
 {
- this.nextUntil.apply(this, arguments);
+ this.nextUntil(callback, extras);
  return this.next();
 }
 
@@ -271,10 +271,10 @@ function pop()
  return this;
 }
 
-function popUntil(callback)
+function popUntil(callback, extras)
 {
- var params = __.toArray(arguments, 1), token = null; 
- while ((token = this.last()) && !callback.apply(this, [token].concat(params)))
+ var token = null;
+ while ((token = this.last()) && !callback.call(this, token, extras))
  {
   this.pop();
  }
@@ -373,8 +373,8 @@ module.exports = __.extend(Lexer,
   last : last,
   each : each,
   reduce : reduce,
-  peekAt : peekAt,
   peek : peek,
+  peekUntil : peekUntil,
   peekT : peekT,
   isLineStart : isLineStart,
   isLineEnd : isLineEnd,
