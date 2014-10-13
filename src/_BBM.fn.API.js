@@ -1,15 +1,17 @@
 (function (){
 "use strict";
 
-var BBM = require("./BBM.js"),
-__aSplice = Array.prototype.splice,
-
+var BBM = require("./BBM.js");
 
 /*
 TODO: Privacy convention:
 
 1. "__" Two underscores for private static variables and methods.
 2. "_" One underscore for private instance variables.
+
+TODO: Optimization:
+
+append and 
 */
 
 
@@ -33,15 +35,28 @@ function __mapArgs(node)
  {
   res = BBM.textNode(res);
  }
- if (BBM.isNode(res))
+ if (BBM.isNode(res) && res !== node)
  {
-  res.remove();
+  res.replaceWith();
   res._parent = this;
  }
- return BBM.isNode(res) ? res : void(0);
+ return res;
 }
 
+function __procArgs(elems, node)
+{
+ return BBM.isArray(elems)
+  ? BBM.flatten(elems).map(__mapArgs, node).filter(BBM.isNode)
+  : __mapArgs.call(node, elems);
+}
 
+function __nullParent(node)
+{
+ if (BBM.isNode(node))
+ {
+  node._parent = null;
+ }
+}
 
 
 
@@ -56,15 +71,23 @@ Basic Accessor Methods
 
 /**
  * @desc Low level method for carrying out the actual insertion & deletion.
+ * @param from The index of the children to start manipulation from.
+ * @param count The number of elements to remove from that index.
+ * @param elems A single ASTNode (BBM), string, number, or an Array of 
+ * such elements to be inserted as the node's children. 
  */
-function splice(from, count)
+function splice(from, count, elems)
 {
- //Filter non-elements, remove them from their belonging sub-tree.
- var elems = toArray(arguments, 2).map(__mapArgs, this).filter(BBM.isNode);
- var args = [from, count].concat(elems);
-  
- //Apply removal for each children removed from this node.
- __aSplice.apply(this.children(), args).forEach(remove, this);
+ var eles = __procArgs(elems, this),
+  kids = this.children(),
+  args = BBM.isArray(eles) ? [from, count].concat(eles) : eles,
+  removed = BBM.isArray(args)
+   ? Array.prototype.splice.apply(kids, args)
+   : BBM.isNode(args)
+   ? kids.splice(from, count, args)
+   : kids.splice(from, count);
+ 
+ removed.forEach(__nullParent);
  return this;
 }
 
@@ -77,25 +100,6 @@ function parent()
 }
 
 /**
- * @desc Returns the node's parents chain contained in an Array. 
- * Returns an empty Array if the node has no parent. The nodes returned 
- * are in ascending order by their distance from the current node.
- *
- * [parent, grandparent, ... , root];
- */
-function parents()
-{
- var list = [], par = this.parent();
- while (par = this.parent())
- {
-  list.push(par);
- }
- return list;
-}
-
-
-
-/**
  * @desc Returns a shallow or hard copy of the node's children Array.
  */
 function children(shallow)
@@ -104,23 +108,11 @@ function children(shallow)
 }
 
 /**
- * @desc Returns the pointer to the node's children Array.
+ * @desc Returns the node's parent's children Array.
  */
 function siblings(shallow)
 {
- if (this.parent())
- {
-  return this.parent().children(shallow);
- }
- return [];
-}
-
-/**
- * @desc Wrapper for Array.prototype.indexOf;
- */
-function indexOf(node, fromIndex)
-{
- return this._nodes.indexOf(node, fromIndex);
+ return this.parent() ? this.parent().children(shallow) : [];
 }
 
 /**
@@ -129,7 +121,7 @@ function indexOf(node, fromIndex)
  */
 function index()
 {
- return this.siblings().indexOf(this);
+ return this.parent() ? this.parent().children().indexOf(this) : -1;
 }
 
 /**
@@ -137,50 +129,63 @@ function index()
  */
 function size()
 {
- return this._nodes.length;
+ return this.children().length;
 }
 
 function last()
 {
- return this._nodes[this._nodes.length - 1];
+ return this.children()[this.children().length - 1];
 }
 
 function first()
 {
- return this._nodes[0];
-}
-
-function get(index)
-{
- return this._nodes[index];
+ return this.children()[0];
 }
 
 
 /**
  * @desc Content at the end of this node's children Array.
  */
-function append()
+function append(content)
 {
- return this.splice(this.size(), 0, BBM.toArray(arguments));
+ var eles = __procArgs(content, this);
+ if (BBM.isArray(eles))
+ {
+  this.children().push.apply(this.children(), eles);
+ }
+ else if (BBM.isNode(eles))
+ {
+  this.children().push(eles);
+ }
+ return this;
 }
 
 /**
- * @desc Content at the beginning of this node's children Array.
+ * @desc Content at the beginning of this node's children Array. 
  */
-function prepend()
+function prepend(content)
 {
- return this.splice(0, 0, BBM.toArray(arguments));
+ var eles = __procArgs(content, this);
+ if (BBM.isArray(eles))
+ {
+  this.children().unshift.apply(this.children(), eles);
+ }
+ else if (BBM.isNode(eles))
+ {
+  this.children().unshift(eles);
+ }
+ return this;
 }
 
 /**
  * @desc Insert content as the node's previous sibling.
  */
-function before()
+function before(content)
 {
  var pos = this.index();
  if (pos > -1)
  {
-  splice.apply(this.parent(), [pos, 0].concat(BBM.toArray(arguments)));
+  this.parent().splice(pos, 0, content);
  }
  return this;
 }
@@ -200,12 +205,12 @@ function insertBefore(target)
 /**
  * @desc Insert content as the node's next sibling.
  */
-function after()
+function after(content)
 {
  var pos = this.index();
  if (pos > -1)
  {
-  splice.apply(this.parent(), [pos + 1, 0].concat(BBM.toArray(arguments)));
+  this.parent().splice(pos + 1, 0, content);
  }
  return this;
 }
@@ -236,13 +241,12 @@ function empty()
  * @alt remove, detach: this.replaceWith();
  * @alt unwrap: this.replaceWith(this.children());
  */
-function replaceWith()
+function replaceWith(content)
 {
  var pos = this.index();
  if (pos > -1)
  {
-  splice.apply(this.parent(), [pos, 1].concat(BBM.toArray(arguments)));
-  this._parent = null; //Null out parent only if replacement is successful.
+  this.parent().splice(pos, 1, content);
  }
  return this;
 }
@@ -260,11 +264,6 @@ function replace(target)
  return this;
 }
 
-function remove()
-{
- return this.replaceWith();
-}
-
 
 
 /*
@@ -274,24 +273,17 @@ Iteration Methods: Children
 
 function eachChild(callback)
 {
- this.children(true).forEach(callback, this);
- return this;
+ return this.children(true).forEach(callback, this) || this;
 }
 
 function everyChild(callback)
 {
- return __everyChild.call(this, true, callback);
+ return this.children(true).every(callback, this);
 }
 
 function someChild(callback)
 {
- return __everyChild.call(this, false, callback);
-}
-
-function __everyChild(isEvery, callback)
-{
- var name = isEvery ? "every" : "some";
- return this.children(true)[name](callback, this);
+ return this.children(true).some(callback, this);
 }
 
 /**
@@ -306,7 +298,8 @@ function __everyChild(isEvery, callback)
  */
 function mapChild(callback)
 {
- return __mapChild.apply(this, true, callback);
+ var newKids = this.children(true).map(callback, this);
+ return __clone(this).append(newKids).replace(this);
 }
 
 /**
@@ -318,17 +311,10 @@ function mapChild(callback)
  */
 function filterChild(callback)
 {
- return __mapChild.apply(this, false, callback);
+ var newKids = this.children(true).filter(callback, this);
+ return __clone(this).append(newKids).replace(this);
 }
 
-function __mapChild(isMap, callback)
-{
- var name = isMap ? "map" : "filter",
-  newKids = BBM.flatten(this.children(true)[name](callback, this)),
-  newNode = append.apply(__clone(this), newKids);
-  
- return newNode.replace(this);
-}
 
 /**
  * Executes callback once per child node, which are to be explicitly 
@@ -340,10 +326,8 @@ function __mapChild(isMap, callback)
  */
 function reduceChild(callback)
 {
- var that = this, newNode = __clone(this);
- this.children(true).forEach(function (node, pos, sibs){
-  callback.call(that, newNode, node, pos, sibs);
- });
+ var newNode = __clone(this);
+ this.children(true).forEach(callback, newNode);
  return newNode.replace(this);
 }
 
@@ -360,15 +344,15 @@ Iteration Methods: Whole Subtree
  */
 function eachPre(callback, thisArg)
 {
- return _eachPre.call(this, callback, thisArg, []);
+ return __eachPre.call(this, callback, thisArg, []);
 }
 
-function _eachPre(callback, thisArg, stack)
+function __eachPre(callback, thisArg, stack)
 {
  callback.call(thisArg, this, stack);
- this._nodes.forEach(function (node){
+ this.__nodes.forEach(function (node){
   stack.push(node);
-  _eachPre.call(node, callback, thisArg, stack);
+  __eachPre.call(node, callback, thisArg, stack);
   stack.pop(node);
  });
  return this;
@@ -380,15 +364,14 @@ function _eachPre(callback, thisArg, stack)
  */
 function reducePre(callback, acc, thisArg)
 {
- return _reducePre.call(this, callback, acc, thisArg, []);
+ return __reducePre.call(this, callback, acc, thisArg, []);
 }
 
-function _reducePre(callback, acc, thisArg, stack)
+function __reducePre(callback, acc, thisArg, stack)
 {
- acc = callback.call(thisArg, acc, this, stack);
- this._nodes.forEach(function (node){
+ this.__nodes.forEach(function (node){
   stack.push(node);
-  acc = reducePre.call(node, callback, acc, thisArg, stack);
+  acc = __reducePre.call(node, callback, acc, thisArg, stack);
   stack.pop(node);
  });
  return acc;
@@ -404,7 +387,7 @@ function eachPost(callback, thisArg)
 
 function __eachPost(callback, thisArg, stack)
 {
- this._nodes.forEach(function (node){
+ this.children().forEach(function (node){
   stack.push(node);
   __eachPost.call(node, callback, thisArg, stack);
   stack.pop(node);
@@ -424,13 +407,13 @@ function reducePost(callback, acc, thisArg)
 
 function __reducePost(callback, acc, thisArg, stack)
 {
- this._nodes.forEach(function (node){
+ acc = callback.call(thisArg, acc, this, stack);
+ this.children().forEach(function (node){
   stack.push(node);
   acc = __reducePost.call(node, callback, acc, thisArg, stack);
   stack.pop(node);
  });
- acc = callback.call(thisArg, acc, this, stack);
- return acc;
+ return callback.call(thisArg, acc, this, stack);
 }
 
 
@@ -492,16 +475,13 @@ function type(newType)
 BBM.fn.extend({
  splice : splice,
  parent : parent,
- parents : parents,
  children : children,
  siblings : siblings,
  
- indexOf : indexOf,
  size : size,
  last : last,
  first : first,
  index : index,
- get : get,
 
  append : append,
  prepend : prepend,
@@ -513,7 +493,6 @@ BBM.fn.extend({
  empty : empty,
  replaceWith : replaceWith,
  replace : replace,
- remove : remove,
 
  eachChild : eachChild,
  everyChild : everyChild,
