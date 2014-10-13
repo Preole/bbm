@@ -1,7 +1,7 @@
 (function (){
 "use strict";
 
-var __aConcat = Array.prototype.concat;
+
 
 function __uniq(acc, val)
 {
@@ -11,13 +11,6 @@ function __uniq(acc, val)
  }
  return acc;
 }
-
-function __isArray(obj)
-{
- return toString(obj) === "[object Array]";
-}
-
-
 
 function toString(obj)
 {
@@ -37,13 +30,13 @@ function uniq(arr)
 function flatten(arr, shallow)
 {
  var res = isArray(arr) ? arr : toArray(arr);
- if (shallow)
- {
-  return __aConcat.apply([], res);
- }
  while (res.some(isArray))
  {
-  res = __aConcat.apply([], res);
+  res = Array.prototype.concat.apply([], res);
+  if (shallow)
+  {
+   break;
+  }
  }
  return res;
 }
@@ -55,13 +48,12 @@ function isNull(obj)
 
 function isArray(obj)
 {
- var isArrayFunc = Array.isArray || __isArrayPrivate;
- return isArrayFunc(obj);
+ return Array.isArray ? Array.isArray(obj) : toString(obj) === "[object Array]";
 }
 
 function isObject(obj)
 {
- return isFunction(obj) || (typeof obj === "object" && !isNull(obj));
+ return isFunction(obj) || (typeof obj === "object" && obj !== null);
 }
 
 function isString(obj)
@@ -138,7 +130,6 @@ function escapeURI(str)
  return str.replace(/^javascript:/i, "javascript;")
   .replace(/^data:/i, "data;");
 }
-
 
 function has(obj, key)
 {

@@ -8,10 +8,6 @@ TODO: Privacy convention:
 
 1. "__" Two underscores for private static variables and methods.
 2. "_" One underscore for private instance variables.
-
-TODO: Optimization:
-
-append and 
 */
 
 
