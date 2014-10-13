@@ -86,7 +86,7 @@ function untilParaEnd(token, minCol)
 
 function parseBlock()
 {
- var tok = this.peekAt(this.nextUntil(untilNotWSNL)),
+ var tok = this.peekUntil(untilNotWSNL),
   func = tok ? lexMapBlock[tok.type] : null,
   isNotAbuse = this.currlvl < (Number(this.options.maxBlocks) || 8),
   node = null;
@@ -124,7 +124,7 @@ function parseList(lexTok)
   col = lexTok.col + lexTok.lexeme.length,
   tok = null;
   
- while ((tok = this.peekAt(this.nextUntil(untilNotWSNL))) && tok.col >= col)
+ while ((tok = this.peekUntil(untilNotWSNL)) && tok.col >= col)
  {
   node.append(parseBlock.call(this));
  }
@@ -144,7 +144,7 @@ function parseDiv(lexTok)
   tok = null;
 
  this.nextUntilPast(untilNL);
- while ((tok = this.peekAt(this.nextUntil(untilNotWSNL))) && tok.col >= col)
+ while ((tok = this.nextUntil(untilNotWSNL)) && tok.col >= col)
  {
   if (this.isMatchDelim(lexTok))
   {

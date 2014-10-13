@@ -83,7 +83,7 @@ function parsePara(fStack, premade)
   fIndex = -1,
   tok = null;
   
- while ((tok = this.peekAt(this.nextUntil(untilInline))))
+ while ((tok = this.peekUntil(untilInline)))
  {
   fIndex = fStack.indexOf(tok.type);
   if (txtStart < this.currPos) //Collect text.
