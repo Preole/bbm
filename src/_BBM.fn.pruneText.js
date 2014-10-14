@@ -2,46 +2,45 @@
 "use strict";
 
 var BBM = require("./BBM.js"),
-ENUM = BBM.ENUM,
-DUMMY = BBM(ENUM._DUMMY);
+DUMMY = BBM("_DUMMY");
 
 
-
-function _pruneTextWork(newNode, node)
+function __prunableText(prev, node)
 {
- var prev = newNode.last() || DUMMY;
- if (prev.type() === ENUM.TEXT && node.type() === ENUM.TEXT)
+ return prev.text().length > 0 && node.text().length > 0;
+}
+
+function __prunable(node, index, sibs)
+{
+ return __prunableText((sibs[index - 1] || DUMMY), node);
+}
+
+function __pruneTextWork(node)
+{
+ var prev = this.last() || DUMMY;
+ if (__prunableText(prev, node))
  {
-  prev.val(prev.val() + node.val());
+  prev.text(prev.text() + node.text());
  }
  else
  {
-  newNode.append(node);
+  this.append(node);
  }
 }
 
-function _prunable(node, index, sibs)
+function __pruneText(node)
 {
- var next = sibs[index + 1] || DUMMY;
- return node.type() === ENUM.TEXT
-  && next.type() === ENUM.TEXT
-  && next !== DUMMY;
-}
-
-function _pruneText(node)
-{
- if (node.children().some(_prunable))
+ if (node.children().some(__prunable))
  {
-  node.reduceChild(_pruneTextWork);
+  node.rebuildChild(__pruneTextWork);
  }
 }
 
 //Combines consecutive text nodes within the tree into one node.
 function pruneText()
 {
- return this.eachPre(_pruneText, this);
+ return this.eachPre(__pruneText, this);
 }
 
-BBM.prototype.pruneText = pruneText;
-
+BBM.fn.pruneText = pruneText;
 }());

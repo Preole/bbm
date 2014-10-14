@@ -3,18 +3,18 @@
 
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
-DUMMY = BBM(ENUM._DUMMY),
+DUMMY = BBM("_DUMMY"),
 SWITCH =
 {
- _DT : _pruneDL,
- _DD : _pruneDL,
- _TH : _pruneTable,
- _TD : _pruneTable,
- _TR : _pruneTable,
- _LI_UL : _pruneUL,
- _LI_OL : _pruneOL
+ _DT : __pruneDL,
+ _DD : __pruneDL,
+ _TH : __pruneTable,
+ _TD : __pruneTable,
+ _TR : __pruneTable,
+ _LI_UL : __pruneUL,
+ _LI_OL : __pruneOL
 },
-IDCLASS = {_ID : _pruneID, _CLASS : _pruneClass},
+IDCLASS = {_ID : __pruneID, _CLASS : __pruneClass},
 PRUNABLE = [
  ENUM._DT,
  ENUM._DD,
@@ -28,22 +28,24 @@ PRUNABLE = [
 ];
 
 
-function _pruneID(prev, node)
+function __pruneID(prev, node)
 {
  return node.attr("id", prev.attr("id"));
 }
 
-function _pruneClass(prev, node)
+function __pruneClass(prev, node)
 {
  var nClass = (node.attr("class") || " ");
  return node.attr("class", (prev.attr("class") + " " + nClass).trim());
 }
 
-function _pruneTable(prev, node)
+function __pruneTable(prev, node)
 {
  var isRow = node.type() === ENUM._TR,
   cellType = node.type() === ENUM._TD ? ENUM.TD : ENUM.TH,
-  pNode = prev.type() === ENUM.TABLE ? prev : BBM(ENUM.TABLE).append(BBM(ENUM.TR));
+  pNode = prev.type() === ENUM.TABLE
+   ? prev
+   : BBM(ENUM.TABLE).append(BBM(ENUM.TR));
 
  if (!isRow)
  {
@@ -56,65 +58,65 @@ function _pruneTable(prev, node)
  return pNode;
 }
 
-function _pruneUL(prev, node)
+function __pruneUL(prev, node)
 {
  var pNode = prev.type() === ENUM.UL ? prev : BBM(ENUM.UL);
  return pNode.append(node.type(ENUM.LI));
 }
 
-function _pruneOL(prev, node)
+function __pruneOL(prev, node)
 {
  var pNode = prev.type() === ENUM.OL ? prev : BBM(ENUM.OL);
  return pNode.append(node.type(ENUM.LI));
 }
 
-function _pruneDL(prev, node)
+function __pruneDL(prev, node)
 {
  var pNode = prev.type() === ENUM.DL ? prev : BBM(ENUM.DL);
  return pNode.append(node.type() === ENUM._DD ? ENUM.DD : ENUM.DT);
 }
 
-function _pruneSwitch(newNode, node)
+function __pruneSwitch(node)
 {
- var prev = newNode.last() || DUMMY,
+ var prev = this.last() || DUMMY,
   nType = node.type(),
   pType = prev.type(),
   res = node;
  
  if (BBM.has(SWITCH, nType))
  {
-  res = SWITCH[nType](prev, node); 
+  res = SWITCH[nType](prev, res); 
  }
  if (BBM.has(IDCLASS, pType))
  {
   res = IDCLASS[pType](prev, res);
-  prev.remove();
+  this.pop();
  }
  if (BBM.isNode(res) && res !== prev)
  {
-  newNode.append(res);
+  this.append(res);
  }
 }
 
-function _prunable(node)
+function __prunable(node)
 {
  return PRUNABLE.indexOf(node.type()) > -1;
 }
 
-function _pruneList(node)
+function __pruneList(node)
 {
- if (node.children().some(_prunable))
+ if (node.children().some(__prunable))
  {
-  node.reduceChild(_pruneSwitch);
+  node.rebuildChild(__pruneSwitch);
  }
 }
 
 function pruneList()
 {
- return this.eachPost(_pruneList);
+ return this.eachPost(__pruneList);
 }
 
-BBM.prototype.pruneList = pruneList;
+BBM.fn.pruneList = pruneList;
 }());
 
 
