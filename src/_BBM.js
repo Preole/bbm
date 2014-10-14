@@ -64,30 +64,29 @@ function isNode(target)
  return BBM.prototype.isPrototypeOf(target);
 }
 
-function textNode(str)
+function extend(extendObj)
 {
- return BBM(ENUM.TEXT).text(String(str));
+ var argLen = arguments.length;
+ return argLen === 0 
+  ? return this
+  : argLen === 1
+  ? return __.extend(this, extendObj)
+  : return __.extend.apply(null, BBM.toArray(arguments));
+}
+
+function fnExtend(extendObj)
+{
+ return BBM.extend(this, extendObj);
 }
 
 
-//Static variables.
 __.extend(BBM, __);
-BBM.extend(BBM,
-{
- ENUM : ENUM,
- isNode : isNode,
- textNode : textNode
-});
-
-
-//Class methods.
+BBM.extend = extend;
+BBM.extend({ENUM : ENUM, isNode : isNode});
 BBM.fn = BBM.prototype;
-BBM.fn.extend = function (extendObj)
-{
- return BBM.extend(this, extendObj);
-};
+BBM.fn.extend = fnExtend;
 
-//Export module
+
 module.exports = BBM;
 }());
 
