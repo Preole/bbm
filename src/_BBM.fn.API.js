@@ -10,20 +10,6 @@ TODO: Privacy convention:
 2. "_" One underscore for private instance variables.
 */
 
-
-/**
- * Create new node with an empty children array and no parent, but clones
- * everything else.
- */
-function __clone(node)
-{
- var obj = BBM.extend(Object.create(BBM.prototype), node);
- obj._nodes = [];
- obj._attr = BBM.extend({}, obj._attr);
- obj._parent = null;
- return obj;
-}
-
 function __mapArgs(node)
 {
  var res = node;
@@ -52,6 +38,13 @@ function __nullParent(node)
  {
   node._parent = null;
  }
+}
+
+function __empty(node)
+{
+ var nodes = node._nodes.splice(0, node._nodes.length);
+ nodes.forEach(__nullParent);
+ return nodes;
 }
 
 
@@ -87,9 +80,6 @@ function splice(from, count, elems)
  return this;
 }
 
-/**
- * 
- */
 function parent()
 {
  return this._parent;
@@ -228,7 +218,8 @@ function insertAfter(target)
  */
 function empty()
 {
- return this.splice(0, this.size());
+ __empty(this);
+ return this;
 }
 
 
@@ -283,48 +274,53 @@ function someChild(callback)
 }
 
 /**
- * Executes callback once per child node, appending results that are of 
- * type node (BBM) into a new replacement copy of the current node.
+ * Executes callback once per child node, transforming the current children 
+ * set into a new set.
  *
- * To map one node into multiple node, return an Array that contains the 
- * collection of nodes.
+ * For one-to-many mapping, return an Array containing a collection of 
+ * nodes.
  * 
  * @param {function} callback The function to execute once per node.
- * @returns {BBM} A new clone of the current node.
+ * @returns {BBM} The current node being rebuilt.
  */
 function mapChild(callback)
 {
- var newKids = this.children(true).map(callback, this);
- return __clone(this).append(newKids).replace(this);
+ var that = this;
+ __empty(that).forEach(function (node, index, sibs){
+  that.append(callback.call(that, node, index, sibs));
+ });
+ return that;
 }
 
 /**
- * Executes callback once per child node, appending nodes that returned
- * "truthy" in the callback into a new replacement copy of the current node.
+ * Executes callback once per child node, discarding nodes that do not 
+ * return a "truthy" value in the callback.
  * 
  * @param {function} callback The function to execute once per node.
- * @returns {BBM} A new clone of the current node.
+ * @returns {BBM} The current node being rebuilt.
  */
 function filterChild(callback)
 {
- var newKids = this.children(true).filter(callback, this);
- return __clone(this).append(newKids).replace(this);
+ var that = this;
+ __empty(that).forEach(function (node, index, sibs){
+  that.append(callback.call(that, node, index, sibs) ? node : void(0));
+ });
+ return that;
 }
+
 
 
 /**
  * Executes callback once per child node, which are to be explicitly 
- * attached to the new replacement copy of the current node by the 
- * callback.
+ * re-attached to the parent.
  * 
  * @param {function} callback The function to execute once per node.
- * @returns {BBM} A new clone of the current node.
+ * @returns {BBM} The current node being rebuilt.
  */
-function reduceChild(callback)
+function rebuildChild(callback)
 {
- var newNode = __clone(this);
- this.children(true).forEach(callback, newNode);
- return newNode.replace(this);
+ __empty(this).forEach(callback, this);
+ return this;
 }
 
 
@@ -336,80 +332,52 @@ Iteration Methods: Whole Subtree
 */
 
 /**
- * @desc Depth-first pre-order traversal. Returns itself.
+ * @desc Depth-first pre-order traversal.
  */
 function eachPre(callback, thisArg)
 {
- return __eachPre.call(this, callback, thisArg, []);
-}
-
-function __eachPre(callback, thisArg, stack)
-{
- callback.call(thisArg, this, stack);
- this.__nodes.forEach(function (node){
-  stack.push(node);
-  __eachPre.call(node, callback, thisArg, stack);
-  stack.pop(node);
- });
+ __reducePre.call(this, callback, thisArg, [], null);
  return this;
 }
 
-
-/**
- * @desc As eachPre, but returns the accumulator instead.
- */
 function reducePre(callback, acc, thisArg)
 {
- return __reducePre.call(this, callback, acc, thisArg, []);
+ return __reducePre.call(this, callback, thisArg, [], acc);
 }
 
-function __reducePre(callback, acc, thisArg, stack)
+function __reducePre(callback, thisArg, stack, acc)
 {
- this.__nodes.forEach(function (node){
+ acc = callback.call(thisArg, this, stack, acc);
+ this.children().forEach(function (node){
   stack.push(node);
-  acc = __reducePre.call(node, callback, acc, thisArg, stack);
+  acc = __reducePre.call(node, callback, thisArg, stack, acc);
   stack.pop(node);
  });
  return acc;
 }
 
 /**
- * @desc Depth-first post-order traversal. Returns itself.
+ * @desc Depth-first post-order traversal.
  */
 function eachPost(callback, thisArg)
 {
- return __eachPost.call(this, callback, thisArg, []);
-}
-
-function __eachPost(callback, thisArg, stack)
-{
- this.children().forEach(function (node){
-  stack.push(node);
-  __eachPost.call(node, callback, thisArg, stack);
-  stack.pop(node);
- });
- callback.call(thisArg, this, stack);
+ __reducePost.call(this, callback, thisArg, [], null);
  return this;
 }
 
-
-/**
- * As reducePre, except it accumulates the value in post-order.
- */
 function reducePost(callback, acc, thisArg)
 {
- return __reducePost.call(this, callback, acc, thisArg, []);
+ return __reducePost.call(this, callback, thisArg, [], acc);
 }
 
-function __reducePost(callback, acc, thisArg, stack)
+function __reducePost(callback, thisArg, stack, acc)
 {
- acc = callback.call(thisArg, acc, this, stack);
  this.children().forEach(function (node){
   stack.push(node);
-  acc = __reducePost.call(node, callback, acc, thisArg, stack);
+  acc = __reducePost.call(node, callback, thisArg, stack, acc);
   stack.pop(node);
  });
- return callback.call(thisArg, acc, this, stack);
+ return callback.call(thisArg, this, stack, acc);
 }
 
 
@@ -495,7 +463,7 @@ BBM.fn.extend({
  someChild : someChild,
  mapChild : mapChild,
  filterChild : filterChild,
- reduceChild : reduceChild,
+ rebuildChild : rebuildChild,
  
  eachPre : eachPre,
  reducePre : reducePre,
