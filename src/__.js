@@ -2,6 +2,17 @@
 "use strict";
 
 
+function __extend(fromObj)
+{
+ if (fromObj === this) {return;}
+ for (var key in fromObj)
+ {
+  if (has(fromObj, key))
+  {
+   this[key] = fromObj[key];
+  }
+ }
+}
 
 function __uniq(acc, val)
 {
@@ -141,25 +152,14 @@ function get(obj, key)
  return has(obj, key) ? obj[key] : void(0);
 }
 
-function extend()
+function extend(others)
 {
- var otherObjs = toArray(arguments).filter(isObject),
-  toObj = isObject(otherObjs[0]) ? otherObjs[0] : {};
-  
- otherObjs.forEach(function (fromObj){
-  if (isObject(fromObj) && fromObj !== toObj)
-  {
-   for (var key in fromObj)
-   {
-    if (has(fromObj, key))
-    {
-     toObj[key] = fromObj[key];
-    }
-   }
-  }
- });
+ var toObj = isObject(others) ? others : {};
+ Array.prototype.filter.call(arguments, isObject).forEach(__extend, toObj);
  return toObj;
 }
+
+
 
 module.exports = {
  toString : toString,
