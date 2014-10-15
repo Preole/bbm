@@ -40,7 +40,10 @@ function __nullParent(node)
 
 function __empty(node)
 {
- var nodes = node._nodes.splice(0, node._nodes.length);
+ var len = node.size(),
+  kids = node.children(),
+  nodes = len > 0 ? kids.splice(0, len) : kids;
+  
  nodes.forEach(__nullParent);
  return nodes;
 }
@@ -178,9 +181,24 @@ Children Iteration
 ------------------
 */
 
+function filterChild(callback)
+{
+ var that = this;
+ if (that.size() > 0)
+ {
+  __empty(that).forEach(function (node, index, sibs){
+   that.append(callback.call(that, node, index, sibs) ? node : null);
+  });
+ }
+ return that;
+}
+
 function rebuildChild(callback)
 {
- __empty(this).forEach(callback, this);
+ if (this.size() > 0)
+ {
+  __empty(this).forEach(callback, this);
+ }
  return this;
 }
 
@@ -248,11 +266,6 @@ Attributes & Properties
 -----------------------
 */
 
-/**
- * @desc If supplied a string argument, converts the node into a text 
- * node with that string value. Otherwise, return the node's text value.
- * If this method returns a non-empty string value, it's a text node.
- */
 function text(val)
 {
  if (arguments.length === 0)
@@ -312,6 +325,7 @@ BBM.fn.extend({
  replace : replace,
  empty : empty,
 
+ filterChild : filterChild,
  rebuildChild : rebuildChild,
  
  eachPre : eachPre,

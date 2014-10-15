@@ -4,6 +4,7 @@
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
 DUMMY = BBM("_DUMMY"),
+IDCLASS = {_ID : __pruneID, _CLASS : __pruneClass},
 SWITCH =
 {
  _DT : __pruneDL,
@@ -13,20 +14,7 @@ SWITCH =
  _TR : __pruneTable,
  _LI_UL : __pruneUL,
  _LI_OL : __pruneOL
-},
-IDCLASS = {_ID : __pruneID, _CLASS : __pruneClass},
-PRUNABLE = [
- ENUM._DT,
- ENUM._DD,
- ENUM._TH,
- ENUM._TD,
- ENUM._TR,
- ENUM._LI_OL,
- ENUM._LI_UL,
- ENUM._ID,
- ENUM._CLASS
-];
-
+};
 
 function __pruneID(prev, node)
 {
@@ -92,7 +80,7 @@ function __pruneSwitch(node)
   res = IDCLASS[pType](prev, res);
   this.pop();
  }
- if (BBM.isNode(res) && res !== prev)
+ if (res !== prev)
  {
   this.append(res);
  }
@@ -100,7 +88,7 @@ function __pruneSwitch(node)
 
 function __prunable(node)
 {
- return PRUNABLE.indexOf(node.type()) > -1;
+ return BBM.has(SWITCH, node.type()) || BBM.has(IDCLASS, node.type());
 }
 
 function __pruneList(node)

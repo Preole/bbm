@@ -12,7 +12,7 @@ function _pruneHREF(node)
  node.attr("href", BBM.get(this, node.attr("href")) || node.attr("href"));
  if (node.size() === 0)
  {
-  node.append(node.attr("href"));
+  node.append(node.attr("href")); //Better blank checking.
  }
 }
 
