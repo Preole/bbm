@@ -11,7 +11,7 @@ Private Methods
 function __mapArgs(node)
 {
  var res = node;
- if (BBM.isString(res) || BBM.isNumber(res))
+ if ((BBM.isString(res) && res.length > 0) || BBM.isNumber(res))
  {
   res = BBM(ENUM.TEXT).text(res);
  }
