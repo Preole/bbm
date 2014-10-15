@@ -72,6 +72,7 @@ function __pruneBlank(node)
  if (node.children().every(__isBlank))
  {
   node.empty();
+  return;
  }
  
  if (node.type() === ENUM.TABLE)
