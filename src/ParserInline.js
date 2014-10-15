@@ -168,7 +168,10 @@ function parseImg(lexTok)
  
  if (this.peekT(LEX.LINK_CONT))
  {
-  alt = this.sliceText(this.next(), this.nextUntilPast(untilBracket) - 1);
+  startPos = this.next();
+  endPos = this.nextUntilPast(untilBracket) - 1;
+  alt = this.sliceText(startPos, endPos).trim();
+  alt = alt.length > 0 ? alt : src;
  }
  return ASTNode(AST.LINK_IMG, {src : src, alt : alt.trim()});
 }
