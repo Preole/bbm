@@ -144,7 +144,7 @@ function parseDiv(lexTok)
   tok = null;
 
  this.nextUntilPast(untilNL);
- while ((tok = this.nextUntil(untilNotWSNL)) && tok.col >= col)
+ while ((tok = this.peekUntil(untilNotWSNL)) && tok.col >= col)
  {
   if (this.isMatchDelim(lexTok))
   {
