@@ -1,8 +1,8 @@
 (function (){
 "use strict";
 
-var BBM = require("./BBM.js"),
-DUMMY = BBM("_DUMMY");
+var BBM = require("./BBM.js");
+var DUMMY = BBM("_DUMMY");
 
 
 function __prunableText(prev, node)

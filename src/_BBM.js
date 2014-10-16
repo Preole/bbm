@@ -2,50 +2,51 @@
 (function (){
 "use strict";
 
-var __ = require("./__.js"),
-ENUM =
+
+var __ = require("./__.js");
+var ENUM =
 {
- _DT : "_DT",
- _DD : "_DD",
- _TH : "_TH",
- _TD : "_TD",
- _TR : "_TR",
- _LI_UL : "_LI_UL",
- _LI_OL : "_LI_OL",
- _ID : "_ID",
- _CLASS : "_CLASS",
- _DUMMY : "_DUMMY",
- 
- ROOT : "ROOT",
- P : "P",
- BLOCKQUOTE : "BLOCKQUOTE",
- PRE : "PRE",
- DIV : "DIV",
- LI : "LI",
- UL : "UL",
- OL : "OL",
- HEADER : "HEADER",
- DT : "DT",
- DD : "DD",
- DL : "DL",
- TH : "TH",
- TD : "TD",
- HR : "HR",
- TR : "TR",
- TABLE : "TABLE",
- LINK_INT : "LINK_INT",
- LINK_EXT : "LINK_EXT",
- LINK_IMG : "LINK_IMG",
- LINK_WIKI : "LINK_WIKI",
- DEL : "DEL",
- INS : "INS",
- U : "U",
- SUB : "SUB",
- SUP : "SUP",
- EM : "EM",
- BOLD : "BOLD",
- CODE : "CODE",
- TEXT : "TEXT"
+  _DT : "_DT"
+, _DD : "_DD"
+, _TH : "_TH"
+, _TD : "_TD"
+, _TR : "_TR"
+, _LI_UL : "_LI_UL"
+, _LI_OL : "_LI_OL"
+, _ID : "_ID"
+, _CLASS : "_CLASS"
+, _DUMMY : "_DUMMY"
+
+, ROOT : "ROOT"
+, P : "P"
+, BLOCKQUOTE : "BLOCKQUOTE"
+, PRE : "PRE"
+, DIV : "DIV"
+, LI : "LI"
+, UL : "UL"
+, OL : "OL"
+, HEADER : "HEADER"
+, DT : "DT"
+, DD : "DD"
+, DL : "DL"
+, TH : "TH"
+, TD : "TD"
+, HR : "HR"
+, TR : "TR"
+, TABLE : "TABLE"
+, LINK_INT : "LINK_INT"
+, LINK_EXT : "LINK_EXT"
+, LINK_IMG : "LINK_IMG"
+, LINK_WIKI : "LINK_WIKI"
+, DEL : "DEL"
+, INS : "INS"
+, U : "U"
+, SUB : "SUB"
+, SUP : "SUP"
+, EM : "EM"
+, BOLD : "BOLD"
+, CODE : "CODE"
+, TEXT : "TEXT"
 };
 
 //Abstract syntax tree node.
@@ -68,10 +69,10 @@ function extend(extendObj)
 {
  var argLen = arguments.length;
  return argLen === 0 
-  ? this
-  : argLen === 1
-  ? __.extend(this, extendObj)
-  : __.extend.apply(null, BBM.toArray(arguments));
+ ? this
+ : argLen === 1
+ ? __.extend(this, extendObj)
+ : __.extend.apply(null, BBM.toArray(arguments));
 }
 
 function fnExtend(extendObj)

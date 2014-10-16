@@ -1,12 +1,10 @@
 (function (){
 "use strict";
 
-
 function __extend(fromObj)
 {
- var key = null;
  if (fromObj === this) {return;}
- for (key in fromObj)
+ for (var key in fromObj)
  {
   if (has(fromObj, key))
   {
@@ -90,16 +88,7 @@ function isBlankString(str)
 
 function repeatString(str, times)
 {
- var s = "";
- if (times <= 0) {return s;}
- for (;;)
- {
-  if (times & 1) {s += str;}
-  times >>= 1;
-  if (times) {str += str;}
-  else {break;}
- }
- return s;
+ return Array((Number(times) || 0) + 1).join(str);
 }
 
 function rmWS(str)
@@ -125,16 +114,16 @@ function rmCTRL(str)
 function escapeHTML(str)
 {
  return str.replace(/&/g, "&amp;")
-  .replace(/</g, "&lt;")
-  .replace(/>/g, "&gt;");
+ .replace(/</g, "&lt;")
+ .replace(/>/g, "&gt;");
 }
 
 function escapeATTR(str)
 {
  return escapeURI(rmCTRL(escapeHTML(str).replace(/"/g, "&quot;")
-  .replace(/'/g, "&#x27;")
-  .replace(/\//g, "&#x2F;")
-  .replace(/`/g, "&#x60;")));
+ .replace(/'/g, "&#x27;")
+ .replace(/\//g, "&#x2F;")
+ .replace(/`/g, "&#x60;")));
 }
 
 function escapeURI(str)
@@ -163,29 +152,29 @@ function extend(others)
 
 
 module.exports = {
- toString : toString,
- toArray : toArray,
- uniq : uniq,
- unique : uniq,
- flatten : flatten,
- isNull : isNull,
- isObject : isObject,
- isArray : isArray,
- isString : isString,
- isNumber : isNumber,
- isFunction : isFunction,
- isBlankString : isBlankString,
- repeatString : repeatString,
- rmWS : rmWS,
- rmNL : rmNL,
- rmNLTail : rmNLTail,
- rmCTRL : rmCTRL,
- escapeHTML : escapeHTML,
- escapeATTR : escapeATTR,
- escapeURI : escapeURI,
- has : has,
- get : get,
- extend : extend
+  toString : toString
+, toArray : toArray
+, uniq : uniq
+, unique : uniq
+, flatten : flatten
+, isNull : isNull
+, isObject : isObject
+, isArray : isArray
+, isString : isString
+, isNumber : isNumber
+, isFunction : isFunction
+, isBlankString : isBlankString
+, repeatString : repeatString
+, rmWS : rmWS
+, rmNL : rmNL
+, rmNLTail : rmNLTail
+, rmCTRL : rmCTRL
+, escapeHTML : escapeHTML
+, escapeATTR : escapeATTR
+, escapeURI : escapeURI
+, has : has
+, get : get
+, extend : extend
 };
 
 }());

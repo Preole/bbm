@@ -1,7 +1,8 @@
 (function (){
 "use strict";
 
-var BBM = require("./BBM.js"), ENUM = BBM.ENUM;
+var BBM = require("./BBM.js");
+var ENUM = BBM.ENUM;
 
 /*
 Private Methods
@@ -26,8 +27,8 @@ function __mapArgs(node)
 function __procArgs(elems, node)
 {
  return BBM.isArray(elems)
-  ? BBM.flatten(elems).map(__mapArgs, node).filter(BBM.isNode)
-  : __mapArgs.call(node, elems);
+ ? BBM.flatten(elems).map(__mapArgs, node).filter(BBM.isNode)
+ : __mapArgs.call(node, elems);
 }
 
 function __nullParent(node)
@@ -58,14 +59,14 @@ Basic & Low-Level Accessors
 
 function splice(from, count, elems)
 {
- var eles = __procArgs(elems, this),
-  kids = this.children(),
-  args = BBM.isArray(eles) ? [from, count].concat(eles) : eles,
-  removed = BBM.isArray(args)
-   ? kids.splice.apply(kids, args)
-   : BBM.isNode(args)
-   ? kids.splice(from, count, args)
-   : kids.splice(from, count);
+ var eles = __procArgs(elems, this);
+ var kids = this.children();
+ var args = BBM.isArray(eles) ? [from, count].concat(eles) : eles;
+ var removed = BBM.isArray(args)
+ ? kids.splice.apply(kids, args)
+ : BBM.isNode(args)
+ ? kids.splice(from, count, args)
+ : kids.splice(from, count);
  
  removed.forEach(__nullParent);
  return this;
@@ -301,33 +302,33 @@ function type(newType)
 
 
 BBM.fn.extend({
- splice : splice,
- parent : parent,
- children : children,
+  splice : splice
+, parent : parent
+, children : children
  
- size : size,
- last : last,
- first : first,
+, size : size
+, last : last
+, first : first
 
- pop : pop,
- shift : shift,
- append : append,
- prepend : prepend,
- replaceWith : replaceWith,
- replace : replace,
- empty : empty,
+, pop : pop
+, shift : shift
+, append : append
+, prepend : prepend
+, replaceWith : replaceWith
+, replace : replace
+, empty : empty
 
- filterChild : filterChild,
- rebuildChild : rebuildChild,
- 
- eachPre : eachPre,
- reducePre : reducePre,
- eachPost : eachPost,
- reducePost : reducePost,
- 
- text : text,
- attr : attr,
- type : type
+, filterChild : filterChild
+, rebuildChild : rebuildChild
+
+, eachPre : eachPre
+, reducePre : reducePre
+, eachPost : eachPost
+, reducePost : reducePost
+
+, text : text
+, attr : attr
+, type : type
 });
 
 }());

@@ -1,43 +1,45 @@
 (function (){
 "use strict";
 
-var BBM = require("./BBM.js"),
-Lexer = require("./_BBM.Lexer.js"),
-parseInline = require("./BBM.parseInline.js"),
-LEX = Lexer.ENUM,
-AST = BBM.ENUM,
-EOF = {},
-lexMapBlock =
+var BBM = require("./BBM.js");
+var Lexer = require("./_BBM.Lexer.js");
+var parseInline = require("./BBM.parseInline.js");
+var LEX = Lexer.ENUM;
+var AST = BBM.ENUM;
+var EOF = {};
+var lexParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV];
+var lexSetext = [LEX.HR, LEX.ATX_END];;
+var lexMapBlock =
 {
- TH : parseListPre,
- TD : parseListPre,
- GT : parseListPre,
- DD : parseListPre,
- OL : parseListPre,
- UL : parseListPre,
- DT : parseListPre,
- HR : parseHRTR,
- TRSEP : parseHRTR,
- REF : parseRef,
- ATX : parseATX,
- COMMENT : parsePre,
- PRE : parsePre,
- DIV : parseDiv,
- CLASS : parseLabel,
- ID : parseLabel
-},
-lexMapList =
+  TH : parseListPre
+, TD : parseListPre
+, GT : parseListPre
+, DD : parseListPre
+, OL : parseListPre
+, UL : parseListPre
+, DT : parseListPre
+, HR : parseHRTR
+, TRSEP : parseHRTR
+, REF : parseRef
+, ATX : parseATX
+, COMMENT : parsePre
+, PRE : parsePre
+, DIV : parseDiv
+, CLASS : parseLabel
+, ID : parseLabel
+};
+
+var lexMapList =
 {
- TH : AST._TH,
- TD : AST._TD,
- GT : AST.BLOCKQUOTE,
- DT : AST._DT,
- DD : AST._DD,
- OL : AST._LI_OL,
- UL : AST._LI_UL
-},
-lexParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV],
-lexSetext = [LEX.HR, LEX.ATX_END];
+  TH : AST._TH
+, TD : AST._TD
+, GT : AST.BLOCKQUOTE
+, DT : AST._DT
+, DD : AST._DD
+, OL : AST._LI_OL
+, UL : AST._LI_UL
+};
+
 
 function notWSNL(tok)
 {
@@ -61,7 +63,8 @@ function isATXEnd(tok)
 
 function isParaEnd(tok, minCol)
 {
- return this.isLineStart() && (
+ return this.isLineStart() &&
+ (
   this.isLineEnd()
   || lexParaDelim.indexOf(tok.type) > -1
   || (notWSNL(tok) && tok.col < minCol)
@@ -70,15 +73,16 @@ function isParaEnd(tok, minCol)
 
 
 
-
+//TODO: Reduce complexity of this function.
+//TODO: Remove the need of a .lvl instance for checking stack depth.
 function parseBlock(lexer)
 {
- var tok = lexer.peekUntil(notWSNL),
-  func = tok ? lexMapBlock[tok.type] : null,
-  isNotAbuse = lexer.currlvl < (Number(lexer.options.maxBlocks) || 8),
-  node = null;
-  
- lexer.currlvl += 1;
+ var tok = lexer.peekUntil(notWSNL);
+ var func = tok ? lexMapBlock[tok.type] : null;
+ var isNotAbuse = lexer.lvl < (Number(lexer.options.maxBlocks) || 8);
+ var node = null;
+
+ lexer.lvl += 1;
  if (func && isNotAbuse)
  {
   node = func(lexer, tok);
@@ -87,7 +91,7 @@ function parseBlock(lexer)
  {
   node = parsePara(lexer, tok);
  }
- lexer.currlvl -= 1;
+ lexer.lvl -= 1;
  return node;
 }
 
@@ -101,15 +105,15 @@ function parseListPre(lexer, lexTok)
  lexer.nextUntil(notWSNL);
  
  return lexTok.type === LEX.DT
-  ? parsePara(lexer, (lexer.peek() || EOF), AST._DT)
-  : parseList(lexer, lexTok);
+ ? parsePara(lexer, (lexer.peek() || EOF), AST._DT)
+ : parseList(lexer, lexTok);
 }
 
 function parseList(lexer, lexTok)
 {
- var node = BBM(lexMapList[lexTok.type]),
-  col = lexTok.col + lexTok.lexeme.length,
-  tok = null;
+ var node = BBM(lexMapList[lexTok.type]);
+ var col = lexTok.col + lexTok.lexeme.length;
+ var tok = null;
   
  while ((tok = lexer.peekUntil(notWSNL)) && tok.col >= col)
  {
@@ -126,9 +130,9 @@ function parseHRTR(lexer, lexTok)
 
 function parseDiv(lexer, lexTok)
 {
- var node = BBM(AST.DIV),
-  col = lexTok.col,
-  tok = null;
+ var node = BBM(AST.DIV);
+ var col = lexTok.col;
+ var tok = null;
 
  lexer.nextPast(isNL);
  while ((tok = lexer.peekUntil(notWSNL)) && tok.col >= col)
@@ -145,11 +149,11 @@ function parseDiv(lexer, lexTok)
 
 function parsePre(lexer, lexTok)
 {
- var startPos = lexer.nextPast(isNL),
-  endPos = lexer.nextPast(lexer.isMatchDelim, lexTok) - 1,
-  text = BBM.rmNLTail(lexer.sliceText(startPos, endPos, lexTok.col));
+ var startPos = lexer.nextPast(isNL);
+ var endPos = lexer.nextPast(lexer.isMatchDelim, lexTok) - 1;
+ var text = BBM.rmNLTail(lexer.sliceText(startPos, endPos, lexTok.col));
 
- if (lexTok.type === LEX.PRE && text.length > 0)
+ if (lexTok.type === LEX.PRE)
  {
   return BBM(AST.PRE).append(text);
  }
@@ -158,9 +162,9 @@ function parsePre(lexer, lexTok)
 
 function parseATX(lexer, lexTok)
 {
- var startPos = lexer.next(),
-  endPos = lexer.nextPast(isATXEnd) - 1,
-  text = lexer.sliceText(startPos, endPos).trim();
+ var startPos = lexer.next();
+ var endPos = lexer.nextPast(isATXEnd) - 1;
+ var text = lexer.sliceText(startPos, endPos).trim();
 
  if (!BBM.isBlankString(text))
  {
@@ -173,25 +177,12 @@ function parseATX(lexer, lexTok)
 
 function parseLabel(lexer, lexTok)
 {
- var startPos = lexer.pos + 1,
-  endPos = lexer.nextPast(isNL) - 1,
-  idClass = lexer.sliceText(startPos, endPos).trim();
-  
- if (idClass.length <= 0)
- {
-  return;
+ var idClass = lexer.sliceText(lexer.pos + 1, lexer.nextPast(isNL)).trim();
+ var isID = lexTok.type === LEX.ID;
+ if (idClass.length > 0)
+ { 
+  return BBM(isID ? AST._ID : AST._CLASS).attr(isID ? "id" : "class", idClass);
  }
- 
- var node = BBM(lexTok.type === LEX.ID ? AST._ID : AST._CLASS);
- if (node.type() === AST._ID)
- {
-  node.attr("id", idClass);
- }
- else
- {
-  node.attr("class", idClass);
- }
- return node;
 }
 
 function parseRef(lexer)
@@ -208,11 +199,11 @@ function parseRef(lexer)
 
 function parsePara(lexer, lexTok, forceType)
 {
- var minCol = lexTok.col || 0,
-  startPos = lexer.pos,
-  endPos = lexer.nextUntil(isParaEnd, minCol),
-  endTok = lexer.peek() || EOF;
-  
+ var minCol = lexTok.col || 0;
+ var startPos = lexer.pos;
+ var endPos = lexer.nextUntil(isParaEnd, minCol);
+ var endTok = lexer.peek() || EOF;
+
  if (startPos >= endPos || notWSNL(endTok))
  {
   lexer.next();
@@ -223,7 +214,7 @@ function parsePara(lexer, lexTok, forceType)
  }
 
  var subLexer = lexer.slice(startPos, endPos, minCol).popUntil(notWSNL);
- var node = BBM.parseInline(subLexer);
+ var node = parseInline(subLexer);
  if (forceType)
  {
   node.type(forceType);
@@ -243,7 +234,7 @@ function parsePara(lexer, lexTok, forceType)
 //TODO: Disambiguate parameters; What if I passed in a lexer instead?
 function Parser(bbmStr, options)
 {
- var lexer = Lexer(bbmStr, options);
+ var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);
  lexer.root = BBM(AST.ROOT);
  lexer.root.refTable = {};
  while (lexer.peek())

@@ -1,10 +1,10 @@
 (function (){
 "use strict";
 
-var BBM = require("./BBM.js"),
-ENUM = BBM.ENUM,
-LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI],
-SYMTABLE = {};
+var BBM = require("./BBM.js");
+var ENUM = BBM.ENUM;
+var LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI];
+var SYMTABLE = {};
 
 function _pruneURL(node)
 {

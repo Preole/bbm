@@ -1,19 +1,19 @@
 (function (){
 "use strict";
 
-var BBM = require("./BBM.js"),
-ENUM = BBM.ENUM,
-DUMMY = BBM("_DUMMY"),
-IDCLASS = {_ID : __pruneID, _CLASS : __pruneClass},
-SWITCH =
+var BBM = require("./BBM.js");
+var ENUM = BBM.ENUM;
+var DUMMY = BBM("_DUMMY");
+var IDCLASS = {_ID : __pruneID, _CLASS : __pruneClass};
+var SWITCH =
 {
- _DT : __pruneDL,
- _DD : __pruneDL,
- _TH : __pruneTable,
- _TD : __pruneTable,
- _TR : __pruneTable,
- _LI_UL : __pruneUL,
- _LI_OL : __pruneOL
+  _DT : __pruneDL
+, _DD : __pruneDL
+, _TH : __pruneTable
+, _TD : __pruneTable
+, _TR : __pruneTable
+, _LI_UL : __pruneUL
+, _LI_OL : __pruneOL
 };
 
 function __pruneID(prev, node)
@@ -29,11 +29,11 @@ function __pruneClass(prev, node)
 
 function __pruneTable(prev, node)
 {
- var isRow = node.type() === ENUM._TR,
-  cellType = node.type() === ENUM._TD ? ENUM.TD : ENUM.TH,
-  pNode = prev.type() === ENUM.TABLE
-   ? prev
-   : BBM(ENUM.TABLE).append(BBM(ENUM.TR));
+ var isRow = node.type() === ENUM._TR;
+ var cellType = node.type() === ENUM._TD ? ENUM.TD : ENUM.TH;
+ var pNode = prev.type() === ENUM.TABLE
+ ? prev
+ : BBM(ENUM.TABLE).append(BBM(ENUM.TR));
 
  if (!isRow)
  {
@@ -66,10 +66,10 @@ function __pruneDL(prev, node)
 
 function __pruneSwitch(node)
 {
- var prev = this.last() || DUMMY,
-  nType = node.type(),
-  pType = prev.type(),
-  res = node;
+ var prev = this.last() || DUMMY;
+ var nType = node.type();
+ var pType = prev.type();
+ var res = node;
  
  if (BBM.has(SWITCH, nType))
  {

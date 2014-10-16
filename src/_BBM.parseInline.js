@@ -2,41 +2,43 @@
 "use strict";
 
 
-var BBM = require("./BBM.js"),
-Lexer = require("./_BBM.Lexer.js"),
-LEX = Lexer.ENUM,
-AST = BBM.ENUM,
-LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT],
-fmtASTMap =
+var BBM = require("./BBM.js");
+var Lexer = require("./_BBM.Lexer.js");
+var LEX = Lexer.ENUM;
+var AST = BBM.ENUM;
+var LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];
+var fmtASTMap =
 {
- LINK_INT : AST.LINK_INT,
- LINK_EXT : AST.LINK_EXT,
- LINK_IMG : AST.LINK_IMG,
- LINK_WIKI : AST.LINK_WIKI,
- INS : AST.INS,
- DEL : AST.DEL,
- INS_END : AST.INS,
- DEL_END : AST.DEL,
- BOLD : AST.BOLD,
- EM : AST.EM,
- SUP : AST.SUP,
- SUB : AST.SUB,
- UNDER : AST.U,
- CODE : AST.CODE,
- PRE : AST.CODE
-},
-
-fmtEndMap =
-{
- INS : LEX.INS_END,
- DEL : LEX.DEL_END,
- BOLD : LEX.BOLD,
- EM : LEX.EM,
- SUP : LEX.SUP,
- SUB : LEX.SUB,
- UNDER : LEX.UNDER
+  LINK_INT : AST.LINK_INT
+, LINK_EXT : AST.LINK_EXT
+, LINK_IMG : AST.LINK_IMG
+, LINK_WIKI : AST.LINK_WIKI
+, INS : AST.INS
+, DEL : AST.DEL
+, INS_END : AST.INS
+, DEL_END : AST.DEL
+, BOLD : AST.BOLD
+, EM : AST.EM
+, SUP : AST.SUP
+, SUB : AST.SUB
+, UNDER : AST.U
+, CODE : AST.CODE
+, PRE : AST.CODE
 };
- 
+
+var fmtEndMap =
+{
+  INS : LEX.INS_END
+, DEL : LEX.DEL_END
+, BOLD : LEX.BOLD
+, EM : LEX.EM
+, SUP : LEX.SUP
+, SUB : LEX.SUB
+, UNDER : LEX.UNDER
+};
+
+
+
 function isCode(tok, tokStart)
 {
  return (tok.type === LEX.CODE || tok.type === LEX.PRE)
@@ -66,14 +68,16 @@ function isInline(tok)
  return tok.type === LEX.BRACKET_R || BBM.get(fmtASTMap, tok.type);
 }
 
+//TODO: Simplify this function's cyclomatic complexity;
+//Especially about fIndex and hasBracket
 function parsePara(lexer, stack, premade)
 {
- var node = premade || BBM(AST.P),
-  isNotAbuse = stack.length < (Number(lexer.options.maxSpans) || 8),
-  txtStart = lexer.pos,
-  hasBracket = stack.indexOf(LEX.BRACKET_R) > -1,
-  fIndex = -1,
-  tok = null;
+ var node = premade || BBM(AST.P);
+ var isNotAbuse = stack.length < (Number(lexer.options.maxSpans) || 8);
+ var txtStart = lexer.pos;
+ var hasBracket = stack.indexOf(LEX.BRACKET_R) > -1;
+ var fIndex = -1;
+ var tok = null;
   
  while ((tok = lexer.peekUntil(isInline)))
  {
@@ -147,7 +151,6 @@ function parseImg(lexer)
 {
  var src = lexer.sliceText(lexer.pos, lexer.nextPast(isAngle) - 1).trim();
  var alt = src;
- 
  if (BBM.isBlankString(src))
  {
   return;
@@ -168,13 +171,13 @@ function parseCode(lexer, lexTok)
  return BBM(AST.CODE).append(lexer.sliceText(startPos, endPos));
 }
 
-
-//TODO: Disambiguate parameter meaning.
 function ParserInline(bbmStr, options)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);
  return parsePara(lexer, []);
 }
+
+
 
 module.exports = BBM.parseInline = ParserInline;
 BBM.fn.parseInline = function (bbmStr, options)

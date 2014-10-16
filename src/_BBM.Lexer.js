@@ -1,7 +1,7 @@
 (function (){
 "use strict";
 
-var BBM = require("./BBM.js"),
+var BBM = require("./BBM.js");
 
 
 /*
@@ -9,55 +9,54 @@ Private methods: Lexing
 -----------------------
 */
 
-WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]",
-NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?",
-EOL = "(?=" + NL + "|$)",
-EMPTY = __LexToken(),
-RULES = (function (){
-return [
- __Rule("ESCAPE"   , "\\\\[\\S]"),
- __Rule("TH"       , "!!" + WS),
- __Rule("TD"       , "\\|\\|" + WS),
- __Rule("TRSEP"    , "\\|[=]+" + EOL),
- __Rule("ATX_END"  , "=+" + EOL),
- __Rule("ATX"      , "=+"),
- __Rule("HR"       , "---[\\-]+" + EOL),
- __Rule("COMMENT"  , "///[/]+" + EOL),
- __Rule("CLASS"    , "\\.\\." + WS),
- __Rule("ID"       , "\\." + WS),
- __Rule("GT"       , ">"),
- __Rule("REF"      , ":{"),
- __Rule("REF_END"  , "}:"),
- __Rule("DD"       , ":" + WS),
- __Rule("DT"       , ";" + WS),
- __Rule("OL"       , "[0-9]+\\." + WS),
- __Rule("OL"       , "#\\." + WS),
- __Rule("DIV"      , "\\*\\*\\*[*]+" + EOL),
- __Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS),
- __Rule("PRE"      , "\\\"\\\"[\\\"]+" + EOL),
- __Rule("CODE"     , "\\\"\\\"[\\\"]+"),
- __Rule("DEL"      , "{--"),
- __Rule("DEL_END"  , "--}"),
- __Rule("BOLD"     , "\\*\\*"),
- __Rule("INS"      , "\\{\\+\\+"),
- __Rule("INS_END"  , "\\+\\+\\}"),
- __Rule("SUP"      , "\\^\\^"),
- __Rule("SUB"      , ",,"),
- __Rule("UNDER"    , "__"),
- __Rule("EM"       , "''"),
- __Rule("LINK_EXT" , "\\?<"),
- __Rule("LINK_IMG" , "!<"),
- __Rule("LINK_WIKI", "#<"),
- __Rule("LINK_INT" , "#\\["),
- __Rule("LINK_CONT", "\\-\\["),
- __Rule("BRACKET_R", "\\]"),
- __Rule("NL"       , NL),
- __Rule("WS"       , WS + "+")
+var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
+var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
+var EOL = "(?=" + NL + "|$)";
+var EMPTY = __LexToken();
+var RULES =
+[
+  __Rule("ESCAPE"   , "\\\\[\\S]")
+, __Rule("TH"       , "!!" + WS)
+, __Rule("TD"       , "\\|\\|" + WS)
+, __Rule("TRSEP"    , "\\|[=]+" + EOL)
+, __Rule("ATX_END"  , "=+" + EOL)
+, __Rule("ATX"      , "=+")
+, __Rule("HR"       , "---[\\-]+" + EOL)
+, __Rule("COMMENT"  , "///[/]+" + EOL)
+, __Rule("CLASS"    , "\\.\\." + WS)
+, __Rule("ID"       , "\\." + WS)
+, __Rule("GT"       , ">")
+, __Rule("REF"      , ":{")
+, __Rule("REF_END"  , "}:")
+, __Rule("DD"       , ":" + WS)
+, __Rule("DT"       , ";" + WS)
+, __Rule("OL"       , "[0-9]+\\." + WS)
+, __Rule("OL"       , "#\\." + WS)
+, __Rule("DIV"      , "\\*\\*\\*[*]+" + EOL)
+, __Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS)
+, __Rule("PRE"      , "\\\"\\\"[\\\"]+" + EOL)
+, __Rule("CODE"     , "\\\"\\\"[\\\"]+")
+, __Rule("DEL"      , "{--")
+, __Rule("DEL_END"  , "--}")
+, __Rule("BOLD"     , "\\*\\*")
+, __Rule("INS"      , "\\{\\+\\+")
+, __Rule("INS_END"  , "\\+\\+\\}")
+, __Rule("SUP"      , "\\^\\^")
+, __Rule("SUB"      , ",,")
+, __Rule("UNDER"    , "__")
+, __Rule("EM"       , "''")
+, __Rule("LINK_EXT" , "\\?<")
+, __Rule("LINK_IMG" , "!<")
+, __Rule("LINK_WIKI", "#<")
+, __Rule("LINK_INT" , "#\\[")
+, __Rule("LINK_CONT", "\\-\\[")
+, __Rule("BRACKET_R", "\\]")
+, __Rule("NL"       , NL)
+, __Rule("WS"       , WS + "+")
 ];
-}()),
 
-ENUM = RULES.reduce(__reduceRulesTypes, {TEXT : "TEXT"}),
-REGEX = new RegExp(RULES.map(__mapRules).join("|"), "g");
+var ENUM = RULES.reduce(__reduceRulesTypes, {TEXT : "TEXT"});
+var REGEX = new RegExp(RULES.map(__mapRules).join("|"), "g");
 
 
 
@@ -80,31 +79,28 @@ function __reduceRulesTypes(acc, rule)
 function __LexToken(lexeme, type, col, line)
 {
  return {
-  lexeme : lexeme || "",
-  type : type || "",
-  col : col || -1,
-  line : line || -1
+   lexeme : lexeme || ""
+ , type : type || ""
+ , col : col || -1
+ , line : line || -1
  };
 }
 
 function __Lexer(strInput)
 {
- var res = null,
-  ruleObj = null,
-  regex = new RegExp(REGEX),
-  tokens = [],
-  lastPos = 0;
+ var res = null;
+ var regex = new RegExp(REGEX);
+ var tokens = [];
+ var lastPos = 0;
  
- regex.lastIndex = 0;
  while (BBM.isArray((res = regex.exec(strInput))))
  {
-  ruleObj = RULES[res.indexOf(res[0], 1) - 1];
-
+  var ruleObj = RULES[res.indexOf(res[0], 1) - 1] || EMPTY;
   if (lastPos < res.index)
   {
    tokens.push(__LexToken(strInput.slice(lastPos, res.index), ENUM.TEXT));
   }
-  tokens.push(__LexToken(res[0], ruleObj ? ruleObj.name : ENUM.TEXT));
+  tokens.push(__LexToken(res[0], ruleObj.name));
 
   if (lastPos > regex.lastIndex)
   {
@@ -196,34 +192,36 @@ Public Methods: peek extras
 
 function isLineStart(offset)
 {
- var off = Number(offset) || 0,
-  prev1 = this.peek(off - 1),
-  prev2 = this.peek(off - 2);
+ var off = Number(offset) || 0;
+ var prev1 = this.peek(off - 1);
+ var prev2 = this.peek(off - 2);
   
  return !prev1
-  || prev1.type === ENUM.NL
-  || prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
+ || prev1.type === ENUM.NL
+ || prev1.type === ENUM.WS
+ && (!prev2 || prev2.type === ENUM.NL);
 }
 
 function isLineEnd(offset)
 {
- var off = Number(offset) || 0,
-  now = this.peek(off),
-  next = this.peek(off + 1);
+ var off = Number(offset) || 0;
+ var now = this.peek(off);
+ var next = this.peek(off + 1);
   
  return !now
-  || now.type === ENUM.NL 
-  || now.type === ENUM.WS && (!next || next.type === ENUM.NL);
+ || now.type === ENUM.NL 
+ || now.type === ENUM.WS
+ && (!next || next.type === ENUM.NL);
 }
 
 function isMatchDelim(currTok, sTok)
 {
  var now = (currTok || this.peek() || EMPTY);
  return now !== EMPTY
-  && sTok.type === now.type
-  && sTok.lexeme === now.lexeme
-  && sTok.col === now.col
-  && this.isLineStart();
+ && sTok.type === now.type
+ && sTok.lexeme === now.lexeme
+ && sTok.col === now.col
+ && this.isLineStart();
 }
 
 
@@ -346,30 +344,30 @@ function isLexer(obj)
 
 module.exports = BBM.Lexer = BBM.extend(Lexer,
 {
- ENUM : ENUM,
- REGEX : REGEX,
- isLexer : isLexer,
- prototype :
- {
-  peek : peek,
-  peekUntil : peekUntil,
-  peekT : peekT,
-  isLineStart : isLineStart,
-  isLineEnd : isLineEnd,
-  isMatchDelim : isMatchDelim,
+  ENUM : ENUM
+, REGEX : REGEX
+, isLexer : isLexer
+, prototype :
+  {
+    peek : peek
+  , peekUntil : peekUntil
+  , peekT : peekT
+  , sLineStart : isLineStart
+  , isLineEnd : isLineEnd
+  , isMatchDelim : isMatchDelim
 
-  next : next,
-  nextUntil : nextUntil,
-  nextPast : nextPast,
+  , next : next
+  , nextUntil : nextUntil
+  , nextPast : nextPast
 
-  popUntil : popUntil,
-  first : first,
-  last : last,
-  each : each,
+  , popUntil : popUntil
+  , first : first
+  , last : last
+  , each : each
 
-  slice : slice,
-  sliceText : sliceText
- }
+  , slice : slice
+  , sliceText : sliceText
+  }
 });
 
 }());
