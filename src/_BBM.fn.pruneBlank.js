@@ -4,6 +4,7 @@
 var BBM = require("./BBM.js"),
 ENUM = BBM.ENUM,
 DUMMY = BBM("_DUMMY"),
+LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI],
 ALONE =
 [
  BBM.PRE,
@@ -29,19 +30,18 @@ function __isKept(node)
  return node.text().length > 0 || !__isBlank(node);
 }
 
-function __pruneEachTR(rowNode)
+function __pruneEachTR(rNode)
 {
- if (rowNode.size() === 0)
+ if (rNode.size() > 0)
  {
-  return;
- }
- while (rowNode.size() > maxCol)
- {
-  rowNode.pop();
- }
- while (rowNode.size() < maxCol)
- {
-  rowNode.append(BBM(ENUM.TD));
+  while (rNode.size() > maxCol)
+  {
+   rNode.pop();
+  }
+  while (rNode.size() < maxCol)
+  {
+   rNode.append(BBM(ENUM.TD));
+  }
  }
 }
 
@@ -69,21 +69,21 @@ function __pruneDL(node)
 
 function __pruneBlank(node)
 {
+ var type = node.type();
  if (node.children().every(__isBlank))
  {
-  node.empty();
+  node.empty().append(LINKS.indexOf(type) > -1 ? node.attr("href") : null);
   return;
  }
  
- if (node.type() === ENUM.TABLE)
+ if (type === ENUM.TABLE)
  {
   __pruneTR(node);
  }
- else if (node.type() === ENUM.DL)
+ else if (type === ENUM.DL)
  {
   __pruneDL(node);
  }
- 
  node.filterChild(__isKept);
 }
 
