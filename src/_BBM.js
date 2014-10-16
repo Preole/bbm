@@ -68,10 +68,10 @@ function extend(extendObj)
 {
  var argLen = arguments.length;
  return argLen === 0 
-  ? return this
+  ? this
   : argLen === 1
-  ? return __.extend(this, extendObj)
-  : return __.extend.apply(null, BBM.toArray(arguments));
+  ? __.extend(this, extendObj)
+  : __.extend.apply(null, BBM.toArray(arguments));
 }
 
 function fnExtend(extendObj)

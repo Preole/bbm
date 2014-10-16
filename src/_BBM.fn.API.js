@@ -13,7 +13,7 @@ function __mapArgs(node)
  var res = node;
  if ((BBM.isString(res) && res.length > 0) || BBM.isNumber(res))
  {
-  res = BBM(ENUM.TEXT).text(res);
+  res = BBM(ENUM.TEXT).text(String(res));
  }
  if (BBM.isNode(res))
  {
@@ -40,10 +40,8 @@ function __nullParent(node)
 
 function __empty(node)
 {
- var len = node.size(),
-  kids = node.children(),
-  nodes = len > 0 ? kids.splice(0, len) : kids;
-  
+ var kids = this.children();
+ var nodes = kids.length > 0 ? kids.splice(0, kids.length) : kids;
  nodes.forEach(__nullParent);
  return nodes;
 }
@@ -64,7 +62,7 @@ function splice(from, count, elems)
   kids = this.children(),
   args = BBM.isArray(eles) ? [from, count].concat(eles) : eles,
   removed = BBM.isArray(args)
-   ? Array.prototype.splice.apply(kids, args)
+   ? kids.splice.apply(kids, args)
    : BBM.isNode(args)
    ? kids.splice(from, count, args)
    : kids.splice(from, count);
@@ -122,28 +120,28 @@ function shift()
 
 function append(content)
 {
- var eles = __procArgs(content, this);
+ var eles = __procArgs(content, this), kids = this.children();
  if (BBM.isNode(eles))
  {
-  this.children().push(eles);
+  kids.push(eles);
  }
  else if (BBM.isArray(eles))
  {
-  this.children().push.apply(this.children(), eles);
+  kids.push.apply(kids, eles);
  }
  return this;
 }
 
 function prepend(content)
 {
- var eles = __procArgs(content, this);
+ var eles = __procArgs(content, this), kids = this.children();
  if (BBM.isNode(eles))
  {
-  this.children().unshift(eles);
+  kids.unshift(eles);
  }
  else if (BBM.isArray(eles))
  {
-  this.children().unshift.apply(this.children(), eles);
+  kids.unshift.apply(kids, eles);
  }
  return this;
 }
@@ -184,21 +182,15 @@ Children Iteration
 function filterChild(callback)
 {
  var that = this;
- if (that.size() > 0)
- {
-  __empty(that).forEach(function (node, index, sibs){
-   that.append(callback.call(that, node, index, sibs) ? node : null);
-  });
- }
+ __empty(that).forEach(function (node, index, sibs){
+  that.append(callback.call(that, node, index, sibs) ? node : null);
+ });
  return that;
 }
 
 function rebuildChild(callback)
 {
- if (this.size() > 0)
- {
-  __empty(this).forEach(callback, this);
- }
+ __empty(this).forEach(callback, this);
  return this;
 }
 
@@ -270,7 +262,7 @@ function text(val)
 {
  if (arguments.length === 0)
  {
-  return this._val || "";
+  return this._value || "";
  }
  if (BBM.isString(val) && val.length > 0)
  {
