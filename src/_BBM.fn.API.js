@@ -41,7 +41,7 @@ function __nullParent(node)
 
 function __empty(node)
 {
- var kids = this.children();
+ var kids = node.children();
  var nodes = kids.length > 0 ? kids.splice(0, kids.length) : kids;
  nodes.forEach(__nullParent);
  return nodes;
