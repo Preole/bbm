@@ -4,8 +4,9 @@
 
 function __extend(fromObj)
 {
+ var key = null;
  if (fromObj === this) {return;}
- for (var key in fromObj)
+ for (key in fromObj)
  {
   if (has(fromObj, key))
   {

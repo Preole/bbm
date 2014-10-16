@@ -12,9 +12,7 @@ Private methods: Lexing
 WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]",
 NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?",
 EOL = "(?=" + NL + "|$)",
-ARRAY = [],
-EMPTY = _LexToken(),
-
+EMPTY = __LexToken(),
 RULES = (function (){
 return [
  __Rule("ESCAPE"   , "\\\\[\\S]"),
@@ -59,7 +57,6 @@ return [
 }()),
 
 ENUM = RULES.reduce(__reduceRulesTypes, {TEXT : "TEXT"}),
-RENL = new RegExp(NL, "g"),
 REGEX = new RegExp(RULES.map(__mapRules).join("|"), "g");
 
 
@@ -80,7 +77,6 @@ function __reduceRulesTypes(acc, rule)
  return acc;
 }
 
-//Returns a Lexical Token object.
 function __LexToken(lexeme, type, col, line)
 {
  return {
@@ -91,7 +87,6 @@ function __LexToken(lexeme, type, col, line)
  };
 }
 
-//Returns an array of Lexical Tokens (Plain objects)
 function __Lexer(strInput)
 {
  var res = null,
@@ -101,7 +96,7 @@ function __Lexer(strInput)
   lastPos = 0;
  
  regex.lastIndex = 0;
- while (BBM.isArray(res = regex.exec(strInput)))
+ while (BBM.isArray((res = regex.exec(strInput))))
  {
   ruleObj = RULES[res.indexOf(res[0], 1) - 1];
 
@@ -127,6 +122,8 @@ function __Lexer(strInput)
 }
 
 
+
+
 /*
 Private methods: sliceText
 --------------------------
@@ -147,27 +144,25 @@ Private methods: Iteration
 --------------------------
 */
 
-function __updateEscapes(token)
+function __updateEscapes(tok)
 {
- if (token.type === ENUM.ESCAPE && token.lexeme.length > 1)
+ if (tok.type === ENUM.ESCAPE && tok.lexeme.length > 1)
  {
-  token.lexeme = token.lexeme.slice(1);
+  tok.lexeme = tok.lexeme.slice(1);
  }
 }
 
-function __updateLines(token, index, tokens)
+function __updateLines(tok, index, toks)
 {
  if (index === 0)
  {
-  token.line = 0;
-  token.col = 0;
+  tok.line = 0;
+  tok.col = 0;
   return;
  }
- var prevTok = tokens[index - 1],
-  nlCount = (prevTok.lexeme.match(new RegExp(RENL)) || ARRAY).length;
-  
- token.line = prevTok.line + nlCount;
- token.col = nlCount > 0 ? 0 : prevTok.col + prevTok.lexeme.length;
+ var prev = toks[index - 1];
+ tok.line = prev.line + (prev.type === ENUM.NL ? 1 : 0);
+ tok.col = prev.type === ENUM.NL ? 0 : prev.col + prev.lexeme.length;
 }
 
 
@@ -181,16 +176,12 @@ Public Methods: peek
 
 function peek(offset)
 {
- return this._tokens[this.currPos + (Number(offset) || 0)];
+ return this._tokens[this.pos + (Number(offset) || 0)];
 }
 
 function peekT(type, offset)
 {
- var token = this.peek(offset);
- if (BBM.isObject(token))
- {
-  return type === token.type;
- }
+ return (this.peek(offset) || EMPTY).type === type;
 }
 
 function peekUntil(callback, extras)
@@ -209,9 +200,9 @@ function isLineStart(offset)
   prev1 = this.peek(off - 1),
   prev2 = this.peek(off - 2);
   
- return !prev1 || 
-  prev1.type === ENUM.NL || 
-  prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
+ return !prev1
+  || prev1.type === ENUM.NL
+  || prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
 }
 
 function isLineEnd(offset)
@@ -220,17 +211,19 @@ function isLineEnd(offset)
   now = this.peek(off),
   next = this.peek(off + 1);
   
- return !now || 
-  now.type === ENUM.NL ||
-  now.type === ENUM.WS && (!next || next.type === ENUM.NL);
+ return !now
+  || now.type === ENUM.NL 
+  || now.type === ENUM.WS && (!next || next.type === ENUM.NL);
 }
 
-function isMatchDelim(sTok)
+function isMatchDelim(currTok, sTok)
 {
- var now = (this.peek() || EMPTY);
- return sTok.type === now.type && 
-  sTok.lexeme.length === now.lexeme.length &&
-  sTok.col === now.col && this.isLineStart();
+ var now = (currTok || this.peek() || EMPTY);
+ return now !== EMPTY
+  && sTok.type === now.type
+  && sTok.lexeme === now.lexeme
+  && sTok.col === now.col
+  && this.isLineStart();
 }
 
 
@@ -243,21 +236,19 @@ Public Methods: next
 
 function next()
 {
- this.currPos += 1;
- return this.currPos;
+ return this.pos += 1;
 }
 
 function nextUntil(callback, extras)
 {
- var token = null;
- while ((token = this.peek()) && !callback.call(this, token, extras))
+ while (this.peek() && !callback.call(this, this.peek(), extras))
  {
   this.next();
  }
- return this.currPos;
+ return this.pos;
 }
 
-function nextUntilPast(callback, extras)
+function nextPast(callback, extras)
 {
  this.nextUntil(callback, extras);
  return this.next();
@@ -268,16 +259,9 @@ Public Methods: pop
 -------------------
 */
 
-function pop()
-{
- this._tokens.pop();
- return this;
-}
-
 function popUntil(callback, extras)
 {
- var token = null;
- while ((token = this.last()) && !callback.call(this, token, extras))
+ while (this.last() && !callback.call(this, this.last(), extras))
  {
   this._tokens.pop();
  }
@@ -305,7 +289,7 @@ Public Methods: iteration
 -------------------------
 */
 
-function each(callback, acc, thisArg)
+function each(callback, thisArg)
 {
  this._tokens.forEach(callback, thisArg);
  return this;
@@ -341,8 +325,8 @@ function Lexer(tokens, options, minCol)
  var obj = Object.create(Lexer.prototype);
  obj._tokens = BBM.isString(tokens) ? __Lexer(tokens) : tokens;
  obj._minCol = Number(minCol) || 0;
- obj.currPos = 0;
- obj.currlvl = 0;
+ obj.pos = 0;
+ obj.lvl = 0;
  obj.options = BBM.isObject(options) ? options : {};
  
  //TODO: If tokens is an Array of tokens or a Lexer instance...
@@ -367,24 +351,22 @@ module.exports = BBM.Lexer = BBM.extend(Lexer,
  isLexer : isLexer,
  prototype :
  {
-  pop : pop,
-  popUntil : popUntil,
-  first : first,
-  last : last,
-  
-  each : each,
-  
   peek : peek,
   peekUntil : peekUntil,
   peekT : peekT,
   isLineStart : isLineStart,
   isLineEnd : isLineEnd,
   isMatchDelim : isMatchDelim,
-  
+
   next : next,
   nextUntil : nextUntil,
-  nextUntilPast : nextUntilPast,
-  
+  nextPast : nextPast,
+
+  popUntil : popUntil,
+  first : first,
+  last : last,
+  each : each,
+
   slice : slice,
   sliceText : sliceText
  }
