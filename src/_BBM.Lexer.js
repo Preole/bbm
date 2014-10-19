@@ -234,7 +234,7 @@ function nextUntil(callback, extras)
 function nextPast(callback, extras)
 {
  this.nextUntil(callback, extras);
- return this.next();
+ return this.pos === this.mark ? this.pos : this.next();
 }
 
 function prev()
