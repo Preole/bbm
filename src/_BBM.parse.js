@@ -8,17 +8,10 @@ var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var EOF = {};
 var lexParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV];
-var lexSetext = [LEX.HR, LEX.ATX_END];;
+var lexSetext = [LEX.HR, LEX.ATX_END];
 var lexMapBlock =
 {
-  TH : parseListPre
-, TD : parseListPre
-, GT : parseListPre
-, DD : parseListPre
-, OL : parseListPre
-, UL : parseListPre
-, DT : parseListPre
-, HR : parseHRTR
+  HR : parseHRTR
 , TRSEP : parseHRTR
 , REF : parseRef
 , ATX : parseATX
@@ -71,23 +64,30 @@ function isParaEnd(tok, minCol)
  );
 }
 
+function isRealParaEnd(tok, endTok)
+{
+ return tok !== endTok && notWSNL(tok);
+}
 
 
-//TODO: Reduce complexity of this function.
-//TODO: Remove the need of a .lvl instance for checking stack depth.
+
 function parseBlock(lexer)
 {
- var tok = lexer.peekUntil(notWSNL);
- var func = tok ? lexMapBlock[tok.type] : null;
+ var tok = (lexer.peekUntil(notWSNL) || EOF);
  var isNotAbuse = lexer.lvl < (Number(lexer.options.maxBlocks) || 8);
  var node = null;
+ var func = lexMapList[tok.type]
+ ? parseListPre
+ : lexMapBlock[tok.type]
+ ? lexMapBlock[tok.type]
+ : null;
 
  lexer.lvl += 1;
  if (func && isNotAbuse)
  {
   node = func(lexer, tok);
  }
- else if (tok)
+ else if (tok !== EOF)
  {
   node = parsePara(lexer, tok);
  }
@@ -203,18 +203,13 @@ function parsePara(lexer, lexTok, forceType)
  var startPos = lexer.pos;
  var endPos = lexer.nextUntil(isParaEnd, minCol);
  var endTok = lexer.peek() || EOF;
-
- if (startPos >= endPos || notWSNL(endTok))
- {
-  lexer.next();
- }
- if (startPos >= endPos)
- {
-  return;
- }
-
- var subLexer = lexer.slice(startPos, endPos, minCol).popUntil(notWSNL);
- var node = parseInline(subLexer);
+ var node = null;
+ 
+ lexer.mark = lexer.prevUntil(isRealParaEnd, endTok);
+ lexer.minCol = minCol;
+ lexer.pos = startPos;
+ 
+ node = parseInline(lexer);
  if (forceType)
  {
   node.type(forceType);
@@ -226,12 +221,14 @@ function parsePara(lexer, lexTok, forceType)
   node.offset = 0;
  }
  
+ lexer.mark = -1;
+ lexer.minCol = 0;
+ lexer.pos = endPos;
+
  return node;
 }
 
 
-
-//TODO: Disambiguate parameters; What if I passed in a lexer instead?
 function Parser(bbmStr, options)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);

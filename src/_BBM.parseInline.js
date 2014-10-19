@@ -7,6 +7,7 @@ var Lexer = require("./_BBM.Lexer.js");
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];
+var EOF = {};
 var fmtASTMap =
 {
   LINK_INT : AST.LINK_INT
@@ -42,8 +43,8 @@ var fmtEndMap =
 function isCode(tok, tokStart)
 {
  return (tok.type === LEX.CODE || tok.type === LEX.PRE)
-  && (tokStart.type === LEX.CODE || tokStart.type === LEX.PRE)
-  && tok.lexeme === tokStart.lexeme;
+ && (tokStart.type === LEX.CODE || tokStart.type === LEX.PRE)
+ && tok.lexeme === tokStart.lexeme;
 }
 
 function isBracket(tok)
@@ -59,8 +60,8 @@ function isAngle(tok)
 function isCont(tok)
 {
  return tok.type === LEX.LINK_CONT
-  || tok.type !== LEX.WS
-  || tok.type !== LEX.NL;
+ || tok.type !== LEX.WS
+ || tok.type !== LEX.NL;
 }
 
 function isInline(tok)
@@ -68,29 +69,18 @@ function isInline(tok)
  return tok.type === LEX.BRACKET_R || BBM.get(fmtASTMap, tok.type);
 }
 
-//TODO: Simplify this function's cyclomatic complexity;
-//Especially about fIndex and hasBracket
-function parsePara(lexer, stack, premade)
+//TODO: Scrutiny on nesting abuse. What's the ideal behaviour?
+function parsePara(lexer, stack, node)
 {
- var node = premade || BBM(AST.P);
- var isNotAbuse = stack.length < (Number(lexer.options.maxSpans) || 8);
- var txtStart = lexer.pos;
- var hasBracket = stack.indexOf(LEX.BRACKET_R) > -1;
- var fIndex = -1;
- var tok = null;
-  
- while ((tok = lexer.peekUntil(isInline)))
+ var isAbuse = stack.length >= (Number(lexer.options.maxSpans) || 8);
+ var hasLink = stack.indexOf(LEX.BRACKET_R) > -1;
+ 
+ while (lexer.pos < lexer.mark)
  {
-  fIndex = stack.indexOf(tok.type);
-  if (txtStart < lexer.pos) 
-  {
-   node.append(lexer.sliceText(txtStart, lexer.pos)); //Collect text.
-  }
-  if (txtStart <= lexer.pos)
-  {
-   txtStart = lexer.next(); //Break infinite loop.
-  }
+  var tok = lexer.peekUntil(isInline) || EOF;
+  var fIndex = stack.indexOf(tok.type);
   
+  node.append(lexer.sliceText(lexer.next() - 1, lexer.pos));
   if (tok.type === LEX.CODE || tok.type === LEX.PRE)
   {
    node.append(parseCode(lexer, tok));
@@ -99,29 +89,21 @@ function parsePara(lexer, stack, premade)
   {
    node.append(parseImg(lexer, tok));
   }
-  else if (!hasBracket && LINKS.indexOf(tok.type) > -1)
+  else if (!hasLink && LINKS.indexOf(tok.type) > -1)
   {
    node.append(parseLink(lexer, tok, stack));
   }
-  else if (fIndex === -1 && isNotAbuse && fmtEndMap[tok.type])
+  else if (!isAbuse && fIndex === -1 && fmtEndMap[tok.type])
   {
    stack.push(fmtEndMap[tok.type]);
    node.append(parsePara(lexer, stack, BBM(fmtASTMap[tok.type])));
    stack.pop();
   }
-  
-  txtStart = txtStart === lexer.pos ? lexer.pos - 1 : lexer.pos;
-  if (fIndex > -1) //Case Format tag end
+  else
   {
    break;
   }
  }
- 
- if (txtStart < lexer.pos)
- {
-  node.append(lexer.sliceText(txtStart, lexer.pos + (fIndex > -1 ? -1 : 0)));
- }
- 
  return node;
 }
 
@@ -174,7 +156,7 @@ function parseCode(lexer, lexTok)
 function ParserInline(bbmStr, options)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);
- return parsePara(lexer, []);
+ return parsePara(lexer, [], BBM(AST.P));
 }
 
 
