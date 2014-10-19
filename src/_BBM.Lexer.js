@@ -76,13 +76,12 @@ function __reduceRulesTypes(acc, rule)
  return acc;
 }
 
-function __LexToken(lexeme, type, col, line)
+function __LexToken(lexeme, type, col)
 {
  return {
    lexeme : lexeme || ""
  , type : type || ""
  , col : col || -1
- , line : line || -1
  };
 }
 
@@ -152,12 +151,10 @@ function __updateLines(tok, index, toks)
 {
  if (index === 0)
  {
-  tok.line = 0;
   tok.col = 0;
   return;
  }
  var prev = toks[index - 1];
- tok.line = prev.line + (prev.type === ENUM.NL ? 1 : 0);
  tok.col = prev.type === ENUM.NL ? 0 : prev.col + prev.lexeme.length;
 }
 
