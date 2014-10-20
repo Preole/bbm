@@ -1,11 +1,24 @@
 Temporary Notice
 ================
 
-BakaBakaMark is currently under refactoring for performance. A major change 
-in its API, likely not backwards-compatible, is to be expected. The previous 
-stable release can be found in the 1.x branch:
+BakaBakaMark is currently under refactoring for performance and usability. 
+Compatibility-breaking changes in its API and the language are to be expected. 
+The previous stable release can be found in the 1.x branch:
 
-<https://github.com/Preole/bbm/tree/1.x>
+<https://github.com/Preole/bbm/tree/1.x/lib/bbm.js>
+
+
+
+Updated Confirmed Changes (October 10th, 2014)
+----------------------------------------------
+
+### Text Formatting: Inserts and Deletes ###
+
+- Text insertion markup `{++ Arbitrary Text ++}` shall be removed from the 
+  grammar.
+  
+- Text deletion markup has been changed from `{-- Deleted Text --}` into 
+  just two consecutive dashes: `-- Deleted Text --`.
 
 
 
@@ -16,8 +29,9 @@ Confirmed Changes
 ### Javascript Engine Requirement (Runtime) ###
 
 ECMAScript5 compatible web browser or standalone Javascript engine that 
-implements `String.prototype.trim()` and most Array comprehension methods 
-such as `.forEach()`, `.reduce()`, `.filter()`. 
+implements `String.prototype.trim()`, Higher-order array iteration methods 
+`.forEach() .every() .some() .reduce() .map() .filter()`, and 
+`Object.create()`. That is, one of the following Javascript engines:
 
 - Internet Explorer 9+ 
 - Opera 12+
@@ -28,6 +42,8 @@ such as `.forEach()`, `.reduce()`, `.filter()`.
 - node.js (Google V8 Javascript Engine)
 - Rhino
 - PhantomJS
+
+
 
 
 ### Javascript Engine Requirement (Build) ###
@@ -69,7 +85,7 @@ break, in addition to being the only visible element on the line.
 
 
 
-### Text Formatting ###
+### Text Formatting: Error Recovery ###
 
 If a hyperlink, image, or formatting construct fails to close properly, 
 the recommended recovery behavior is to interpret the rest of the paragraph 
@@ -107,12 +123,11 @@ Examples with HTML Escaping and URL encoding considered:
 
 ### Remove the syntax BlockStop ###
 
-The syntax "BlockStop" has been removed, which can be readily substituted 
-with a single escaped space, creating an empty paragraph, then removed in 
-the semantic analysis stage.
+The syntax "BlockStop" has been removed. This functionality can either be 
+replaced by a comment node or an empty paragraph with just a backslash.
 
-"""
+```
 \\
-"""
+```
 
 

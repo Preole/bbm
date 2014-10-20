@@ -457,9 +457,8 @@ TextFrag
     SUB
     SUP
     ITAL
-    DEL_START
+    DEL
     UNDERLINE
-    INS_START
     CODE
     LINK_INT
     LINK_WIKI
@@ -489,11 +488,7 @@ TextFrag_Underline
  ;
  
 TextFrag_Delete
- | DEL_START TextFrag DEL_END
- ;
- 
-TextFrag_Insert
- | INS_START TextFrag INS_END
+ | DEL TextFrag DEL
  ;
 
 TextFrag_Code
@@ -531,9 +526,8 @@ TextFragLink
     SUB
     SUP
     ITAL
-    DEL_START
+    DEL
     UNDERLINE
-    INS_START
     CODE
     ]+
  ;
@@ -559,11 +553,7 @@ TextFragLink_Underline
  ;
  
 TextFragLink_Delete
- | DEL_START TextFragLink DEL_END
- ;
- 
-TextFragLink_Insert
- | INS_START TextFragLink INS_END
+ | DEL TextFragLink DEL
  ;
 
 
@@ -733,19 +723,7 @@ CODE
  ;
  
 DEL
- | "{--"
- ;
- 
-DEL_END
- | "--}"
- ;
- 
-INS
- | "{++"
- ;
- 
-INS_END
- | "++}"
+ | "--"
  ;
 """
 
