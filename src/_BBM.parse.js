@@ -7,9 +7,9 @@ var parseInline = require("./BBM.parseInline.js");
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var EOF = {};
-var lexParaDelim = [LEX.HR, LEX.ATX_END, LEX.DIV];
-var lexSetext = [LEX.HR, LEX.ATX_END];
-var lexMapBlock =
+var LEX_DELIM = [LEX.HR, LEX.ATX_END, LEX.DIV];
+var LEX_SETEXT = [LEX.HR, LEX.ATX_END];
+var LEX_BLOCK =
 {
   HR : parseHRTR
 , TRSEP : parseHRTR
@@ -22,7 +22,7 @@ var lexMapBlock =
 , ID : parseLabel
 };
 
-var lexMapList =
+var LEX_LIST =
 {
   TH : AST._TH
 , TD : AST._TD
@@ -59,14 +59,9 @@ function isParaEnd(tok, minCol)
  return this.isLineStart() &&
  (
   this.isLineEnd()
-  || lexParaDelim.indexOf(tok.type) > -1
+  || LEX_DELIM.indexOf(tok.type) > -1
   || (notWSNL(tok) && tok.col < minCol)
  );
-}
-
-function isRealParaEnd(tok, endTok)
-{
- return tok !== endTok && notWSNL(tok);
 }
 
 
@@ -76,10 +71,10 @@ function parseBlock(lexer)
  var tok = (lexer.peekUntil(notWSNL) || EOF);
  var isNotAbuse = lexer.lvl < (Number(lexer.options.maxBlocks) || 8);
  var node = null;
- var func = lexMapList[tok.type]
+ var func = LEX_LIST[tok.type]
  ? parseListPre
- : lexMapBlock[tok.type]
- ? lexMapBlock[tok.type]
+ : LEX_BLOCK[tok.type]
+ ? LEX_BLOCK[tok.type]
  : null;
 
  lexer.lvl += 1;
@@ -111,7 +106,7 @@ function parseListPre(lexer, lexTok)
 
 function parseList(lexer, lexTok)
 {
- var node = BBM(lexMapList[lexTok.type]);
+ var node = BBM(LEX_LIST[lexTok.type]);
  var col = lexTok.col + lexTok.lexeme.length;
  var tok = null;
   
@@ -137,7 +132,7 @@ function parseDiv(lexer, lexTok)
  lexer.nextPast(isNL);
  while ((tok = lexer.peekUntil(notWSNL)) && tok.col >= col)
  {
-  if (lexer.isMatchDelim(tok, lexTok))
+  if (lexer.isDelim(tok, lexTok))
   {
    break;
   }
@@ -149,10 +144,8 @@ function parseDiv(lexer, lexTok)
 
 function parsePre(lexer, lexTok)
 {
- var startPos = lexer.nextPast(isNL);
- var endPos = lexer.nextPast(lexer.isMatchDelim, lexTok) - 1;
- var text = BBM.rmNLTail(lexer.sliceText(startPos, endPos, lexTok.col));
-
+ var text = lexer.nextPast(isNL).textPast(lexer.isDelim, lexTok, lexTok.col);
+ text = BBM.rmNLTail(text);
  if (lexTok.type === LEX.PRE)
  {
   return BBM(AST.PRE).append(text);
@@ -162,11 +155,8 @@ function parsePre(lexer, lexTok)
 
 function parseATX(lexer, lexTok)
 {
- var startPos = lexer.next();
- var endPos = lexer.nextPast(isATXEnd) - 1;
- var text = lexer.sliceText(startPos, endPos).trim();
-
- if (!BBM.isBlankString(text))
+ var text = lexer.next().textPast(isATXEnd).trim();
+ if (text.length > 0)
  {
   var node = BBM(AST.HEADER).append(text);
   node.level = lexTok.lexeme.length;
@@ -177,7 +167,7 @@ function parseATX(lexer, lexTok)
 
 function parseLabel(lexer, lexTok)
 {
- var idClass = lexer.sliceText(lexer.pos + 1, lexer.nextPast(isNL)).trim();
+ var idClass = lexer.next().textPast(isNL).trim();
  var isID = lexTok.type === LEX.ID;
  if (idClass.length > 0)
  { 
@@ -187,9 +177,8 @@ function parseLabel(lexer, lexTok)
 
 function parseRef(lexer)
 {
- var id = lexer.sliceText(lexer.next(), lexer.nextUntil(isRefEnd)).trim();
- var url = lexer.sliceText(lexer.pos + 1, lexer.nextUntil(isNL)).trim();
-
+ var id = lexer.next().textPast(isRefEnd).trim();
+ var url = lexer.peekT(LEX.NL, -1) ? "" : lexer.textUntil(isNL).trim();
  if (url.length > 0 && id.length > 0)
  {
   lexer.root.refTable[id] = url;
@@ -201,20 +190,20 @@ function parsePara(lexer, lexTok, forceType)
 {
  var minCol = lexTok.col || 0;
  var startPos = lexer.pos;
- var endPos = lexer.nextUntil(isParaEnd, minCol);
+ var endPos = lexer.nextUntil(isParaEnd, minCol).pos;
  var endTok = lexer.peek() || EOF;
  var node = null;
  
- lexer.mark = lexer.prevUntil(isRealParaEnd, endTok);
  lexer.minCol = minCol;
  lexer.pos = startPos;
+ lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
  
  node = parseInline(lexer);
  if (forceType)
  {
   node.type(forceType);
  }
- else if (lexSetext.indexOf(endTok.type) > -1)
+ else if (LEX_SETEXT.indexOf(endTok.type) > -1)
  {
   node.type(AST.HEADER);
   node.level = endTok.type === LEX.HR ? 2 : 1;

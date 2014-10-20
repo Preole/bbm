@@ -130,13 +130,10 @@ function __updateEscapes(tok)
 
 function __updateCols(tok, index, toks)
 {
- if (index === 0)
- {
-  tok.col = 0;
-  return;
- }
- var prev = toks[index - 1];
- tok.col = prev.type === ENUM.NL ? 0 : prev.col + prev.lexeme.length;
+ var prev = toks[index - 1] || EMPTY;
+ tok.col = (index === 0 || prev.type === ENUM.NL)
+ ? 0
+ : prev.col + prev.lexeme.length;
 }
 
 
@@ -176,8 +173,7 @@ function isLineStart(offset)
   
  return !prev1
  || prev1.type === ENUM.NL
- || prev1.type === ENUM.WS
- && (!prev2 || prev2.type === ENUM.NL);
+ || prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
 }
 
 function isLineEnd(offset)
@@ -188,11 +184,10 @@ function isLineEnd(offset)
   
  return !now
  || now.type === ENUM.NL 
- || now.type === ENUM.WS
- && (!next || next.type === ENUM.NL);
+ || now.type === ENUM.WS && (!next || next.type === ENUM.NL);
 }
 
-function isMatchDelim(currTok, sTok)
+function isDelim(currTok, sTok)
 {
  var now = (currTok || this.peek() || EMPTY);
  return now !== EMPTY
@@ -206,70 +201,62 @@ function isMatchDelim(currTok, sTok)
 
 
 /*
-Public Methods: next, prev
+Public Methods: next, text
 --------------------------
 */
 
-function next()
+function next(offset)
 {
- return (this.pos += 1);
+ this.pos += Math.floor(Number(offset) || 1);
+ return this;
 }
 
 function nextUntil(callback, extras)
 {
- while (this.peek() && !callback.call(this, this.peek(), extras))
+ while (this.peek())
  {
-  if (this.pos === this.mark)
+  if (this.pos === this.mark || callback.call(this, this.peek(), extras))
   {
    break;
   }
   this.next();
  }
- return this.pos;
+ return this;
 }
 
 function nextPast(callback, extras)
 {
  this.nextUntil(callback, extras);
- return this.pos === this.mark ? this.pos : this.next();
+ return this.pos === this.mark ? this : this.next();
 }
 
-function prev()
-{
- return (this.pos -= 1);
-}
-
-function prevUntil(callback, extras)
-{
- while (this.peek() && !callback.call(this, this.peek(), extras))
- {
-  this.prev();
- }
- return this.pos;
-}
-
-
-
-
-/*
-Public Methods: sliceText
--------------------------
-*/
-
-function sliceText(fromPos, toPos, minCol)
+function textUntil(callback, extras, minCol)
 {
  var col = Number(minCol) || Number(this.minCol) || 0;
- return this._tokens.slice(fromPos, toPos).map(__sliceText, col).join("");
+ var text = "";
+ 
+ this.nextUntil(function (tok){
+  if (callback.call(this, tok, extras))
+  {
+   return true;
+  }
+  
+  text += col > 0 && tok.type === ENUM.WS && this.isLineStart()
+  ? tok.lexeme.slice(col)
+  : tok.lexeme;
+ });
+ 
+ return text;
 }
 
-function __sliceText(tok, index, tokens)
+function textPast(callback, extras, minCol)
 {
- var minCol = this, prev = tokens[index - 1];
- if (minCol > 0 && tok.type === ENUM.WS && (!prev || prev.type === ENUM.NL))
+ var text = this.textUntil(callback, extras, minCol);
+ if (this.pos !== this.mark)
  {
-  return tok.lexeme.slice(minCol);
+  this.next();
  }
- return tok.lexeme;
+ return text;
 }
 
 
@@ -311,15 +298,13 @@ module.exports = BBM.Lexer = BBM.extend(Lexer,
   , peekT : peekT
   , isLineStart : isLineStart
   , isLineEnd : isLineEnd
-  , isMatchDelim : isMatchDelim
+  , isDelim : isDelim
 
   , next : next
   , nextUntil : nextUntil
   , nextPast : nextPast
-  , prev : prev
-  , prevUntil : prevUntil
-
-  , sliceText : sliceText
+  , textUntil : textUntil
+  , textPast : textPast
   }
 });
 

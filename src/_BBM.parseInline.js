@@ -8,8 +8,8 @@ var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];
 var EOF = {};
-var fmtLexList = [LEX.DEL, LEX.BOLD, LEX.EM, LEX.SUP, LEX.SUB, LEX.UNDER];
-var fmtASTMap =
+var FMT = [LEX.DEL, LEX.BOLD, LEX.EM, LEX.SUP, LEX.SUB, LEX.UNDER];
+var AST_MAP =
 {
   LINK_INT : AST.LINK_INT
 , LINK_EXT : AST.LINK_EXT
@@ -54,20 +54,20 @@ function isCont(tok)
 
 function isInline(tok)
 {
- return tok.type === LEX.BRACKET_R || BBM.get(fmtASTMap, tok.type);
+ return tok.type === LEX.BRACKET_R || !!AST_MAP[tok.type];
 }
 
 
 function parsePara(lexer, stack, node)
 {
  var hasLink = stack.indexOf(LEX.BRACKET_R) > -1;
- 
  while (lexer.pos < lexer.mark)
  {
-  var tok = lexer.peekUntil(isInline) || EOF;
-  var fIndex = stack.indexOf(tok.type);
+  var text = lexer.textUntil(isInline);
+  var tok = lexer.peek() || EOF;
   
-  node.append(lexer.sliceText(lexer.next() - 1, lexer.pos));
+  node.append(text);
+  lexer.next();
   if (tok.type === LEX.CODE || tok.type === LEX.PRE)
   {
    node.append(parseCode(lexer, tok));
@@ -80,10 +80,10 @@ function parsePara(lexer, stack, node)
   {
    node.append(parseLink(lexer, tok, stack));
   }
-  else if (fIndex === -1 && fmtLexList.indexOf(tok.type) > -1)
+  else if (stack.indexOf(tok.type) === -1 && FMT.indexOf(tok.type) > -1)
   {
    stack.push(tok.type);
-   node.append(parsePara(lexer, stack, BBM(fmtASTMap[tok.type])));
+   node.append(parsePara(lexer, stack, BBM(AST_MAP[tok.type])));
    stack.pop();
   }
   else
@@ -97,14 +97,14 @@ function parsePara(lexer, stack, node)
 function parseLink(lexer, lexTok, stack)
 {
  var callback = lexTok.type === LEX.LINK_INT ? isBracket : isAngle;
- var href = lexer.sliceText(lexer.pos, lexer.nextPast(callback) - 1).trim();
+ var href = lexer.textPast(callback).trim();
 
- if (BBM.isBlankString(href))
+ if (href.length > 0)
  {
   return;
  }
  
- var node = BBM(fmtASTMap[lexTok.type]).attr({href : href});
+ var node = BBM(AST_MAP[lexTok.type]).attr({href : href});
  lexer.nextUntil(isCont);
  if (lexer.peekT(LEX.LINK_CONT))
  {
@@ -118,9 +118,9 @@ function parseLink(lexer, lexTok, stack)
 
 function parseImg(lexer)
 {
- var src = lexer.sliceText(lexer.pos, lexer.nextPast(isAngle) - 1).trim();
+ var src = lexer.textPast(callback).trim();
  var alt = src;
- if (BBM.isBlankString(src))
+ if (src.length > 0)
  {
   return;
  }
@@ -128,7 +128,7 @@ function parseImg(lexer)
  lexer.nextUntil(isCont);
  if (lexer.peekT(LEX.LINK_CONT))
  {
-  alt = lexer.sliceText(lexer.next(), lexer.nextPast(isBracket) - 1).trim();
+  alt = lexer.next().textPast(isBracket).trim();
   alt = alt.length > 0 ? alt : src;
  }
  return BBM(AST.LINK_IMG).attr({src : src, alt : alt});
@@ -136,8 +136,7 @@ function parseImg(lexer)
 
 function parseCode(lexer, lexTok)
 {
- var startPos = lexer.pos, endPos = lexer.nextPast(isCode, lexTok) - 1;
- return BBM(AST.CODE).append(lexer.sliceText(startPos, endPos));
+ return BBM(AST.CODE).append(lexer.textPast(isCode, lexTok));
 }
 
 function ParserInline(bbmStr, options)
