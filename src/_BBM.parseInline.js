@@ -8,16 +8,14 @@ var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];
 var EOF = {};
+var fmtLexList = [LEX.DEL, LEX.BOLD, LEX.EM, LEX.SUP, LEX.SUB, LEX.UNDER];
 var fmtASTMap =
 {
   LINK_INT : AST.LINK_INT
 , LINK_EXT : AST.LINK_EXT
 , LINK_IMG : AST.LINK_IMG
 , LINK_WIKI : AST.LINK_WIKI
-, INS : AST.INS
 , DEL : AST.DEL
-, INS_END : AST.INS
-, DEL_END : AST.DEL
 , BOLD : AST.BOLD
 , EM : AST.EM
 , SUP : AST.SUP
@@ -27,16 +25,6 @@ var fmtASTMap =
 , PRE : AST.CODE
 };
 
-var fmtEndMap =
-{
-  INS : LEX.INS_END
-, DEL : LEX.DEL_END
-, BOLD : LEX.BOLD
-, EM : LEX.EM
-, SUP : LEX.SUP
-, SUB : LEX.SUB
-, UNDER : LEX.UNDER
-};
 
 
 
@@ -69,10 +57,9 @@ function isInline(tok)
  return tok.type === LEX.BRACKET_R || BBM.get(fmtASTMap, tok.type);
 }
 
-//TODO: Scrutiny on nesting abuse. What's the ideal behaviour?
+
 function parsePara(lexer, stack, node)
 {
- var isAbuse = stack.length >= (Number(lexer.options.maxSpans) || 8);
  var hasLink = stack.indexOf(LEX.BRACKET_R) > -1;
  
  while (lexer.pos < lexer.mark)
@@ -93,9 +80,9 @@ function parsePara(lexer, stack, node)
   {
    node.append(parseLink(lexer, tok, stack));
   }
-  else if (!isAbuse && fIndex === -1 && fmtEndMap[tok.type])
+  else if (fIndex === -1 && fmtLexList.indexOf(tok.type) > -1)
   {
-   stack.push(fmtEndMap[tok.type]);
+   stack.push(tok.type);
    node.append(parsePara(lexer, stack, BBM(fmtASTMap[tok.type])));
    stack.pop();
   }

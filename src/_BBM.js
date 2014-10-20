@@ -39,7 +39,6 @@ var ENUM =
 , LINK_IMG : "LINK_IMG"
 , LINK_WIKI : "LINK_WIKI"
 , DEL : "DEL"
-, INS : "INS"
 , U : "U"
 , SUB : "SUB"
 , SUP : "SUP"
