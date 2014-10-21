@@ -56,7 +56,6 @@ var ENUM = RULES.reduce(__reduceRulesTypes, {TEXT : "TEXT"});
 var REGEX = new RegExp(RULES.map(__mapRules).join("|"), "g");
 
 
-
 function __Rule(name, pattern)
 {
  return {name : name, pattern : pattern};
@@ -82,38 +81,30 @@ function __LexToken(lexeme, type, col)
  };
 }
 
-function __Lexer(strInput)
+function __Lexer(bbmStr)
 {
- var res = null;
  var regex = new RegExp(REGEX);
- var tokens = [];
- var lastPos = 0;
+ var toks = [];
+ var pos = 0;
  
- while (BBM.isArray((res = regex.exec(strInput))))
+ while (pos < bbmStr.length)
  {
-  var ruleObj = RULES[res.indexOf(res[0], 1) - 1] || EMPTY;
-  if (lastPos < res.index)
+  var res = regex.exec(bbmStr);
+  var ruleObj = RULES[res ? res.indexOf(res[0], 1) - 1 : -1];
+  var textEnd = res ? res.index : bbmStr.length;
+  
+  if (pos < textEnd)
   {
-   tokens.push(__LexToken(strInput.slice(lastPos, res.index), ENUM.TEXT));
+   toks.push(__LexToken(bbmStr.slice(pos, textEnd), ENUM.TEXT));
   }
-  tokens.push(__LexToken(res[0], ruleObj.name));
-
-  if (lastPos > regex.lastIndex)
+  if (ruleObj)
   {
-   regex.lastIndex += 1;
+   toks.push(__LexToken(res[0], ruleObj.name));
   }
-  lastPos = regex.lastIndex;
+  pos = (regex.lastIndex += pos > regex.lastIndex ? 1 : 0);
  }
-
- if (lastPos < strInput.length)
- {
-  tokens.push(__LexToken(strInput.slice(lastPos), ENUM.TEXT));
- }
- 
- return tokens;
+ return toks;
 }
-
-
 
 /*
 Private methods: Iteration
@@ -276,8 +267,8 @@ function Lexer(bbmStr, options)
  obj.lvl = 0;
  obj.options = BBM.isObject(options) ? options : {};
 
- obj._tokens.forEach(__updateCols);
  obj._tokens.forEach(__updateEscapes);
+ obj._tokens.forEach(__updateCols);
  return obj;
 }
 
