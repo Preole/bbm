@@ -1,6 +1,6 @@
- {--
+ --
  Deletion Bad Nesting due to indentation
---}
+--
 
 ////
 The closing deletion tag is not properly indented with the rest of the 
