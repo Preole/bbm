@@ -371,7 +371,7 @@ Export basic API
 ----------------
 */
 
-BBM.prototype =
+BBM.fn = BBM.prototype =
 {
   splice : splice
 , parent : parent
