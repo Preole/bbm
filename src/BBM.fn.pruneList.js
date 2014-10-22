@@ -104,7 +104,7 @@ function pruneList()
  return this.eachPost(__pruneList);
 }
 
-BBM.prototype.pruneList = pruneList;
+BBM.fn.pruneList = pruneList;
 }());
 
 
