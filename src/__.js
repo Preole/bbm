@@ -3,7 +3,7 @@
 
 function __extend(fromObj)
 {
- if (fromObj === this) {return;}
+ if (fromObj === this || !isObject(fromObj)) {return;}
  for (var key in fromObj)
  {
   if (has(fromObj, key))
@@ -145,7 +145,7 @@ function get(obj, key)
 function extend(others)
 {
  var toObj = isObject(others) ? others : {};
- Array.prototype.filter.call(arguments, isObject).forEach(__extend, toObj);
+ Array.prototype.forEach.call(arguments, __extend, toObj);
  return toObj;
 }
 

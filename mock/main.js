@@ -1,7 +1,7 @@
 "use strict";
 
 var fs = require("fs"),
-Parser = require("../src/Parser.js"),
+Parser = require("../src/BBM.parse.js"),
 fsOptR = {encoding : "utf-8"},
 defOpt =
 {
