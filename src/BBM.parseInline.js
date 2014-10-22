@@ -3,7 +3,7 @@
 
 
 var BBM = require("./BBM.js");
-var Lexer = require("./_BBM.Lexer.js");
+var Lexer = require("./BBM.Lexer.js");
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];

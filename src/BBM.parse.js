@@ -2,7 +2,7 @@
 "use strict";
 
 var BBM = require("./BBM.js");
-var Lexer = require("./_BBM.Lexer.js");
+var Lexer = require("./BBM.Lexer.js");
 var parseInline = require("./BBM.parseInline.js");
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
