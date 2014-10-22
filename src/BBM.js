@@ -48,7 +48,307 @@ var ENUM =
 , TEXT : "TEXT"
 };
 
-//Abstract syntax tree node.
+
+
+/*
+Private Methods
+---------------
+*/
+
+function __mapArgs(node)
+{
+ var res = node;
+ if ((BBM.isString(res) && res.length > 0) || BBM.isNumber(res))
+ {
+  res = BBM(ENUM.TEXT).text(String(res));
+ }
+ if (BBM.isNode(res))
+ {
+  res.replaceWith();
+  res._parent = this;
+ }
+ return res;
+}
+
+function __procArgs(elems, node)
+{
+ return BBM.isArray(elems)
+ ? BBM.flatten(elems).map(__mapArgs, node).filter(BBM.isNode)
+ : __mapArgs.call(node, elems);
+}
+
+function __nullParent(node)
+{
+ if (BBM.isNode(node))
+ {
+  node._parent = null;
+ }
+}
+
+function __empty(node)
+{
+ var kids = node.children();
+ var nodes = kids.length > 0 ? kids.splice(0, kids.length) : kids;
+ nodes.forEach(__nullParent);
+ return nodes;
+}
+
+
+
+/*
+Basic & Low-Level Accessors
+---------------------------
+*/
+
+function splice(from, count, elems)
+{
+ var eles = __procArgs(elems, this);
+ var kids = this.children();
+ var args = BBM.isArray(eles) ? [from, count].concat(eles) : eles;
+ var removed = BBM.isArray(args)
+ ? kids.splice.apply(kids, args)
+ : BBM.isNode(args)
+ ? kids.splice(from, count, args)
+ : kids.splice(from, count);
+ 
+ removed.forEach(__nullParent);
+ return this;
+}
+
+function parent()
+{
+ return this._parent;
+}
+
+function children(shallow)
+{
+ return shallow ? this._nodes.slice() : this._nodes;
+}
+
+function size()
+{
+ return this.children().length;
+}
+
+function last()
+{
+ return this.children()[this.children().length - 1];
+}
+
+function first()
+{
+ return this.children()[0];
+}
+
+
+
+/*
+Manipulation
+------------
+*/
+
+function pop()
+{
+ __nullParent(this.children().pop());
+ return this;
+}
+
+function shift()
+{
+ __nullParent(this.children().shift());
+ return this;
+}
+
+function append(content)
+{
+ var eles = __procArgs(content, this), kids = this.children();
+ if (BBM.isNode(eles))
+ {
+  kids.push(eles);
+ }
+ else if (BBM.isArray(eles))
+ {
+  kids.push.apply(kids, eles);
+ }
+ return this;
+}
+
+function prepend(content)
+{
+ var eles = __procArgs(content, this), kids = this.children();
+ if (BBM.isNode(eles))
+ {
+  kids.unshift(eles);
+ }
+ else if (BBM.isArray(eles))
+ {
+  kids.unshift.apply(kids, eles);
+ }
+ return this;
+}
+
+function replaceWith(content)
+{
+ var pos = this.parent() ? this.parent().children().indexOf(this) : -1;
+ if (pos > -1)
+ {
+  this.parent().splice(pos, 1, content);
+ }
+ return this;
+}
+
+function replace(target)
+{
+ if (BBM.isNode(target))
+ {
+  target.replaceWith(this);
+ }
+ return this;
+}
+
+function empty()
+{
+ __empty(this);
+ return this;
+}
+
+
+
+/*
+Children Iteration
+------------------
+*/
+
+function filterChild(callback)
+{
+ var that = this;
+ __empty(that).forEach(function (node, index, sibs){
+  that.append(callback.call(that, node, index, sibs) ? node : null);
+ });
+ return that;
+}
+
+function rebuildChild(callback)
+{
+ __empty(this).forEach(callback, this);
+ return this;
+}
+
+
+
+/*
+Subtree Iteration
+-----------------
+*/
+
+/**
+ * @desc Depth-first pre-order traversal.
+ */
+function eachPre(callback, thisArg)
+{
+ __reducePre.call(this, callback, thisArg, [], null);
+ return this;
+}
+
+function reducePre(callback, acc, thisArg)
+{
+ return __reducePre.call(this, callback, thisArg, [], acc);
+}
+
+function __reducePre(callback, thisArg, stack, acc)
+{
+ acc = callback.call(thisArg, this, stack, acc);
+ this.children().forEach(function (node){
+  stack.push(node);
+  acc = __reducePre.call(node, callback, thisArg, stack, acc);
+  stack.pop(node);
+ });
+ return acc;
+}
+
+/**
+ * @desc Depth-first post-order traversal.
+ */
+function eachPost(callback, thisArg)
+{
+ __reducePost.call(this, callback, thisArg, [], null);
+ return this;
+}
+
+function reducePost(callback, acc, thisArg)
+{
+ return __reducePost.call(this, callback, thisArg, [], acc);
+}
+
+function __reducePost(callback, thisArg, stack, acc)
+{
+ this.children().forEach(function (node){
+  stack.push(node);
+  acc = __reducePost.call(node, callback, thisArg, stack, acc);
+  stack.pop(node);
+ });
+ return callback.call(thisArg, this, stack, acc);
+}
+
+
+
+/*
+Attributes, Properties, and Class Extension
+-------------------------------------------
+*/
+
+function text(val)
+{
+ if (arguments.length === 0)
+ {
+  return this._value || "";
+ }
+ if (BBM.isString(val) && val.length > 0)
+ {
+  this._value = val;
+ }
+ return this;
+}
+
+function attr(key, val)
+{
+ if (BBM.isObject(key))
+ {
+  BBM.extend(this._attr, key);
+ }
+ else if (arguments.length > 1)
+ {
+  this._attr[key] = String(val);
+ }
+ else if (arguments.length === 1)
+ {
+  return BBM.get(this._attr, key);
+ }
+ return this;
+}
+
+function type(newType)
+{
+ if (arguments.length === 0)
+ {
+  return this._type;
+ }
+ this._type = String(newType).toLocaleUpperCase();
+ return this;
+}
+
+function extend(extendObj)
+{
+ return __.extend(this, extendObj);
+}
+
+
+
+/*
+Public: Constructors & Static Methods
+-------------------------------------
+*/
+
 function BBM(type)
 {
  var obj = Object.create(BBM.prototype);
@@ -64,29 +364,47 @@ function isNode(target)
  return BBM.prototype.isPrototypeOf(target);
 }
 
-function extend(extendObj)
+
+
+/*
+Export basic API
+----------------
+*/
+
+BBM.prototype =
 {
- var argLen = arguments.length;
- return argLen === 0 
- ? this
- : argLen === 1
- ? __.extend(this, extendObj)
- : __.extend.apply(null, BBM.toArray(arguments));
-}
+  splice : splice
+, parent : parent
+, children : children
+ 
+, size : size
+, last : last
+, first : first
 
-function fnExtend(extendObj)
-{
- return BBM.extend(this, extendObj);
-}
+, pop : pop
+, shift : shift
+, append : append
+, prepend : prepend
+, replaceWith : replaceWith
+, replace : replace
+, empty : empty
+
+, filterChild : filterChild
+, rebuildChild : rebuildChild
+
+, eachPre : eachPre
+, reducePre : reducePre
+, eachPost : eachPost
+, reducePost : reducePost
+
+, text : text
+, attr : attr
+, type : type
+
+, extend : extend
+};
 
 
-__.extend(BBM, __);
-BBM.extend = extend;
-BBM.extend({ENUM : ENUM, isNode : isNode});
-BBM.fn = BBM.prototype;
-BBM.fn.extend = fnExtend;
-
-
-module.exports = BBM;
+module.exports = __.extend(BBM, __, {ENUM : ENUM, isNode : isNode});
 }());
 
