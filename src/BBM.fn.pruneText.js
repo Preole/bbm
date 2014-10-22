@@ -42,5 +42,5 @@ function pruneText()
  return this.eachPre(__pruneText, this);
 }
 
-BBM.fn.pruneText = pruneText;
+BBM.prototype.pruneText = pruneText;
 }());

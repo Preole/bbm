@@ -25,6 +25,6 @@ function pruneURL()
  return this.eachPost(_pruneURL, refTable);
 }
 
-BBM.fn.pruneURL = pruneURL;
+BBM.prototype.pruneURL = pruneURL;
 }());
 

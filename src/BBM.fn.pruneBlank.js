@@ -94,7 +94,7 @@ function pruneBlank()
  return this.eachPost(__pruneBlank);
 }
 
-BBM.fn.pruneBlank = pruneBlank;
+BBM.prototype.pruneBlank = pruneBlank;
 
 }());
 

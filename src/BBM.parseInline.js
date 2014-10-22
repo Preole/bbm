@@ -148,7 +148,7 @@ function ParserInline(bbmStr, options)
 
 
 module.exports = BBM.parseInline = ParserInline;
-BBM.fn.parseInline = function (bbmStr, options)
+BBM.prototype.parseInline = function (bbmStr, options)
 {
  return this.empty().append(ParserInline(bbmStr, options));
 };

@@ -231,7 +231,7 @@ function Parser(bbmStr, options)
 }
 
 module.exports = BBM.parse = Parser;
-BBM.fn.parse = function (bbmStr, options)
+BBM.prototype.parse = function (bbmStr, options)
 {
  return this.empty().append(Parser(bbmStr, options));
 };
