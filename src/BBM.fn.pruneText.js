@@ -44,3 +44,4 @@ function pruneText()
 
 BBM.fn.pruneText = pruneText;
 }());
+

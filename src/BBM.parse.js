@@ -4,6 +4,7 @@
 require("./BBM.fn.pruneList.js");
 require("./BBM.fn.pruneBlank.js");
 require("./BBM.fn.pruneURL.js");
+require("./BBM.fn.toHTML.js");
 
 
 var BBM = require("./BBM.js");
@@ -391,7 +392,7 @@ function parse(bbmStr, options)
  {
   lexer.root.append(parseBlock(lexer));
  }
- return lexer.root.pruneList().pruneBlank().pruneURL();
+ return lexer.root.pruneList().pruneBlank().pruneURL().toHTML();
 }
 
 module.exports = BBM.parse = parse;

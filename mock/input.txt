@@ -1,12 +1,6 @@
-=== ATX String! ===
-
-- """
-  I am a code block sir!
-  """
-  
-  I'm a paragraph sir!
-  
-- Granary.
+"""
+I'm a code block.
+"""
 
 #[Internal Link URL]-[**Face Rage --Deleted-- Rage face**]
 

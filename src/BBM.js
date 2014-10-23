@@ -316,13 +316,17 @@ function attr(key, val)
  {
   BBM.extend(this._attr, key);
  }
- else if (arguments.length > 1)
+ else if (arguments.length === 0)
  {
-  this._attr[key] = String(val);
+  return this._attr;
  }
  else if (arguments.length === 1)
  {
   return BBM.get(this._attr, key);
+ }
+ else if (arguments.length > 1)
+ {
+  this._attr[key] = String(val);
  }
  return this;
 }

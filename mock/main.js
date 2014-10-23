@@ -6,5 +6,5 @@ var fsOptR = {encoding : "utf-8"};
 var defOpt = {maxBlocks : 8};
 var tree = Parser(fs.readFileSync("./input.txt", fsOptR), defOpt);
  
-console.log(JSON.stringify(tree, null, " "));
-//console.log(tree);
+//console.log(JSON.stringify(tree, null, " "));
+console.log(tree);

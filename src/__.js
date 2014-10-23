@@ -122,7 +122,6 @@ function escapeATTR(str)
 {
  return escapeURI(rmCTRL(escapeHTML(str).replace(/"/g, "&quot;")
  .replace(/'/g, "&#x27;")
- .replace(/\//g, "&#x2F;")
  .replace(/`/g, "&#x60;")));
 }
 
