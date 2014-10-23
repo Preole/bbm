@@ -1,6 +1,7 @@
-- Vacuous Proof.
-- 1. ?<URL>-[Blank]
-  2. [Green]
-  3. Q.E.D.
+; Vacuous Proof.
+: 1. ////
+     ////
+     
+  2. Q.E.D.
 
 

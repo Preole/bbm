@@ -21,7 +21,7 @@ var RULES =
 , __Rule("TRSEP"    , "\\|[=]+" + EOL)
 , __Rule("ATX_END"  , "=+" + EOL)
 , __Rule("ATX"      , "=+")
-, __Rule("HR"       , "/{4,}" + EOL)
+, __Rule("HR"       , "-{4,}" + EOL)
 , __Rule("COMMENT"  , "/{4,}" + EOL)
 , __Rule("CLASS"    , "\\.\\." + WS)
 , __Rule("ID"       , "\\." + WS)
