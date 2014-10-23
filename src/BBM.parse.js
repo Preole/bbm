@@ -127,9 +127,9 @@ function isCont(tok)
  || tok.type !== LEX.NL;
 }
 
-function isInline(tok)
+function isInline(tok, hasLink)
 {
- return tok.type === LEX.BRACKET_R || !!LEX_INLINE[tok.type];
+ return (hasLink && tok.type === LEX.BRACKET_R) || !!LEX_INLINE[tok.type];
 }
 
 
@@ -173,7 +173,7 @@ function parseListPre(lexer, lexTok)
  lexer.nextUntil(notWSNL);
  
  return lexTok.type === LEX.DT
- ? parsePara(lexer, (lexer.peek() || EOF), AST._DT)
+ ? parsePara(lexer, lexTok, AST._DT)
  : parseList(lexer, lexTok);
 }
 
@@ -261,7 +261,7 @@ function parsePara(lexer, lexTok, forceType)
 {
  var minCol = lexTok.col || 0;
  var startPos = lexer.pos;
- var endPos = lexer.nextUntil(isParaEnd, minCol).pos + 1;
+ var endPos = lexer.nextUntil(isParaEnd, minCol).pos;
  var endTok = lexer.peek() || EOF;
  var node = BBM(AST.P);
  
@@ -297,14 +297,13 @@ Inline-Level Grammar
 function parseInline(lexer, stack, node)
 {
  var hasLink = stack.indexOf(LEX.BRACKET_R) > -1;
- 
  while (lexer.pos < lexer.mark)
  {
-  var text = lexer.textUntil(isInline);
+  var text = lexer.textUntil(isInline, hasLink);
   var tok = lexer.peek() || EOF;
-  
-  node.append(text);
   lexer.next();
+  node.append(text);
+  
   if (tok.type === LEX.CODE || tok.type === LEX.PRE)
   {
    node.append(parseCode(lexer, tok));
@@ -392,7 +391,7 @@ function parse(bbmStr, options)
  {
   lexer.root.append(parseBlock(lexer));
  }
- return lexer.root.pruneList().pruneBlank().pruneURL().toHTML();
+ return lexer.root.pruneList().pruneBlank().pruneURL();
 }
 
 module.exports = BBM.parse = parse;

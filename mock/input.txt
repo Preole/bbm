@@ -1,9 +1,6 @@
-"""
-I'm a code block.
-"""
-
-#[Internal Link URL]-[**Face Rage --Deleted-- Rage face**]
-
-!<http://imgur.com/sr93kb.jpg>-[]
+- Vacuous Proof.
+- 1. ?<URL>-[Blank]
+  2. [Green]
+  3. Q.E.D.
 
 
