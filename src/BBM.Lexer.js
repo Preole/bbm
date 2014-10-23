@@ -185,7 +185,8 @@ function isDelim(currTok, sTok)
  && sTok.type === now.type
  && sTok.lexeme === now.lexeme
  && sTok.col === now.col
- && this.isLineStart();
+ && this.isLineStart()
+ && this.isLineEnd();
 }
 
 
