@@ -173,7 +173,7 @@ function parseListPre(lexer, lexTok)
  lexer.nextUntil(notWSNL);
  
  return lexTok.type === LEX.DT
- ? parsePara(lexer, lexTok, AST._DT)
+ ? parsePara(lexer, lexer.peek() || EOF, AST._DT)
  : parseList(lexer, lexTok);
 }
 
@@ -391,7 +391,7 @@ function parse(bbmStr, options)
  {
   lexer.root.append(parseBlock(lexer));
  }
- return lexer.root.pruneList().pruneBlank().pruneURL();
+ return lexer.root.pruneList().pruneBlank();
 }
 
 module.exports = BBM.parse = parse;

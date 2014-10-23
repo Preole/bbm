@@ -52,12 +52,12 @@ function __pruneTR(node)
 function __pruneDL(node)
 {
  var ht = null;
- while ((ht = node.first()) && ht.type() === AST.DD)
+ while ((ht = node.first()) && ht.type() === ENUM.DD)
  {
   node.shift();
  }
  
- while ((ht = node.last()) && ht.type() === AST.DT)
+ while ((ht = node.last()) && ht.type() === ENUM.DT)
  {
   node.pop();
  }

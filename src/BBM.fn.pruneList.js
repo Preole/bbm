@@ -37,11 +37,11 @@ function __pruneTable(prev, node)
 
  if (!isRow)
  {
-  pNode.last().append(cellType);
+  pNode.last().append(node);
  }
  else if (pNode.last().size() > 0)
  {
-  pNode.append(BBM(ENUM.TR));
+  pNode.append(node);
  }
  return pNode;
 }
@@ -61,7 +61,8 @@ function __pruneOL(prev, node)
 function __pruneDL(prev, node)
 {
  var pNode = prev.type() === ENUM.DL ? prev : BBM(ENUM.DL);
- return pNode.append(node.type() === ENUM._DD ? ENUM.DD : ENUM.DT);
+ var type = node.type();
+ return pNode.append(node.type(type === ENUM._DD ? ENUM.DD : ENUM.DT));
 }
 
 function __pruneSwitch(node)
