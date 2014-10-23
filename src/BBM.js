@@ -18,6 +18,7 @@ var ENUM =
 , _DUMMY : "_DUMMY"
 
 , ROOT : "ROOT"
+, COMMENT : "COMMENT"
 , P : "P"
 , BLOCKQUOTE : "BLOCKQUOTE"
 , PRE : "PRE"
@@ -320,6 +321,19 @@ function attr(key, val)
  return this;
 }
 
+function removeAttr(key)
+{
+ if (arguments.length === 1)
+ {
+  delete this._attr[key];
+ }
+ if (arguments.length === 0)
+ {
+  this._attr = {};
+ }
+ return this;
+}
+
 function type(newType)
 {
  if (arguments.length === 0)
@@ -399,7 +413,7 @@ BBM.fn = BBM.prototype =
 , text : text
 , attr : attr
 , type : type
-
+, removeAttr : removeAttr
 , extend : extend
 , toJSON : toJSON
 };

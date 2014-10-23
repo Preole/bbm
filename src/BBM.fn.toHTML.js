@@ -154,13 +154,12 @@ function printTagClose(node, opts)
 
 function printComment(node, opts)
 {
- var depth = opts.depth;
- return "\n"
- + printIndent(depth)
+ var indent = printIndent(node, opts);
+ return indent
  + "<!--\n"
- + node.children().map(printHTML, opts).join("");
- + printIndent(depth)
- + "-->\n";
+ + node.children().map(printHTML, opts).join("")
+ + indent
+ + "-->";
 }
 
 function printText(node, opts)
