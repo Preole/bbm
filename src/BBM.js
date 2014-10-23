@@ -342,6 +342,13 @@ function extend(extendObj)
  return __.extend(this, extendObj);
 }
 
+function toJSON()
+{
+ var obj = __.extend({}, this);
+ delete obj._parent;
+ return obj;
+}
+
 
 
 /*
@@ -363,6 +370,7 @@ function isNode(target)
 {
  return BBM.prototype.isPrototypeOf(target);
 }
+
 
 
 
@@ -402,6 +410,7 @@ BBM.fn = BBM.prototype =
 , type : type
 
 , extend : extend
+, toJSON : toJSON
 };
 
 

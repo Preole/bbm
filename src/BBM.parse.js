@@ -160,7 +160,6 @@ function parseATX(lexer, lexTok)
  {
   var node = BBM(AST.HEADER).append(text);
   node.level = lexTok.lexeme.length;
-  node.offset = 0;
   return node;
  }
 }
@@ -190,13 +189,13 @@ function parsePara(lexer, lexTok, forceType)
 {
  var minCol = lexTok.col || 0;
  var startPos = lexer.pos;
- var endPos = lexer.nextUntil(isParaEnd, minCol).pos;
+ var endPos = lexer.nextUntil(isParaEnd, minCol).pos + 1;
  var endTok = lexer.peek() || EOF;
  var node = null;
  
  lexer.minCol = minCol;
- lexer.pos = startPos;
  lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
+ lexer.pos = startPos;
  
  node = parseInline(lexer);
  if (forceType)
@@ -207,11 +206,10 @@ function parsePara(lexer, lexTok, forceType)
  {
   node.type(AST.HEADER);
   node.level = endTok.type === LEX.HR ? 2 : 1;
-  node.offset = 0;
  }
  
- lexer.mark = -1;
  lexer.minCol = 0;
+ lexer.mark = -1;
  lexer.pos = endPos;
 
  return node;
@@ -225,7 +223,7 @@ function Parser(bbmStr, options)
  lexer.root.refTable = {};
  while (lexer.peek())
  {
-  lexer.root.append(parseBlock(lexer));
+  lexer.root.append(parseBlock(lexer)); //Infinite loop problem.
  }
  return lexer.root;
 }

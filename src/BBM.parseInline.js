@@ -61,6 +61,7 @@ function isInline(tok)
 function parsePara(lexer, stack, node)
 {
  var hasLink = stack.indexOf(LEX.BRACKET_R) > -1;
+ 
  while (lexer.pos < lexer.mark)
  {
   var text = lexer.textUntil(isInline);
@@ -98,8 +99,8 @@ function parseLink(lexer, lexTok, stack)
 {
  var callback = lexTok.type === LEX.LINK_INT ? isBracket : isAngle;
  var href = lexer.textPast(callback).trim();
-
- if (href.length > 0)
+ 
+ if (href.length === 0)
  {
   return;
  }
@@ -120,7 +121,7 @@ function parseImg(lexer)
 {
  var src = lexer.textPast(callback).trim();
  var alt = src;
- if (src.length > 0)
+ if (src.length === 0)
  {
   return;
  }
@@ -142,6 +143,7 @@ function parseCode(lexer, lexTok)
 function ParserInline(bbmStr, options)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);
+ lexer.mark = Lexer.isLexer(bbmStr) ? lexer.mark : lexer.size();
  return parsePara(lexer, [], BBM(AST.P));
 }
 

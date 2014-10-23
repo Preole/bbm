@@ -101,7 +101,7 @@ function __Lexer(bbmStr)
   {
    toks.push(__LexToken(res[0], ruleObj.name));
   }
-  pos = (regex.lastIndex += pos > regex.lastIndex ? 1 : 0);
+  pos = res ? (regex.lastIndex += pos > regex.lastIndex ? 1 : 0) : textEnd;
  }
  return toks;
 }
@@ -148,7 +148,7 @@ function peekT(type, offset)
 
 function peekUntil(callback, extras)
 {
- return this._tokens[this.nextUntil(callback, extras)];
+ return this._tokens[this.nextUntil(callback, extras).pos];
 }
 
 /*
@@ -196,9 +196,14 @@ Public Methods: next, text
 --------------------------
 */
 
+function size()
+{
+ return this._tokens.length;
+}
+
 function next(offset)
 {
- this.pos += Math.floor(Number(offset) || 1);
+ this.pos = Math.max(0, this.pos + Math.floor(Number(offset) || 1));
  return this;
 }
 
@@ -291,6 +296,7 @@ module.exports = BBM.Lexer = BBM.extend(Lexer,
   , isLineEnd : isLineEnd
   , isDelim : isDelim
 
+  , size : size
   , next : next
   , nextUntil : nextUntil
   , nextPast : nextPast
