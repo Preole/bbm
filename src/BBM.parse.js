@@ -1,14 +1,21 @@
 (function (){
 "use strict";
 
+require("./BBM.fn.pruneList.js");
+require("./BBM.fn.pruneBlank.js");
+require("./BBM.fn.pruneURL.js");
+
+
 var BBM = require("./BBM.js");
 var Lexer = require("./BBM.Lexer.js");
-var parseInline = require("./BBM.parseInline.js");
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var EOF = {};
 var LEX_DELIM = [LEX.HR, LEX.ATX_END, LEX.DIV];
 var LEX_SETEXT = [LEX.HR, LEX.ATX_END];
+var LEX_FMT = [LEX.DEL, LEX.BOLD, LEX.EM, LEX.SUP, LEX.SUB, LEX.UNDER];
+var LEX_LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];
+
 var LEX_BLOCK =
 {
   HR : parseHRTR
@@ -33,6 +40,30 @@ var LEX_LIST =
 , UL : AST._LI_UL
 };
 
+var LEX_INLINE =
+{
+  LINK_INT : AST.LINK_INT
+, LINK_EXT : AST.LINK_EXT
+, LINK_IMG : AST.LINK_IMG
+, LINK_WIKI : AST.LINK_WIKI
+, DEL : AST.DEL
+, BOLD : AST.BOLD
+, EM : AST.EM
+, SUP : AST.SUP
+, SUB : AST.SUB
+, UNDER : AST.U
+, CODE : AST.CODE
+, PRE : AST.CODE
+};
+
+
+
+
+
+/*
+Block-level iterators
+---------------------
+*/
 
 function notWSNL(tok)
 {
@@ -65,6 +96,47 @@ function isParaEnd(tok, minCol)
 }
 
 
+
+/*
+Inline-level Iterators
+----------------------
+*/
+
+function isCode(tok, tokStart)
+{
+ return (tok.type === LEX.CODE || tok.type === LEX.PRE)
+ && (tokStart.type === LEX.CODE || tokStart.type === LEX.PRE)
+ && tok.lexeme === tokStart.lexeme;
+}
+
+function isBracket(tok)
+{
+ return tok.type === LEX.BRACKET_R;
+}
+
+function isAngle(tok)
+{
+ return tok.type === LEX.GT;
+}
+
+function isCont(tok)
+{
+ return tok.type === LEX.LINK_CONT
+ || tok.type !== LEX.WS
+ || tok.type !== LEX.NL;
+}
+
+function isInline(tok)
+{
+ return tok.type === LEX.BRACKET_R || !!LEX_INLINE[tok.type];
+}
+
+
+
+/*
+Block-level Grammar
+-------------------
+*/
 
 function parseBlock(lexer)
 {
@@ -184,20 +256,19 @@ function parseRef(lexer)
  }
 }
 
-
 function parsePara(lexer, lexTok, forceType)
 {
  var minCol = lexTok.col || 0;
  var startPos = lexer.pos;
  var endPos = lexer.nextUntil(isParaEnd, minCol).pos + 1;
  var endTok = lexer.peek() || EOF;
- var node = null;
+ var node = BBM(AST.P);
  
  lexer.minCol = minCol;
  lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
  lexer.pos = startPos;
  
- node = parseInline(lexer);
+ parseInline(lexer, [], node);
  if (forceType)
  {
   node.type(forceType);
@@ -216,22 +287,117 @@ function parsePara(lexer, lexTok, forceType)
 }
 
 
-function Parser(bbmStr, options)
+
+/*
+Inline-Level Grammar
+--------------------
+*/
+
+function parseInline(lexer, stack, node)
+{
+ var hasLink = stack.indexOf(LEX.BRACKET_R) > -1;
+ 
+ while (lexer.pos < lexer.mark)
+ {
+  var text = lexer.textUntil(isInline);
+  var tok = lexer.peek() || EOF;
+  
+  node.append(text);
+  lexer.next();
+  if (tok.type === LEX.CODE || tok.type === LEX.PRE)
+  {
+   node.append(parseCode(lexer, tok));
+  }
+  else if (tok.type === LEX.LINK_IMG)
+  {
+   node.append(parseImg(lexer, tok));
+  }
+  else if (!hasLink && LEX_LINKS.indexOf(tok.type) > -1)
+  {
+   node.append(parseLink(lexer, tok, stack));
+  }
+  else if (stack.indexOf(tok.type) === -1 && LEX_FMT.indexOf(tok.type) > -1)
+  {
+   stack.push(tok.type);
+   node.append(parseInline(lexer, stack, BBM(LEX_INLINE[tok.type])));
+   stack.pop();
+  }
+  else
+  {
+   break;
+  }
+ }
+ return node;
+}
+
+function parseLink(lexer, lexTok, stack)
+{
+ var callback = lexTok.type === LEX.LINK_INT ? isBracket : isAngle;
+ var href = lexer.textPast(callback).trim();
+ if (href.length === 0)
+ {
+  return;
+ }
+ 
+ var node = BBM(LEX_INLINE[lexTok.type]).attr({href : href});
+ lexer.nextUntil(isCont);
+ if (lexer.peekT(LEX.LINK_CONT))
+ {
+  lexer.next();
+  stack.push(LEX.BRACKET_R);
+  parseInline(lexer, stack, node);
+  stack.pop();
+ }
+ return node;
+}
+
+function parseImg(lexer)
+{
+ var src = lexer.textPast(isAngle).trim();
+ var alt = src;
+ if (src.length === 0)
+ {
+  return;
+ }
+ 
+ lexer.nextUntil(isCont);
+ if (lexer.peekT(LEX.LINK_CONT))
+ {
+  alt = lexer.next().textPast(isBracket).trim();
+  alt = alt.length > 0 ? alt : src;
+ }
+ return BBM(AST.LINK_IMG).attr({src : src, alt : alt});
+}
+
+function parseCode(lexer, lexTok)
+{
+ return BBM(AST.CODE).append(lexer.textPast(isCode, lexTok));
+}
+
+
+
+
+/*
+Exporting
+---------
+*/
+
+function parse(bbmStr, options)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);
  lexer.root = BBM(AST.ROOT);
  lexer.root.refTable = {};
  while (lexer.peek())
  {
-  lexer.root.append(parseBlock(lexer)); //Infinite loop problem.
+  lexer.root.append(parseBlock(lexer));
  }
- return lexer.root;
+ return lexer.root.pruneList().pruneBlank().pruneURL();
 }
 
-module.exports = BBM.parse = Parser;
+module.exports = BBM.parse = parse;
 BBM.fn.parse = function (bbmStr, options)
 {
- return this.empty().append(Parser(bbmStr, options));
+ return this.empty().append(parse(bbmStr, options).children());
 };
 
 
