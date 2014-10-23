@@ -7,14 +7,14 @@ var DUMMY = BBM("_DUMMY");
 var LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI];
 var ALONE =
 [
-  BBM.PRE
-, BBM.TD
-, BBM.TH
-, BBM.HR
-, BBM.LINK_EXT
-, BBM.LINK_INT
-, BBM.LINK_WIKI
-, BBM.LINK_IMG
+  ENUM.PRE
+, ENUM.TD
+, ENUM.TH
+, ENUM.HR
+, ENUM.LINK_EXT
+, ENUM.LINK_INT
+, ENUM.LINK_WIKI
+, ENUM.LINK_IMG
 ];
 
 
@@ -22,7 +22,7 @@ function __isBlank(node)
 {
  return BBM.isBlankString(node.text())
  && node.size() === 0
- && AST_ALONE.indexOf(node.type) === -1;
+ && ALONE.indexOf(node.type()) === -1;
 }
 
 function __isKept(node)
@@ -54,12 +54,12 @@ function __pruneTR(node)
 function __pruneDL(node)
 {
  var ht = null;
- while ((ht = node.first()) && ht.type === AST.DD)
+ while ((ht = node.first()) && ht.type() === AST.DD)
  {
   node.shift();
  }
  
- while ((ht = node.last()) && ht.type === AST.DT)
+ while ((ht = node.last()) && ht.type() === AST.DT)
  {
   node.pop();
  }
