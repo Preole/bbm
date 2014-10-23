@@ -30,25 +30,22 @@ function __isKept(node)
  return node.text().length > 0 || !__isBlank(node);
 }
 
-function __pruneEachTR(rNode)
-{
- if (rNode.size() > 0)
- {
-  while (rNode.size() > maxCol)
-  {
-   rNode.pop();
-  }
-  while (rNode.size() < maxCol)
-  {
-   rNode.append(BBM(ENUM.TD));
-  }
- }
-}
-
 function __pruneTR(node)
 {
  var maxCol = Math.min((node.first() || DUMMY).size(), 64);
- node.children().forEach(__pruneEachTR, maxCol);
+ node.children().forEach(function (rNode){
+  if (rNode.size() > 0)
+  {
+   while (rNode.size() > maxCol)
+   {
+    rNode.pop();
+   }
+   while (rNode.size() < maxCol)
+   {
+    rNode.append(BBM(ENUM.TD));
+   }
+  }
+ });
 }
 
 function __pruneDL(node)
