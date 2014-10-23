@@ -185,8 +185,7 @@ function isDelim(currTok, sTok)
  && sTok.type === now.type
  && sTok.lexeme === now.lexeme
  && sTok.col === now.col
- && this.isLineStart()
- && this.isLineEnd();
+ && this.isLineStart();
 }
 
 
@@ -282,6 +281,7 @@ function isLexer(obj)
 {
  return Lexer.prototype.isPrototypeOf(obj);
 }
+
 
 module.exports = BBM.Lexer = BBM.extend(Lexer,
 {
