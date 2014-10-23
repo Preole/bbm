@@ -4,6 +4,7 @@
 var BBM = require("./BBM.js");
 var AST = BBM.ENUM;
 var XHTML = [AST.HR, AST.LINK_IMG];
+var NOOP = {};
 var INLINES =
 [
   AST.DEL
@@ -52,6 +53,15 @@ var MAP_HTML =
 , CODE : "code"
 };
 
+/*
+Options:
+
+rmNL
+headerOffset
+maxAttrChars
+XHTML
+*/
+
 function hasEndTag(node)
 {
  return XHTML.indexOf(node.type()) === -1;
@@ -62,111 +72,127 @@ function printBlockEnd(node)
  return INLINES.indexOf(node.type()) === -1 ? "\n" : ""; 
 }
 
-function printXHTML(node, isXHTML)
+function printXHTML(node, opts)
 {
+ var isXHTML = !!opts.options.XHTML;
  return (isXHTML && XHTML.indexOf(node.type()) > -1) ? " /" : ""; 
 }
 
-function printIndent(level)
+function printIndent(node, opts)
 {
- return BBM.repeatString(" ", Number(level) || 0);
+ return INLINES.indexOf(node.type()) === -1
+ ? BBM.repeatString(" ", parseInt(opts.depth, 10) || 0)
+ : "";
 }
 
-function printHeader(node)
+function printHeader(node, opts)
 {
- return "h" + Math.min(Math.abs(Math.floor(Number(node.level) || 1)), 6);
+ var off = Math.abs(parseInt(opts.options.headerOffset, 10) || 0);
+ var lvl = Math.abs(parseInt(node.level) || 1);
+ return "h" + Math.min(lvl + off, 6);
 }
 
-function printAttr(node)
+function printAttr(node, opts)
 {
- var res = "", attr = node.attr();
+ var res = "";
+ var attr = node.attr();
+ var maxChars = Math.abs(parseInt(opts.options.maxAttrLength, 10) || 2048);
+ 
  for (var key in attr)
  {
   if (BBM.has(attr, key))
   {
-   res += BBM.escapeATTR(key).substring(0, 2048)
+   res += BBM.escapeATTR(key).substring(0, maxChars)
    + "=\"" 
-   + BBM.escapeATTR(attr[key]).substring(0, 2048)
+   + BBM.escapeATTR(attr[key]).substring(0, maxChars)
    + "\" ";
   }
  }
  return res.length === 0 ? "" : " " + res.trim();
 }
 
-function printTagName(node)
+function printTagName(node, opts)
 {
  var tagName = node.type() === AST.HEADER
- ? printHeader(node)
+ ? printHeader(node, opts)
  : MAP_HTML[node.type()];
 
  return BBM.escapeATTR(tagName || "");
 }
 
-function printTagOpen(node)
+function printTagOpen(node, opts)
 {
- var tagName = printTagName(node);
+ var tagName = printTagName(node, opts);
  if (tagName)
  {
-  return printIndent()
+  return printIndent(node, opts)
   + "<"
   + tagName
-  + printAttr(node)
-  + printXHTML(node)
+  + printAttr(node, opts)
+  + printXHTML(node, opts)
   + ">"
-  + printBlockEnd(node);
+  + printBlockEnd(node, opts);
  }
  return "";
 }
 
-function printTagClose(node)
+function printTagClose(node, opts)
 {
- var tagName = printTagName(node);
- if (tagName && hasEndTag(node))
+ var tagName = printTagName(node, opts);
+ var isLastChild = node.parent() && node.parent().last() === node;
+ if (tagName && hasEndTag(node, opts))
  {
-  return printBlockEnd(node)
-  + printIndent()
+  return printBlockEnd(node, opts)
+  + printIndent(node, opts)
   + "</" 
   + tagName
   + ">" 
-  + printBlockEnd(node);
+  + (isLastChild ? printIndent(node, opts) : printBlockEnd(node, opts));
  }
  return "";
 }
 
-function printComment(node)
+function printComment(node, opts)
 {
+ var depth = opts.depth;
  return "\n"
- + printIndent()
+ + printIndent(depth)
  + "<!--\n"
- + node.children().map(printHTML, this).join("");
- + printIndent(stack.length)
+ + node.children().map(printHTML, opts).join("");
+ + printIndent(depth)
  + "-->\n";
 }
 
-//TODO: NL removal for text nodes not in PRE or COMMENT.
-function printText(node)
+function printText(node, opts)
 {
- return BBM.escapeHTML(node.text()); 
+ var rmNL = !!opts.options.rmNL;
+ return BBM.escapeHTML(rmNL ? BBM.rmNL(node.text()) : node.text()); 
 }
 
-//TODO: Implement call stack size and indentation.
-function printHTML(node, index, sibs)
+function printHTML(node)
 {
- var str = node.text().length > 0
- ? printText(node)
+ var str = "";
+ this.depth += 1;
+ str = node.text().length > 0
+ ? printText(node, this)
  : node.type() === AST.COMMENT
- ? printComment(node)
+ ? printComment(node, this)
  : printTagOpen(node, this)
    + node.children().map(printHTML, this).join("")
-   + printTagClose(node);
-
+   + printTagClose(node, this);
+ this.depth -= 1;
  return str;
 }
 
 
-function toHTML()
+function toHTML(options)
 {
- return printHTML(this);
+ var opts =
+ {
+   options : BBM.isObject(options) ? options : NOOP
+ , depth : this.type() === AST.ROOT ? -2 : -1
+ };
+ return printHTML.call(opts, this);
 }
 
 BBM.fn.toHTML = toHTML;
