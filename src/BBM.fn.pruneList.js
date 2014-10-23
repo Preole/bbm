@@ -4,7 +4,7 @@
 var BBM = require("./BBM.js");
 var ENUM = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
-var IDCLASS = {_ID : __pruneID, _CLASS : __pruneClass};
+var IDCLASS = [ENUM._ID, ENUM._CLASS];
 var SWITCH =
 {
   _DT : __pruneDL
@@ -16,15 +16,18 @@ var SWITCH =
 , _LI_OL : __pruneOL
 };
 
-function __pruneID(prev, node)
-{
- return node.attr("id", prev.attr("id"));
-}
-
-function __pruneClass(prev, node)
+function __pruneIDClass(prev, node)
 {
  var nClass = (node.attr("class") || " ");
- return node.attr("class", (prev.attr("class") + " " + nClass).trim());
+ if (prev.attr("id"))
+ {
+  node.attr("id", prev.attr("id"));
+ }
+ if (prev.attr("class"))
+ {
+  node.attr("class", (prev.attr("class") + " " + nClass).trim());
+ }
+ return node;
 }
 
 function __pruneTable(prev, node)
@@ -74,11 +77,11 @@ function __pruneSwitch(node)
  
  if (BBM.has(SWITCH, nType))
  {
-  res = SWITCH[nType](prev, res); 
+  res = SWITCH[nType](prev, res);
  }
- if (BBM.has(IDCLASS, pType))
+ if (IDCLASS.indexOf(pType) > -1)
  {
-  res = IDCLASS[pType](prev, res);
+  __pruneIDClass(prev, res);
   this.pop();
  }
  if (res !== prev)
