@@ -15,7 +15,7 @@ var EOL = "(?=" + NL + "|$)";
 var EMPTY = __LexToken();
 var RULES =
 [
-  __Rule("ESCAPE"   , "\\\\[\\s\\S]")
+  __Rule("ESCAPE"   , "\\\\[\\S]")
 , __Rule("TH"       , "!!" + WS)
 , __Rule("TD"       , "\\|\\|" + WS)
 , __Rule("TRSEP"    , "\\|[=]+" + EOL)

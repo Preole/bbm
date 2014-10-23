@@ -1,11 +1,13 @@
 (function (){
 "use strict";
 
+require("./BBM.fn.pruneText.js");
+
 var BBM = require("./BBM.js");
 var ENUM = BBM.ENUM;
 var REGSTR =
 [
-  "\\\\[\\s\\S]"
+  "\\\\"
 , "\"{3,}"
 , "--"
 , "\\*{2}"
@@ -21,7 +23,9 @@ var REGSTR =
 , "\\]"
 ];
 
-var REGEX = new RegExp(REGSTR.join("|"), "g");
+var REGEX_TEXT = new RegExp(REGSTR.join("|"), "g");
+var REGEX_PRE = new RegExp("\"{3,}", "g");
+
 
 
 
@@ -31,6 +35,6 @@ function toBBM()
  
 }
 
-BBM.prototype.toBBM = toBBM;
+BBM.fn.toBBM = toBBM;
 
 }());
