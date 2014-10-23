@@ -246,24 +246,18 @@ Subtree Iteration
  */
 function eachPre(callback, thisArg)
 {
- __reducePre.call(this, callback, thisArg, [], null);
- return this;
+ return __eachPre.call(this, callback, thisArg, []);
 }
 
-function reducePre(callback, acc, thisArg)
+function __eachPre(callback, thisArg, stack)
 {
- return __reducePre.call(this, callback, thisArg, [], acc);
-}
-
-function __reducePre(callback, thisArg, stack, acc)
-{
- acc = callback.call(thisArg, this, stack, acc);
+ callback.call(thisArg, this, stack);
  this.children().forEach(function (node){
   stack.push(node);
-  acc = __reducePre.call(node, callback, thisArg, stack, acc);
+  __eachPre.call(node, callback, thisArg, stack);
   stack.pop(node);
  });
- return acc;
+ return this;
 }
 
 /**
@@ -271,23 +265,18 @@ function __reducePre(callback, thisArg, stack, acc)
  */
 function eachPost(callback, thisArg)
 {
- __reducePost.call(this, callback, thisArg, [], null);
- return this;
+ return __eachPost.call(this, callback, thisArg, []);
 }
 
-function reducePost(callback, acc, thisArg)
-{
- return __reducePost.call(this, callback, thisArg, [], acc);
-}
-
-function __reducePost(callback, thisArg, stack, acc)
+function __eachPost(callback, thisArg, stack)
 {
  this.children().forEach(function (node){
   stack.push(node);
-  acc = __reducePost.call(node, callback, thisArg, stack, acc);
+  __eachPost.call(node, callback, thisArg, stack);
   stack.pop(node);
  });
- return callback.call(thisArg, this, stack, acc);
+ callback.call(thisArg, this, stack);
+ return this;
 }
 
 
@@ -405,9 +394,7 @@ BBM.fn = BBM.prototype =
 , rebuildChild : rebuildChild
 
 , eachPre : eachPre
-, reducePre : reducePre
 , eachPost : eachPost
-, reducePost : reducePost
 
 , text : text
 , attr : attr

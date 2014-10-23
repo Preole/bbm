@@ -138,7 +138,7 @@ Public Methods: peek
 
 function peek(offset)
 {
- return this._tokens[this.pos + (Number(offset) || 0)];
+ return this._tokens[this.pos + (parseInt(offset, 10) || 0)];
 }
 
 function peekT(type, offset)
@@ -158,7 +158,7 @@ Public Methods: peek extras
 
 function isLineStart(offset)
 {
- var off = Number(offset) || 0;
+ var off = parseInt(offset, 10) || 0;
  var prev1 = this.peek(off - 1);
  var prev2 = this.peek(off - 2);
   
@@ -169,7 +169,7 @@ function isLineStart(offset)
 
 function isLineEnd(offset)
 {
- var off = Number(offset) || 0;
+ var off = parseInt(offset, 10) || 0;
  var now = this.peek(off);
  var next = this.peek(off + 1);
   
@@ -203,7 +203,7 @@ function size()
 
 function next(offset)
 {
- this.pos = Math.max(0, this.pos + Math.floor(Number(offset) || 1));
+ this.pos = Math.max(0, this.pos + (parseInt(offset, 10) || 1));
  return this;
 }
 
