@@ -22,7 +22,7 @@ function _pruneURL(node)
 function pruneURL()
 {
  var refTable = BBM.isObject(this.refTable) ? this.refTable : SYMTABLE;
- return this.eachPost(_pruneURL, refTable);
+ return this.eachPre(_pruneURL, refTable);
 }
 
 BBM.fn.pruneURL = pruneURL;

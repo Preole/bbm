@@ -79,7 +79,7 @@ function printHeader(node)
 
 function printAttr(node)
 {
- var res = " ", attr = node.attr();
+ var res = "", attr = node.attr();
  for (var key in attr)
  {
   if (BBM.has(attr, key))
@@ -87,10 +87,10 @@ function printAttr(node)
    res += BBM.escapeATTR(key).substring(0, 2048)
    + "=\"" 
    + BBM.escapeATTR(attr[key]).substring(0, 2048)
-   + "\"";
+   + "\" ";
   }
  }
- return res.length === 1 ? "" : res;
+ return res.length === 0 ? "" : " " + res.trim();
 }
 
 function printTagName(node)
@@ -152,23 +152,21 @@ function printText(node)
 //TODO: Implement call stack size and indentation.
 function printHTML(node, index, sibs)
 {
- if (node.text().length > 0)
- {
-  return printText(node);
- }
- if (node.type() === AST.COMMENT)
- {
-  return printComment(node);
- }
- return printTagOpen(node, this)
- + node.children().map(printHTML, this).join("")
- + printTagClose(node);
+ var str = node.text().length > 0
+ ? printText(node)
+ : node.type() === AST.COMMENT
+ ? printComment(node)
+ : printTagOpen(node, this)
+   + node.children().map(printHTML, this).join("")
+   + printTagClose(node);
+
+ return str;
 }
 
 
 function toHTML()
 {
- return this.children().map(printHTML).join("");
+ return printHTML(this);
 }
 
 BBM.fn.toHTML = toHTML;
