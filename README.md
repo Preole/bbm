@@ -14,11 +14,20 @@ Updated Confirmed Changes (October 10th, 2014)
 
 ### Text Formatting: Inserts and Deletes ###
 
-- Text insertion markup `{++ Arbitrary Text ++}` shall be removed from the 
-  grammar.
+Text insertion markup `{++ Arbitrary Text ++}` shall be removed from the 
+grammar.
   
-- Text deletion markup has been changed from `{-- Deleted Text --}` into 
-  just two consecutive dashes: `-- Deleted Text --`.
+Text deletion markup has been changed from `{-- Deleted Text --}` into 
+just two consecutive dashes: `-- Deleted Text --`.
+
+
+
+### Pre-formatted Text Output (October 24th, 2014) ###
+
+Pre-formatted Text Output no longer generates a `<code>` wrapper inside 
+the `<pre>` tag, for simplicity reason.
+
+
 
 
 
