@@ -43,7 +43,6 @@ var MAP_HTML =
 , LINK_IMG : "img"
 , LINK_WIKI : "a"
 , DEL : "del"
-, INS : "ins"
 , U : "u"
 , SUB : "sub"
 , SUP : "sup"
@@ -65,7 +64,7 @@ function printXHTML(node, opts)
 function printIndent(node, opts)
 {
  return INLINES.indexOf(node.type()) === -1
- ? BBM.repeatString(" ", parseInt(opts.depth, 10) || 0)
+ ? BBM.repeatString(" ", opts.depth)
  : "";
 }
 
@@ -183,3 +182,4 @@ BBM.fn.toHTML = function (options)
 };
 
 }());
+
