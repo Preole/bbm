@@ -47,11 +47,11 @@ function pruneTable(prev, node)
 
  if (!isRow)
  {
-  pNode.last().append(node);
+  pNode.last().append(node.type(cellType));
  }
  else if (pNode.last().size() > 0)
  {
-  pNode.append(node);
+  pNode.append(node.type(ENUM.TR));
  }
  return pNode;
 }
