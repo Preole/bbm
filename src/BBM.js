@@ -235,16 +235,9 @@ Subtree Iteration
  */
 function eachPre(callback, thisArg)
 {
- return __eachPre.call(this, callback, thisArg, []);
-}
-
-function __eachPre(callback, thisArg, stack)
-{
- callback.call(thisArg, this, stack);
+ callback.call(thisArg, this);
  this.children().forEach(function (node){
-  stack.push(node);
-  __eachPre.call(node, callback, thisArg, stack);
-  stack.pop(node);
+  node.eachPre(callback, thisArg);
  });
  return this;
 }
@@ -254,17 +247,10 @@ function __eachPre(callback, thisArg, stack)
  */
 function eachPost(callback, thisArg)
 {
- return __eachPost.call(this, callback, thisArg, []);
-}
-
-function __eachPost(callback, thisArg, stack)
-{
  this.children().forEach(function (node){
-  stack.push(node);
-  __eachPost.call(node, callback, thisArg, stack);
-  stack.pop(node);
+  node.eachPost(callback, thisArg);
  });
- callback.call(thisArg, this, stack);
+ callback.call(thisArg, this);
  return this;
 }
 
