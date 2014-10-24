@@ -253,7 +253,7 @@ function parseRef(lexer)
  var url = lexer.peekT(LEX.NL, -1) ? "" : lexer.textUntil(isNL).trim();
  if (url.length > 0 && id.length > 0)
  {
-  lexer.root.refTable[id] = url;
+  lexer.root.symTable[id] = url;
  }
 }
 
@@ -382,22 +382,21 @@ Exporting
 ---------
 */
 
-function parse(bbmStr, options)
+module.exports = BBM.parse = function (bbmStr, options)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);
  lexer.root = BBM(AST.ROOT);
- lexer.root.refTable = {};
+ lexer.root.symTable = {};
  while (lexer.peek())
  {
   lexer.root.append(parseBlock(lexer));
  }
  return lexer.root.pruneList().pruneBlank();
-}
+};
 
-module.exports = BBM.parse = parse;
 BBM.fn.parse = function (bbmStr, options)
 {
- return this.empty().append(parse(bbmStr, options).children());
+ return this.empty().append(BBM.parse(bbmStr, options).children());
 };
 
 

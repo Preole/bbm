@@ -13,15 +13,6 @@ function __extend(fromObj)
  }
 }
 
-function __uniq(acc, val)
-{
- if (acc.indexOf(val) === -1)
- {
-  acc.push(val);
- }
- return acc;
-}
-
 function toString(obj)
 {
  return Object.prototype.toString.call(obj);
@@ -30,11 +21,6 @@ function toString(obj)
 function toArray(obj, sPos, ePos)
 {
  return Array.prototype.slice.call(obj, sPos, ePos);
-}
-
-function uniq(arr)
-{
- return (isArray(arr) ? arr : toArray(arr)).reduce(__uniq, []);
 }
 
 function flatten(arr, shallow)
@@ -128,7 +114,7 @@ function escapeATTR(str)
 function escapeURI(str)
 {
  return str.replace(/^javascript:/i, "javascript;")
-  .replace(/^data:/i, "data;");
+ .replace(/^data:/i, "data;");
 }
 
 function has(obj, key)
@@ -153,8 +139,6 @@ function extend(others)
 module.exports = {
   toString : toString
 , toArray : toArray
-, uniq : uniq
-, unique : uniq
 , flatten : flatten
 , isNull : isNull
 , isObject : isObject

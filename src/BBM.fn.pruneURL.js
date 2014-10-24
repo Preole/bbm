@@ -4,9 +4,8 @@
 var BBM = require("./BBM.js");
 var ENUM = BBM.ENUM;
 var LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI];
-var SYMTABLE = {};
 
-function _pruneURL(node)
+function pruneURL(node)
 {
  var nType = node.type();
  if (nType === ENUM.IMG)
@@ -19,12 +18,13 @@ function _pruneURL(node)
  }
 }
 
-function pruneURL()
-{
- var refTable = BBM.isObject(this.refTable) ? this.refTable : SYMTABLE;
- return this.eachPre(_pruneURL, refTable);
-}
 
-BBM.fn.pruneURL = pruneURL;
+BBM.fn.pruneURL = function ()
+{
+ return BBM.isObject(this.symTable)
+ ? this.eachPre(pruneURL, this.symTable)
+ : this;
+};
+
 }());
 

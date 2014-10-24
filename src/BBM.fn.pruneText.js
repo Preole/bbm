@@ -4,21 +4,15 @@
 var BBM = require("./BBM.js");
 var DUMMY = BBM("_DUMMY");
 
-
-function __prunableText(prev, node)
+function isPrunable(node, index, sibs)
 {
- return prev.text().length > 0 && node.text().length > 0;
+ return prunableText((sibs[index - 1] || DUMMY), node);
 }
 
-function __prunable(node, index, sibs)
-{
- return __prunableText((sibs[index - 1] || DUMMY), node);
-}
-
-function __pruneTextWork(node)
+function pruneTextWork(node)
 {
  var prev = this.last() || DUMMY;
- if (__prunableText(prev, node))
+ if (prev.text() && node.text())
  {
   prev.text(prev.text() + node.text());
  }
@@ -28,20 +22,19 @@ function __pruneTextWork(node)
  }
 }
 
-function __pruneText(node)
+function pruneText(node)
 {
- if (node.children().some(__prunable))
+ if (node.children().some(isPrunable))
  {
-  node.rebuildChild(__pruneTextWork);
+  node.rebuildChild(pruneTextWork);
  }
 }
 
-//Combines consecutive text nodes within the tree into one node.
-function pruneText()
-{
- return this.eachPre(__pruneText, this);
-}
 
-BBM.fn.pruneText = pruneText;
+
+BBM.fn.pruneText = function ()
+{
+ return this.eachPre(pruneText);
+};
 }());
 

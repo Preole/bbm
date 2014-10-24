@@ -61,7 +61,7 @@ function __mapArgs(node)
  var res = node;
  if ((BBM.isString(res) && res.length > 0) || BBM.isNumber(res))
  {
-  res = BBM(ENUM.TEXT).text(String(res));
+  res = BBM(ENUM.TEXT).text(res + "");
  }
  if (BBM.isNode(res))
  {
@@ -147,18 +147,6 @@ function first()
 Manipulation
 ------------
 */
-
-function pop()
-{
- __nullParent(this.children().pop());
- return this;
-}
-
-function shift()
-{
- __nullParent(this.children().shift());
- return this;
-}
 
 function append(content)
 {
@@ -316,7 +304,7 @@ function attr(key, val)
  }
  else if (arguments.length > 1)
  {
-  this._attr[key] = String(val);
+  this._attr[key] = val + "";
  }
  return this;
 }
@@ -340,7 +328,7 @@ function type(newType)
  {
   return this._type;
  }
- this._type = String(newType).toLocaleUpperCase();
+ this._type = (newType + "").toLocaleUpperCase();
  return this;
 }
 
@@ -396,8 +384,6 @@ BBM.fn = BBM.prototype =
 , last : last
 , first : first
 
-, pop : pop
-, shift : shift
 , append : append
 , prepend : prepend
 , replaceWith : replaceWith

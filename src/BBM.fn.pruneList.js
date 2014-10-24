@@ -4,19 +4,26 @@
 var BBM = require("./BBM.js");
 var ENUM = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
-var IDCLASS = [ENUM._ID, ENUM._CLASS];
+var IDCLASS = {_ID : true, _CLASS : true};
 var SWITCH =
 {
-  _DT : __pruneDL
-, _DD : __pruneDL
-, _TH : __pruneTable
-, _TD : __pruneTable
-, _TR : __pruneTable
-, _LI_UL : __pruneUL
-, _LI_OL : __pruneOL
+  _DT : pruneDL
+, _DD : pruneDL
+, _TH : pruneTable
+, _TD : pruneTable
+, _TR : pruneTable
+, _LI_UL : pruneUL
+, _LI_OL : pruneOL
 };
 
-function __pruneIDClass(prev, node)
+
+
+function isPrunable(node)
+{
+ return BBM.has(SWITCH, node.type()) || BBM.has(IDCLASS, node.type());
+}
+
+function pruneIDClass(prev, node)
 {
  var nClass = (node.attr("class") || " ");
  if (prev.attr("id"))
@@ -30,7 +37,7 @@ function __pruneIDClass(prev, node)
  return node;
 }
 
-function __pruneTable(prev, node)
+function pruneTable(prev, node)
 {
  var isRow = node.type() === ENUM._TR;
  var cellType = node.type() === ENUM._TD ? ENUM.TD : ENUM.TH;
@@ -49,26 +56,26 @@ function __pruneTable(prev, node)
  return pNode;
 }
 
-function __pruneUL(prev, node)
+function pruneUL(prev, node)
 {
  var pNode = prev.type() === ENUM.UL ? prev : BBM(ENUM.UL);
  return pNode.append(node.type(ENUM.LI));
 }
 
-function __pruneOL(prev, node)
+function pruneOL(prev, node)
 {
  var pNode = prev.type() === ENUM.OL ? prev : BBM(ENUM.OL);
  return pNode.append(node.type(ENUM.LI));
 }
 
-function __pruneDL(prev, node)
+function pruneDL(prev, node)
 {
  var pNode = prev.type() === ENUM.DL ? prev : BBM(ENUM.DL);
  var type = node.type();
  return pNode.append(node.type(type === ENUM._DD ? ENUM.DD : ENUM.DT));
 }
 
-function __pruneSwitch(node)
+function pruneSwitch(node)
 {
  var prev = this.last() || DUMMY;
  var nType = node.type();
@@ -79,10 +86,9 @@ function __pruneSwitch(node)
  {
   res = SWITCH[nType](prev, res);
  }
- if (IDCLASS.indexOf(pType) > -1)
+ if (BBM.has(IDCLASS, pType))
  {
-  __pruneIDClass(prev, res);
-  this.pop();
+  res = pruneIDClass(prev, res);
  }
  if (res !== prev)
  {
@@ -90,25 +96,19 @@ function __pruneSwitch(node)
  }
 }
 
-function __prunable(node)
+function pruneList(node)
 {
- return BBM.has(SWITCH, node.type()) || BBM.has(IDCLASS, node.type());
-}
-
-function __pruneList(node)
-{
- if (node.children().some(__prunable))
+ if (node.children().some(isPrunable))
  {
-  node.rebuildChild(__pruneSwitch);
+  node.rebuildChild(pruneSwitch);
  }
 }
 
-function pruneList()
+BBM.fn.pruneList = function ()
 {
- return this.eachPost(__pruneList);
-}
+ return this.eachPost(pruneList);
+};
 
-BBM.fn.pruneList = pruneList;
 }());
 
 

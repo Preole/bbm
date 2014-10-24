@@ -19,19 +19,19 @@ var ALONE =
 ];
 
 
-function __isBlank(node)
+function isBlank(node)
 {
  return BBM.isBlankString(node.text())
  && node.size() === 0
  && ALONE.indexOf(node.type()) === -1;
 }
 
-function __isKept(node)
+function isKept(node)
 {
- return node.text().length > 0 || !__isBlank(node);
+ return node.text().length > 0 || !isBlank(node);
 }
 
-function __pruneTR(node)
+function pruneTR(node)
 {
  var maxCol = Math.min((node.first() || DUMMY).size(), 64);
  node.children().forEach(function (rNode){
@@ -49,7 +49,7 @@ function __pruneTR(node)
  });
 }
 
-function __pruneDL(node)
+function pruneDL(node)
 {
  var ht = null;
  while ((ht = node.first()) && ht.type() === ENUM.DD)
@@ -63,12 +63,10 @@ function __pruneDL(node)
  }
 }
 
-
-
-function __pruneBlank(node)
+function pruneBlank(node)
 {
  var type = node.type();
- if (node.children().every(__isBlank))
+ if (node.children().every(isBlank))
  {
   node.empty().append(LINKS.indexOf(type) > -1 ? node.attr("href") : null);
   return;
@@ -76,23 +74,21 @@ function __pruneBlank(node)
  
  if (type === ENUM.TABLE)
  {
-  __pruneTR(node);
+  pruneTR(node);
  }
  else if (type === ENUM.DL)
  {
-  __pruneDL(node);
+  pruneDL(node);
  }
- node.filterChild(__isKept);
+ node.filterChild(isKept);
 }
 
 
-//Removes certain nodes that contains no visible content.
-function pruneBlank()
+
+BBM.fn.pruneBlank = function ()
 {
- return this.eachPost(__pruneBlank);
-}
-
-BBM.fn.pruneBlank = pruneBlank;
+ return this.eachPost(pruneBlank);
+};
 
 }());
 

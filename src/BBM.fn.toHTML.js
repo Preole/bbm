@@ -4,7 +4,6 @@
 var BBM = require("./BBM.js");
 var AST = BBM.ENUM;
 var XHTML = [AST.HR, AST.LINK_IMG];
-var NOOP = {};
 var INLINES =
 [
   AST.DEL
@@ -53,29 +52,14 @@ var MAP_HTML =
 , CODE : "code"
 };
 
-/*
-Options:
-
-rmNL
-headerOffset
-maxAttrChars
-XHTML
-*/
-
 function hasEndTag(node)
 {
  return XHTML.indexOf(node.type()) === -1;
 }
 
-function printBlockEnd(node)
-{
- return INLINES.indexOf(node.type()) === -1 ? "\n" : ""; 
-}
-
 function printXHTML(node, opts)
 {
- var isXHTML = !!opts.options.XHTML;
- return (isXHTML && XHTML.indexOf(node.type()) > -1) ? " /" : ""; 
+ return (opts.XHTML && XHTML.indexOf(node.type()) > -1) ? " /" : ""; 
 }
 
 function printIndent(node, opts)
@@ -85,26 +69,29 @@ function printIndent(node, opts)
  : "";
 }
 
+function printBlockEnd(node)
+{
+ return INLINES.indexOf(node.type()) === -1 ? "\n" : ""; 
+}
+
 function printHeader(node, opts)
 {
- var off = Math.abs(parseInt(opts.options.headerOffset, 10) || 0);
- var lvl = Math.abs(parseInt(node.level) || 1);
- return "h" + Math.min(lvl + off, 6);
+ var lvl = Math.abs(parseInt(node.level, 10) || 1);
+ return "h" + Math.min(lvl + opts.headerOffset, 6);
 }
 
 function printAttr(node, opts)
 {
  var res = "";
  var attr = node.attr();
- var maxChars = Math.abs(parseInt(opts.options.maxAttrLength, 10) || 2048);
  
  for (var key in attr)
  {
   if (BBM.has(attr, key))
   {
-   res += BBM.escapeATTR(key).substring(0, maxChars)
+   res += BBM.escapeATTR(key).substring(0, opts.maxAttrChars)
    + "=\"" 
-   + BBM.escapeATTR(attr[key]).substring(0, maxChars)
+   + BBM.escapeATTR(attr[key]).substring(0, opts.maxAttrChars)
    + "\" ";
   }
  }
@@ -164,36 +151,35 @@ function printComment(node, opts)
 
 function printText(node, opts)
 {
- var rmNL = !!opts.options.rmNL;
- return BBM.escapeHTML(rmNL ? BBM.rmNL(node.text()) : node.text()); 
+ return BBM.escapeHTML(opts.rmNL ? BBM.rmNL(node.text()) : node.text()); 
 }
 
 function printHTML(node)
 {
  var str = "";
- this.depth += 1;
+ var opts = this;
+ 
+ opts.depth += 1;
  str = node.text().length > 0
- ? printText(node, this)
+ ? printText(node, opts)
  : node.type() === AST.COMMENT
- ? printComment(node, this)
- : printTagOpen(node, this)
-   + node.children().map(printHTML, this).join("")
-   + printTagClose(node, this);
- this.depth -= 1;
+ ? printComment(node, opts)
+ : printTagOpen(node, opts)
+   + node.children().map(printHTML, opts).join("")
+   + printTagClose(node, opts);
+ opts.depth -= 1;
  return str;
 }
 
-
-function toHTML(options)
+BBM.fn.toHTML = function (options)
 {
- var opts =
- {
-   options : BBM.isObject(options) ? options : NOOP
- , depth : this.type() === AST.ROOT ? -2 : -1
- };
+ var opts = BBM.extend({}, options);
+ opts.depth = this.type() === AST.ROOT ? -2 : -1;
+ opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
+ opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
+ opts.XHTML = !!opts.XHTML;
+ opts.rmNL = !!opts.rmNL;
  return printHTML.call(opts, this);
-}
-
-BBM.fn.toHTML = toHTML;
+};
 
 }());
