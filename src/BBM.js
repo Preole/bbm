@@ -148,6 +148,19 @@ Manipulation
 ------------
 */
 
+function pop()
+{
+ __.empty(this.children().pop());
+ return this;
+}
+
+function shift()
+{
+ __.empty(this.children().shift());
+ return this;
+}
+
+
 function append(content)
 {
  var eles = __procArgs(content, this), kids = this.children();
@@ -370,6 +383,8 @@ BBM.fn = BBM.prototype =
 , last : last
 , first : first
 
+, pop : pop
+, shift : shift
 , append : append
 , prepend : prepend
 , replaceWith : replaceWith
