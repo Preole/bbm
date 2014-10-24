@@ -65,7 +65,8 @@ implements `String.prototype.trim()`, Higher-order array iteration methods
 ### Javascript Engine Requirement (Build) ###
 
 - Node.js
-- Browserify
+- <del>Browserify</del> <ins>Update October 24th, 2014: Reconsidering;</ins>
+
 
 
 ### Reference Link Elements ###
@@ -73,10 +74,21 @@ implements `String.prototype.trim()`, Higher-order array iteration methods
 Reference Links `:{ID}: URL` no longer generates a node in the parse tree, 
 and thus no longer qualified as an implicit list breaker.
 
-Reference Link scoping has been removed to reduce implementation complexity. 
-That is, if a block-level element has a reference link, and the parent has 
-another reference link with the same identifier, the link that's defined 
-later in the document shall now overwrite the previously stored URL.
+Reference Links scoping have been removed to reduce implementation complexity. 
+That is, block-level elements no longer has scopes with link identifiers. 
+Last-defined valid link identifier wins. 
+
+```
+> :{ID}: URL-One
+
+  I'm a paragraph using ?<ID>-[URL-Zero].
+
+:{ID}: URL-Zero
+```
+
+In this particular example, the second definition of `ID` shall be used to 
+create `<a href="URL-Zero">URL-Zero</a>.
+
 
 
 
@@ -84,7 +96,16 @@ later in the document shall now overwrite the previously stored URL.
 
 Setext Paragraph delimiters, Horizontal Rules, Fenced Code Blocks, Comment 
 Blocks, and Div Block delimiters must be immediately followed by a line 
-break, in addition to being the only visible element on the line.
+break.
+
+They will not count as valid delimiting token otherwise. Specifically:
+
+```
+- """    
+  This is not a pre-formatted code block, but rather an inline code snippet, 
+  because there are invisible white space after the starting fence.
+  """
+```
 
 
 

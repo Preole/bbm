@@ -465,6 +465,7 @@ TextFrag
     DEL
     UNDERLINE
     CODE
+    CODE_FENCE
     LINK_INT
     LINK_WIKI
     LINK_EXT
