@@ -150,13 +150,13 @@ Manipulation
 
 function pop()
 {
- __empty(this.children().pop());
+ __nullParent(this.children().pop());
  return this;
 }
 
 function shift()
 {
- __empty(this.children().shift());
+ __nullParent(this.children().shift());
  return this;
 }
 
