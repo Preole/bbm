@@ -37,11 +37,6 @@ function flatten(arr, shallow)
  return res;
 }
 
-function isNull(obj)
-{
- return obj === null;
-}
-
 function isArray(obj)
 {
  return Array.isArray ? Array.isArray(obj) : toString(obj) === "[object Array]";
@@ -74,7 +69,21 @@ function isBlankString(str)
 
 function repeatString(str, times)
 {
- return Array((Number(times) || 0) + 1).join(str);
+ var many = Math.abs(parseInt(times, 10)) || 0;
+ var res = "";
+ while (many > 0)
+ {
+  if (many % 2 === 1)
+  {
+   res += str;
+  }
+  if (many > 1)
+  {
+   str += str;
+  }
+  many = Math.floor(many / 2);
+ }
+ return res;
 }
 
 function rmWS(str)
@@ -140,7 +149,6 @@ module.exports = {
   toString : toString
 , toArray : toArray
 , flatten : flatten
-, isNull : isNull
 , isObject : isObject
 , isArray : isArray
 , isString : isString
