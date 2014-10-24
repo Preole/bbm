@@ -173,7 +173,7 @@ function printHTML(node)
 BBM.fn.toHTML = function (options)
 {
  var opts = BBM.extend({}, options);
- opts.depth = this.type() === AST.ROOT ? -2 : -1;
+ opts.depth = (parseInt(opts.depth, 10) || 0) + (printTagName(this) ? -1 : -2);
  opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
  opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
  opts.XHTML = !!opts.XHTML;
