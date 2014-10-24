@@ -1,11 +1,4 @@
-.. class1 class2 class3
-.. class4 class5 class6
-. Id 
-
-; Vacuous Proof.
-: 1. ////
-     ////
-     
-  2. Q.E.D.
-
+= ?<https://www.title.com>
+==========================
+I shall not leak.
 

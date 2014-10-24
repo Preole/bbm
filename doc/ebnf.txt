@@ -104,12 +104,17 @@ This is a gallery's caption.
 
 """
 ATXHeader
- | ATX ~(NL | ATX_END) ATX_END
+ | ATX ATXContent ATX_END
+ ;
+ 
+ATXContent
+ | ~(ATX_END)
  ;
 """
 
-One-liner header. This particular header style parses a line of text in 
-verbatim without any inline-level processing, like bold and italic.
+One-liner header. Inline formatting constructs are effective like a regular 
+paragraph, but the text cannot contain any line break characters or end with 
+an """ATX_END""" token. See also: **Inline-Level Grammar**.
 
 
 
@@ -435,7 +440,7 @@ Inline-Level Grammar
 The context involved at this level is strictly inline; Block-level grammar 
 rules, such as indentation, nesting, and bullet lists do not apply. This 
 grammar is effective for the lexical tokens extracted from the rule 
-**ParaContent** in the section **Block-Level Grammar**.
+**ParaContent** and *ATXContent** in the section **Block-Level Grammar**.
 
 
 """
@@ -622,7 +627,6 @@ FULLSTOP
  | "."
  ;
 
- 
 ATX_END
  | [=]+ (?=(NL))
  | NL

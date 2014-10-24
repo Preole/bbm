@@ -29,6 +29,13 @@ the `<pre>` tag, for simplicity reason.
 
 
 
+### ATX-Header Inline Formatting ###
+
+Texts in ATX header can now be formatted with inline elements. That is, 
+it's now possible to include hyperlinks, images and bold text in ATX headers, 
+so long as they do not contain line breaks or closing ATX tokens.
+
+
 
 
 

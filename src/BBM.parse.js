@@ -1,11 +1,8 @@
 (function (){
 "use strict";
 
-require("./BBM.fn.pruneList.js");
-require("./BBM.fn.pruneBlank.js");
-require("./BBM.fn.pruneURL.js");
+require("./BBM.fn.prune.js");
 require("./BBM.fn.toHTML.js");
-
 
 var BBM = require("./BBM.js");
 var Lexer = require("./BBM.Lexer.js");
@@ -150,6 +147,7 @@ function parseBlock(lexer)
  ? LEX_BLOCK[tok.type]
  : null;
 
+ 
  lexer.lvl += 1;
  if (func && isNotAbuse)
  {
@@ -228,13 +226,19 @@ function parsePre(lexer, lexTok)
 
 function parseATX(lexer, lexTok)
 {
- var text = lexer.next().textPast(isATXEnd).trim();
- if (text.length > 0)
- {
-  var node = BBM(AST.HEADER).append(text);
-  node.level = lexTok.lexeme.length;
-  return node;
- }
+ var startPos = lexer.next().pos;
+ var endPos = lexer.nextUntil(isATXEnd).pos;
+ var node = BBM(AST.HEADER);
+ 
+ node.level = lexTok.lexeme.length;
+ 
+ lexer.mark = endPos;
+ lexer.pos = startPos;
+ parseInline(lexer, [], node);
+ lexer.mark = -1;
+ lexer.pos = endPos <= startPos ? endPos : endPos + 1;
+ 
+ return node;
 }
 
 function parseLabel(lexer, lexTok)
@@ -282,7 +286,7 @@ function parsePara(lexer, lexTok, forceType)
  
  lexer.minCol = 0;
  lexer.mark = -1;
- lexer.pos = endPos;
+ lexer.pos = endPos <= startPos ? endPos + 1 : endPos;
 
  return node;
 }
@@ -391,7 +395,7 @@ module.exports = BBM.parse = function (bbmStr, options)
  {
   lexer.root.append(parseBlock(lexer));
  }
- return lexer.root.pruneList().pruneBlank();
+ return lexer.root.prune();
 };
 
 BBM.fn.parse = function (bbmStr, options)
