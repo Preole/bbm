@@ -89,7 +89,8 @@ function printAttr(node, opts)
   if (BBM.has(attr, key))
   {
    res += BBM.escapeATTR(key).substring(0, opts.maxAttrChars)
-   + "=\"" 
+   + "=\""
+   + ((node.type() === AST.LINK_INT && key === "href") ? "#" : "")
    + BBM.escapeATTR(attr[key]).substring(0, opts.maxAttrChars)
    + "\" ";
   }

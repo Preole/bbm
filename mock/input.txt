@@ -19,11 +19,7 @@
 || One table
 |======
 
-; ** **
-: Nope
-: Address
-; ** **
-
+#[PointsToIdentifier]
 
 ?<Right>-[Goes to a website.]
 
