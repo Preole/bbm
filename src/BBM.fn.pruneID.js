@@ -3,7 +3,7 @@
 
 var BBM = require("./BBM.js");
 
-function __pruneID(node)
+function pruneID(node)
 {
  var idList = this;
  var id = node.attr("id");
@@ -24,7 +24,7 @@ function __pruneID(node)
 
 BBM.fn.pruneID = function ()
 {
- return this.eachPre(__pruneID, []);
+ return this.eachPre(pruneID, []);
 };
 
 }());

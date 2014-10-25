@@ -166,11 +166,7 @@ function parseListPre(lexer, lexTok)
  lexer.next();
  if (lexer.isLineEnd())
  {
-  return lexTok.type === LEX.TH
-  ? BBM(AST._TH)
-  : lexTok.type === LEX.TD
-  ? BBM(AST._TD)
-  : null;
+  return BBM(LEX_LIST[lexTok.type]);
  }
  lexer.nextUntil(notWSNL);
  

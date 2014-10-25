@@ -25,11 +25,13 @@ var REGSTR =
 
 var REGEX_TEXT = new RegExp(REGSTR.join("|"), "g");
 var REGEX_PRE = new RegExp("\"{3,}", "g");
+var REGEX_NL = new RegExp("TODORegex", "g");
+var REGEX_NL_PARA = new RegExp("TODORegex|TODORegex2", "g");
 
 
 
-
-//Serializes this subtree into BBM.
+//Serializes this subtree into approximate BBM representation.
+//No guarantee in identical document though.
 function toBBM()
 {
  
@@ -38,3 +40,4 @@ function toBBM()
 BBM.fn.toBBM = toBBM;
 
 }());
+

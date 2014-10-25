@@ -10,7 +10,12 @@ var ALONE =
   ENUM.PRE
 , ENUM.TD
 , ENUM.TH
+, ENUM.LI
+, ENUM.BLOCKQUOTE
+, ENUM.DD
+, ENUM.DT
 , ENUM.HR
+, ENUM.DIV
 , ENUM.LINK_EXT
 , ENUM.LINK_INT
 , ENUM.LINK_WIKI
@@ -28,7 +33,7 @@ function isBlank(node)
 
 function isKept(node)
 {
- return node.text().length > 0 || !isBlank(node);
+ return node.text() || !isBlank(node);
 }
 
 function pruneTR(node)
@@ -72,6 +77,7 @@ function pruneBlank(node)
   return;
  }
  
+ node.filterChild(isKept);
  if (type === ENUM.TABLE)
  {
   pruneTR(node);
@@ -80,7 +86,6 @@ function pruneBlank(node)
  {
   pruneDL(node);
  }
- node.filterChild(isKept);
 }
 
 
