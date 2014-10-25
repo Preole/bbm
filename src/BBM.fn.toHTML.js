@@ -125,7 +125,6 @@ function printTagOpen(node, opts)
 function printTagClose(node, opts)
 {
  var tagName = printTagName(node, opts);
- var isLastChild = node.parent() && node.parent().last() === node;
  if (tagName && hasEndTag(node, opts))
  {
   return printBlockEnd(node, opts)
@@ -133,7 +132,9 @@ function printTagClose(node, opts)
   + "</" 
   + tagName
   + ">" 
-  + (isLastChild ? printIndent(node, opts) : printBlockEnd(node, opts));
+  + (node.isLastChild()
+    ? printIndent(node, opts)
+    : printBlockEnd(node, opts));
  }
  return "";
 }
@@ -145,7 +146,10 @@ function printComment(node, opts)
  + "<!--\n"
  + node.children().map(printHTML, opts).join("")
  + indent
- + "-->";
+ + "-->"
+ + (node.isLastChild()
+   ? printIndent(node, opts)
+   : printBlockEnd(node, opts));
 }
 
 function printText(node, opts)

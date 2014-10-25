@@ -141,6 +141,17 @@ function first()
  return this.children()[0];
 }
 
+function isFirstChild()
+{
+ return this.parent() && this.parent().first() === this;
+}
+
+function isLastChild()
+{
+ return this.parent() && this.parent().last() === this;
+}
+
+
 
 
 /*
@@ -382,6 +393,8 @@ BBM.fn = BBM.prototype =
 , size : size
 , last : last
 , first : first
+, isLastChild : isLastChild
+, isFirstChild : isFirstChild
 
 , pop : pop
 , shift : shift
