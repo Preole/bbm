@@ -256,28 +256,40 @@ Subtree Iteration
 
 /**
  * @desc Depth-first pre-order traversal.
+ * TODO: thisContext should be equal to the calling node.
  */
-function eachPre(callback, thisArg)
+function eachPre(callback, params)
 {
- callback.call(thisArg, this);
+ callback(this, params);
  this.children().forEach(function (node){
-  node.eachPre(callback, thisArg);
+  node.eachPre(callback, params);
  });
  return this;
+}
+
+function find(callback, params)
+{
+ var res = [];
+ this.eachPre(function (){
+  if (callback(this, params))
+  {
+   res.push(this);
+  }
+ });
+ return res;
 }
 
 /**
  * @desc Depth-first post-order traversal.
  */
-function eachPost(callback, thisArg)
+function eachPost(callback, params)
 {
  this.children().forEach(function (node){
-  node.eachPost(callback, thisArg);
+  node.eachPost(callback, params);
  });
- callback.call(thisArg, this);
+ callback(this, params);
  return this;
 }
-
 
 
 /*
@@ -408,6 +420,7 @@ BBM.fn = BBM.prototype =
 , rebuildChild : rebuildChild
 
 , eachPre : eachPre
+, find : find
 , eachPost : eachPost
 
 , text : text

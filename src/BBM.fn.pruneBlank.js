@@ -2,25 +2,25 @@
 "use strict";
 
 var BBM = require("./BBM.js");
-var ENUM = BBM.ENUM;
+var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
-var LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI];
+var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
 var ALONE =
 [
-  ENUM.PRE
-, ENUM.TD
-, ENUM.TH
-, ENUM.LI
-, ENUM.BLOCKQUOTE
-, ENUM.DD
-, ENUM.DT
-, ENUM.HR
-, ENUM.DIV
-, ENUM.LINK_EXT
-, ENUM.LINK_INT
-, ENUM.LINK_WIKI
-, ENUM.LINK_IMG
-, ENUM.COMMENT
+  AST.PRE
+, AST.TD
+, AST.TH
+, AST.LI
+, AST.BLOCKQUOTE
+, AST.DD
+, AST.DT
+, AST.HR
+, AST.DIV
+, AST.LINK_EXT
+, AST.LINK_INT
+, AST.LINK_WIKI
+, AST.LINK_IMG
+, AST.COMMENT
 ];
 
 
@@ -48,7 +48,7 @@ function pruneTR(node)
    }
    while (rNode.size() < maxCol)
    {
-    rNode.append(BBM(ENUM.TD));
+    rNode.append(BBM(AST.TD));
    }
   }
  });
@@ -57,12 +57,12 @@ function pruneTR(node)
 function pruneDL(node)
 {
  var ht = null;
- while ((ht = node.first()) && ht.type() === ENUM.DD)
+ while ((ht = node.first()) && ht.type() === AST.DD)
  {
   node.shift();
  }
  
- while ((ht = node.last()) && ht.type() === ENUM.DT)
+ while ((ht = node.last()) && ht.type() === AST.DT)
  {
   node.pop();
  }
@@ -71,18 +71,18 @@ function pruneDL(node)
 function pruneBlank(node)
 {
  var type = node.type();
- if (node.children().every(isBlank))
+ if (node.size() > 0 && node.children().every(isBlank))
  {
   node.empty().append(LINKS.indexOf(type) > -1 ? node.attr("href") : null);
   return;
  }
  
  node.filterChild(isKept);
- if (type === ENUM.TABLE)
+ if (type === AST.TABLE)
  {
   pruneTR(node);
  }
- else if (type === ENUM.DL)
+ else if (type === AST.DL)
  {
   pruneDL(node);
  }

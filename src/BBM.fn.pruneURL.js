@@ -2,14 +2,13 @@
 "use strict";
 
 var BBM = require("./BBM.js");
-var ENUM = BBM.ENUM;
-var LINKS = [ENUM.LINK_EXT, ENUM.LINK_INT, ENUM.LINK_WIKI];
+var AST = BBM.ENUM;
+var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
 
-function pruneURL(node)
+function pruneURL(node, symTable)
 {
  var nType = node.type();
- var symTable = this;
- if (nType === ENUM.IMG)
+ if (nType === AST.IMG)
  {
   node.attr("src", BBM.get(symTable, node.attr("src")) || node.attr("src"));
  }

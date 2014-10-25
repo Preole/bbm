@@ -6,7 +6,7 @@ var DUMMY = BBM("_DUMMY");
 
 function isPrunable(node, index, sibs)
 {
- return prunableText((sibs[index - 1] || DUMMY), node);
+ return (sibs[index - 1] || DUMMY).text() && node.text();
 }
 
 function pruneTextWork(node)
