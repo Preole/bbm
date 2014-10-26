@@ -136,7 +136,7 @@ Block-level Grammar
 function parseBlock(lexer)
 {
  var tok = (lexer.peekUntil(notWSNL) || EOF);
- var isNotAbuse = lexer.lvl < (Number(lexer.options.maxBlocks) || 8);
+ var isNotAbuse = lexer.lvl < lexer.maxDepth;
  var node = null;
  var func = LEX_LIST[tok.type]
  ? parseListPre
@@ -383,9 +383,9 @@ Exporting
 ---------
 */
 
-module.exports = BBM.parse = function (bbmStr, options)
+module.exports = BBM.parse = function (bbmStr, maxDepth)
 {
- var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, options);
+ var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, maxDepth);
  lexer.root = BBM(AST.ROOT);
  lexer.root.symTable = {};
  while (lexer.peek())
@@ -395,9 +395,9 @@ module.exports = BBM.parse = function (bbmStr, options)
  return lexer.root.prune();
 };
 
-BBM.fn.parse = function (bbmStr, options)
+BBM.fn.parse = function (bbmStr, maxDepth)
 {
- return this.empty().append(BBM.parse(bbmStr, options).children());
+ return this.empty().append(BBM.parse(bbmStr, maxDepth).children());
 };
 
 

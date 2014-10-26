@@ -262,7 +262,7 @@ Public Method: Constructor
 --------------------------
 */
 
-function Lexer(bbmStr, options)
+function Lexer(bbmStr, maxDepth)
 {
  var obj = Object.create(Lexer.prototype);
  obj._tokens = __Lexer(bbmStr);
@@ -270,7 +270,7 @@ function Lexer(bbmStr, options)
  obj.mark = -1;
  obj.pos = 0;
  obj.lvl = 0;
- obj.options = BBM.isObject(options) ? options : {};
+ obj.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
 
  obj._tokens.forEach(__updateEscapes);
  obj._tokens.forEach(__updateCols);
