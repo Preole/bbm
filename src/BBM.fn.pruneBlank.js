@@ -71,7 +71,7 @@ function pruneDL(node)
 function pruneBlank(node)
 {
  var type = node.type();
- if (node.size() > 0 && node.children().every(isBlank))
+ if (node.children().every(isBlank))
  {
   node.empty().append(LINKS.indexOf(type) > -1 ? node.attr("href") : null);
   return;
