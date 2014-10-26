@@ -1,6 +1,8 @@
 (function (){
 "use strict";
 
+require("./BBM.fn.prune.js");
+
 var BBM = require("./BBM.js");
 var Lexer = require("./BBM.Lexer.js");
 var LEX = Lexer.ENUM;
@@ -50,8 +52,6 @@ var LEX_INLINE =
 , PRE : AST.CODE
 };
 
-require("./BBM.fn.prune.js");
-require("./BBM.fn.toHTML.js");
 
 
 
