@@ -1,7 +1,7 @@
 (function (){
 "use strict";
 
-require("./BBM.fn.pruneText.js");
+
 
 var BBM = require("./BBM.js");
 var ENUM = BBM.ENUM;
@@ -28,6 +28,7 @@ var REGEX_PRE = new RegExp("\"{3,}", "g");
 var REGEX_NL = new RegExp("TODORegex", "g");
 var REGEX_NL_PARA = new RegExp("TODORegex|TODORegex2", "g");
 
+require("./BBM.fn.pruneText.js");
 
 
 //Serializes this subtree into approximate BBM representation.

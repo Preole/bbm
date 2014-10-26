@@ -1,9 +1,6 @@
 (function (){
 "use strict";
 
-require("./BBM.fn.prune.js");
-require("./BBM.fn.toHTML.js");
-
 var BBM = require("./BBM.js");
 var Lexer = require("./BBM.Lexer.js");
 var LEX = Lexer.ENUM;
@@ -13,7 +10,6 @@ var LEX_DELIM = [LEX.HR, LEX.ATX_END, LEX.DIV];
 var LEX_SETEXT = [LEX.HR, LEX.ATX_END];
 var LEX_FMT = [LEX.DEL, LEX.BOLD, LEX.EM, LEX.SUP, LEX.SUB, LEX.UNDER];
 var LEX_LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];
-
 var LEX_BLOCK =
 {
   HR : parseHRTR
@@ -54,7 +50,8 @@ var LEX_INLINE =
 , PRE : AST.CODE
 };
 
-
+require("./BBM.fn.prune.js");
+require("./BBM.fn.toHTML.js");
 
 
 
