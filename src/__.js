@@ -146,8 +146,7 @@ function extend(others)
 
 
 module.exports = {
-  toString : toString
-, toArray : toArray
+  toArray : toArray
 , flatten : flatten
 , isObject : isObject
 , isArray : isArray
