@@ -59,11 +59,11 @@ Private Methods
 function __mapArgs(node)
 {
  var res = node;
- if ((BBM.isString(res) && res.length > 0) || BBM.isNumber(res))
+ if ((__.isString(res) && res.length > 0) || __.isNumber(res))
  {
   res = BBM(ENUM.TEXT).text(res + "");
  }
- if (BBM.isNode(res))
+ if (isNode(res))
  {
   res.replaceWith();
   res._parent = this;
@@ -73,14 +73,14 @@ function __mapArgs(node)
 
 function __procArgs(elems, node)
 {
- return BBM.isArray(elems)
- ? BBM.flatten(elems).map(__mapArgs, node).filter(BBM.isNode)
+ return __.isArray(elems)
+ ? __.flatten(elems).map(__mapArgs, node).filter(isNode)
  : __mapArgs.call(node, elems);
 }
 
 function __nullParent(node)
 {
- if (BBM.isNode(node))
+ if (isNode(node))
  {
   node._parent = null;
  }
@@ -105,10 +105,10 @@ function splice(from, count, elems)
 {
  var eles = __procArgs(elems, this);
  var kids = this.children();
- var args = BBM.isArray(eles) ? [from, count].concat(eles) : eles;
- var removed = BBM.isArray(args)
+ var args = __.isArray(eles) ? [from, count].concat(eles) : eles;
+ var removed = __.isArray(args)
  ? kids.splice.apply(kids, args)
- : BBM.isNode(args)
+ : isNode(args)
  ? kids.splice(from, count, args)
  : kids.splice(from, count);
  
@@ -175,11 +175,11 @@ function shift()
 function append(content)
 {
  var eles = __procArgs(content, this), kids = this.children();
- if (BBM.isNode(eles))
+ if (isNode(eles))
  {
   kids.push(eles);
  }
- else if (BBM.isArray(eles))
+ else if (__.isArray(eles))
  {
   kids.push.apply(kids, eles);
  }
@@ -189,11 +189,11 @@ function append(content)
 function prepend(content)
 {
  var eles = __procArgs(content, this), kids = this.children();
- if (BBM.isNode(eles))
+ if (isNode(eles))
  {
   kids.unshift(eles);
  }
- else if (BBM.isArray(eles))
+ else if (__.isArray(eles))
  {
   kids.unshift.apply(kids, eles);
  }
@@ -212,7 +212,7 @@ function replaceWith(content)
 
 function replace(target)
 {
- if (BBM.isNode(target))
+ if (isNode(target))
  {
   target.replaceWith(this);
  }
@@ -303,7 +303,7 @@ function text(val)
  {
   return this._value || "";
  }
- if (BBM.isString(val) && val.length > 0)
+ if ((__.isString(val) && val.length > 0) || __.isNumber(val))
  {
   this._value = val;
  }
@@ -312,9 +312,9 @@ function text(val)
 
 function attr(key, val)
 {
- if (BBM.isObject(key))
+ if (__.isObject(key))
  {
-  BBM.extend(this._attr, key);
+  __.extend(this._attr, key);
  }
  else if (arguments.length === 0)
  {
@@ -322,7 +322,7 @@ function attr(key, val)
  }
  else if (arguments.length === 1)
  {
-  return BBM.get(this._attr, key);
+  return __.get(this._attr, key);
  }
  else if (arguments.length > 1)
  {
@@ -376,7 +376,7 @@ Public: Constructors & Static Methods
 function BBM(type)
 {
  var obj = Object.create(BBM.prototype);
- obj._type = (BBM.isString(type) ? type : "").toLocaleUpperCase();
+ obj._type = (__.isString(type) ? type : "").toLocaleUpperCase();
  obj._attr = {};
  obj._nodes = [];
  obj._parent = null;

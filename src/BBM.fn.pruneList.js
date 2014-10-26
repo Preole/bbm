@@ -109,6 +109,7 @@ BBM.fn.pruneList = function ()
  return this.eachPost(pruneList);
 };
 
+module.exports = BBM;
 }());
 
 

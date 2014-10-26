@@ -186,5 +186,6 @@ BBM.fn.toHTML = function (options)
  return printHTML.call(opts, this);
 };
 
+module.exports = BBM;
 }());
 

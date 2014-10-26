@@ -14,5 +14,5 @@ BBM.fn.prune = function (bbmStr, options)
  return this.pruneList().pruneBlank().pruneURL().pruneID();
 };
 
-
+module.exports = BBM;
 }());

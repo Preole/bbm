@@ -283,7 +283,7 @@ function isLexer(obj)
 }
 
 
-module.exports = BBM.Lexer = BBM.extend(Lexer,
+BBM.Lexer = BBM.extend(Lexer,
 {
   ENUM : ENUM
 , REGEX : REGEX
@@ -306,5 +306,6 @@ module.exports = BBM.Lexer = BBM.extend(Lexer,
   }
 });
 
+module.exports = BBM;
 }());
 

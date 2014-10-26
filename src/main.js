@@ -23,10 +23,7 @@ else
 }(this, function (){
 "use strict";
 
-
-//@StringReplace
-
-return BBM;
+return require("./BBM.parse.js");
 }));
 
 

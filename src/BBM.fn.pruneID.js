@@ -26,5 +26,6 @@ BBM.fn.pruneID = function (idList)
  return this.eachPre(pruneID, BBM.isArray(idList) ? idList : []);
 };
 
+module.exports = BBM;
 }());
 

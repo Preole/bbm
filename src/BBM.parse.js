@@ -1,10 +1,8 @@
 (function (){
 "use strict";
 
-require("./BBM.fn.prune.js");
-
-var BBM = require("./BBM.js");
-var Lexer = require("./BBM.Lexer.js");
+var BBM = require("./BBM.Lexer.js") && require("./BBM.fn.prune.js");
+var Lexer = BBM.Lexer;
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var EOF = {};
@@ -383,7 +381,7 @@ Exporting
 ---------
 */
 
-module.exports = BBM.parse = function (bbmStr, maxDepth)
+BBM.parse = function (bbmStr, maxDepth)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, maxDepth);
  lexer.root = BBM(AST.ROOT);
@@ -400,5 +398,5 @@ BBM.fn.parse = function (bbmStr, maxDepth)
  return this.empty().append(BBM.parse(bbmStr, maxDepth).children());
 };
 
-
+module.exports = BBM;
 }());

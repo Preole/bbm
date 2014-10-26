@@ -36,5 +36,7 @@ BBM.fn.pruneText = function ()
 {
  return this.eachPre(pruneText);
 };
+
+module.exports = BBM;
 }());
 

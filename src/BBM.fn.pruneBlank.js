@@ -96,6 +96,7 @@ BBM.fn.pruneBlank = function ()
  return this.eachPost(pruneBlank);
 };
 
+module.exports = BBM;
 }());
 
 

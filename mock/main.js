@@ -1,10 +1,9 @@
 "use strict";
 
 var fs = require("fs");
-var Parser = require("../src/BBM.parse.js");
+var BBM = require("../src/main.js");
 var fsOptR = {encoding : "utf-8"};
-var defOpt = {maxBlocks : 8};
-var tree = Parser(fs.readFileSync("./input.txt", fsOptR), defOpt);
+var tree = BBM.parse(fs.readFileSync("./input.txt", fsOptR));
  
 //console.log(JSON.stringify(tree, null, " "));
 console.log(tree.toHTML());

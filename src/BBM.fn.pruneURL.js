@@ -26,5 +26,6 @@ BBM.fn.pruneURL = function ()
  : this;
 };
 
+module.exports = BBM;
 }());
 
