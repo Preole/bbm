@@ -1,3 +1,4 @@
+
 (function (){
 "use strict";
 
@@ -98,5 +99,4 @@ BBM.fn.pruneBlank = function ()
 
 module.exports = BBM;
 }());
-
 

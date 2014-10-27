@@ -1,3 +1,4 @@
+
 (function (){
 "use strict";
 
@@ -8,13 +9,14 @@ var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
 function pruneURL(node, symTable)
 {
  var nType = node.type();
- if (nType === AST.IMG)
+ var attr = node.attr();
+ if (nType === AST.LINK_IMG)
  {
-  node.attr("src", BBM.get(symTable, node.attr("src")) || node.attr("src"));
+  attr.src = BBM.get(symTable, attr.src) || attr.src;
  }
  else if (LINKS.indexOf(nType) > -1)
  {
-  node.attr("href", BBM.get(symTable, node.attr("href")) || node.attr("href"));
+  attr.href = BBM.get(symTable, attr.href) || attr.href;
  }
 }
 
