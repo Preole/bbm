@@ -237,7 +237,7 @@ function parseATX(lexer, lexTok)
 
 function parseLabel(lexer, lexTok)
 {
- var idClass = lexer.next().textPast(isNL).trim();
+ var idClass = BBM.rmCTRL(lexer.next().textPast(isNL)).trim();
  var isID = lexTok.type === LEX.ID;
  if (idClass.length > 0)
  { 
@@ -331,7 +331,7 @@ function parseInline(lexer, stack, node)
 function parseLink(lexer, lexTok, stack)
 {
  var callback = lexTok.type === LEX.LINK_INT ? isBracket : isAngle;
- var href = lexer.textPast(callback).trim();
+ var href = BBM.rmCTRL(lexer.textPast(callback)).trim();
  if (href.length === 0)
  {
   return;
@@ -349,7 +349,7 @@ function parseLink(lexer, lexTok, stack)
 
 function parseImg(lexer)
 {
- var src = lexer.textPast(isAngle).trim();
+ var src = BBM.rmCTRL(lexer.textPast(isAngle)).trim();
  if (src.length === 0)
  {
   return;
