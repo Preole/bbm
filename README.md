@@ -179,8 +179,7 @@ Examples with HTML Escaping and URL encoding considered:
 ### Remove the syntax BlockStop ###
 
 The syntax "BlockStop" has been removed. This functionality can be replaced 
-by the Comment syntax, which now occupy a spot in the abstract syntax tree 
-instead of simply being omitted.
+by the Comment syntax, which now occupy a spot in the abstract syntax tree.
 
 ```
 1. One

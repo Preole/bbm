@@ -76,19 +76,35 @@ BlockClass
 
 The """BlockID""" and """BlockClass""" parses the rest of the content on 
 its line as a CSS class or ID, **One value per line**. These values will be 
-applied to the next content-holding sibling block element in the tree.
+applied to the next content-holding sibling block element in the tree in 
+the following ways:
 
-The CSS class or ID values need white space characters stripped from them. 
-The node shall have no effects on the following conditions:
+; BlockID
+: Replace the next node's "id" attribute.
 
-- The value is empty after white space stripping.
-- The Block ID's value has already been defined earlier in the document.
+; BlockClass
+: If the next node has a "class" attribute, the next node's class attribute 
+  value becomes the following text with leading and trailing white spaces 
+  and line breaks stripped.
+  
+  1. This node's class attribute value, and
+  2. One ASCII space character " ". (U+0020), and
+  3. The next node's class attribute value.
+  
+  Otherwise, the next node's attribute value becomes this node's class 
+  attribute value.
 
-////
+The CSS class or ID values must have at least one character after stripping 
+leading or trailing white space to be considered effective.
+
+In case of BlockID, the ID value must not have been defined earlier in the 
+document.
+
 """
-. Figure 1.
+. Fig1
 .. Gallery
 .. Left
+. Fig1
 ****
 !<MyImage.jpg>
 !<MyImage2.jpg>
@@ -96,7 +112,20 @@ The node shall have no effects on the following conditions:
 This is a gallery's caption.
 ****
 """
-////
+
+This ends up as the following HTML:
+
+"""
+<div id="Fig1" class="Gallery Left">
+ <p>
+<img src="MyImage.jpg">
+<img src="MyImage2.jpg">
+ </p>
+ <p>
+This is a gallery's caption.
+ </p>
+</div>
+"""
 
 
 
