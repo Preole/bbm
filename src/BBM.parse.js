@@ -1,3 +1,4 @@
+
 (function (){
 "use strict";
 
@@ -114,9 +115,7 @@ function isAngle(tok)
 
 function isCont(tok)
 {
- return tok.type === LEX.LINK_CONT
- || tok.type !== LEX.WS
- || tok.type !== LEX.NL;
+ return tok.type === LEX.LINK_CONT || notWSNL(tok);
 }
 
 function isInline(tok, hasLink)
@@ -400,3 +399,4 @@ BBM.fn.parse = function (bbmStr, maxDepth)
 
 module.exports = BBM;
 }());
+
