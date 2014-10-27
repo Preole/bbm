@@ -304,20 +304,43 @@ TableCellContent
 """
 
 TABLE_ROW_DELIM tokens that is not immediately followed or preceded by either 
-a TableCell or a TableHead element has no effect.
+a TableCell or a TableHead element has no effect. Specifically, it should 
+produce no output.
+
+"""
+|======
+|======
+|======
+"""
 
 A table starts as soon as there's either a TableHead or TableCell element, 
 which starts the table's first row, and its size determines the number of 
 columns each row in the table must contain.
 
-The row size is determined by the number of TableHead or TableCell on the 
-same column before the row terminates, either from insufficient block 
-indentation, or from a TABLE_ROW_DELIM on the same column.
-
 Subsequent rows in the table, if they contain at least one cell, and their 
 column count differ from the first row's, shall have extra columns discarded, 
 and empty columns padded with empty cells. Table rows that have no cell are 
-removed from the parse tree.
+removed from the syntax tree.
+
+"""
+|=====
+|| Sharapova
+|| Tiger Woods
+|=====
+|| 45
+|| 15
+|=====
+|| The next cell in this row shall be empty. The row after this one 
+   shall be removed from the tree.
+|=====
+|=====
+|| Empty Cell
+|| Empty Cell
+|| Will not be displayed 
+|=====
+"""
+
+
 
 
 
@@ -573,12 +596,12 @@ Link
 LinkDisplay
  | LINK_CONT TextFragLink BRACKET_R
  ;
- Changes the default display text of hyperlinks (URL).
+ Changes the default display text (URL) of hyperlinks.
  
 LinkAlt
  | LINK_CONT URLSquare BRACKET_R
  ;
- Changes the default alt text for images.
+ Changes the default alt text (Blank string) for images.
 
 LinkContinue
  | SPACES? NL? SPACES?
@@ -604,7 +627,7 @@ URLAngle
  | ~(GT_THAN)+
  ;
  This is the """src""" attribute for LinkImage, or """href""" attribute 
- for LinkInt, LinkWiki.
+ for LinkInt, LinkWiki
  
 URLSquare
  | ~(BRACKET_R)+
