@@ -48,6 +48,12 @@ unless an alt text is explicitly provided using the link continuation syntax.
 <img src="http://www.imageHoster.com/something.jpg" alt="">
 ```
 
+```
+!<Image.jpg>-[Alt text]
+
+<img src="Image.jpg" alt="Alt text">
+```
+
 
 
 
@@ -148,7 +154,7 @@ Examples with HTML Escaping and URL encoding considered:
 
 ?<Unclosed URL -[Rest of my document]
 
-**?<URL>-[Rest of my document**
+**?<URL>-[Rest of my document** Not included
 ```
 
 ```
@@ -165,18 +171,28 @@ Examples with HTML Escaping and URL encoding considered:
 </p>
 
 <p>
-<strong><a href="URL">Rest of my document **</a></strong>
+<strong><a href="URL">Rest of my document</a></strong> Not included
 </p>
 ```
 
 
 ### Remove the syntax BlockStop ###
 
-The syntax "BlockStop" has been removed. This functionality can either be 
-replaced by a comment node or an empty paragraph with just a backslash.
+The syntax "BlockStop" has been removed. This functionality can be replaced 
+by the Comment syntax, which now occupy a spot in the abstract syntax tree 
+instead of simply being omitted.
 
 ```
-\\
+1. One
+2. Two
+3. Three
+
+////
+////
+
+1. One
+2. Two
+3. Three
 ```
 
 
