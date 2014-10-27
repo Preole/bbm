@@ -338,12 +338,10 @@ function parseLink(lexer, lexTok, stack)
  }
  
  var node = BBM(LEX_INLINE[lexTok.type]).attr({href : href});
- lexer.nextUntil(isCont);
- if (lexer.peekT(LEX.LINK_CONT))
+ if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
  {
-  lexer.next();
   stack.push(LEX.BRACKET_R);
-  parseInline(lexer, stack, node);
+  parseInline(lexer.next(), stack, node);
   stack.pop();
  }
  return node;
@@ -352,17 +350,15 @@ function parseLink(lexer, lexTok, stack)
 function parseImg(lexer)
 {
  var src = lexer.textPast(isAngle).trim();
- var alt = src;
  if (src.length === 0)
  {
   return;
  }
  
- lexer.nextUntil(isCont);
- if (lexer.peekT(LEX.LINK_CONT))
+ var alt = "";
+ if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
  {
   alt = lexer.next().textPast(isBracket).trim();
-  alt = alt.length > 0 ? alt : src;
  }
  return BBM(AST.LINK_IMG).attr({src : src, alt : alt});
 }

@@ -37,6 +37,18 @@ so long as they do not contain line breaks or closing ATX tokens.
 
 
 
+### Default Alt Text in Images ###
+
+Alt text in image elements shall be left blank, but not undefined by default, 
+unless an alt text is explicitly provided using the link continuation syntax.
+
+```
+!<http://www.imageHoster.com/something.jpg>
+
+<img src="http://www.imageHoster.com/something.jpg" alt="">
+```
+
+
 
 
 Confirmed Changes
