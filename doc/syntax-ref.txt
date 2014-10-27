@@ -1,0 +1,1143 @@
+BakaBakaMark Syntax Reference
+=============================
+
+This document contains BakaBakaMark's syntax reference in full. It's a comprehensive guide to the language, providing a simple introduction as well as an in-depth walk through.
+
+
+
+. toc
+
+Table of Contents
+=================
+
+* Prelude
+
+  * #[HTML-Specific Issue]
+  * #[A Word on Indentation]
+
+* Main Syntax
+  
+  * #[Block Level Elements]
+  
+    * #[Paragraphs]
+    * #[Fenced Code Blocks]
+    * #[Blockquotes]
+    * #[Headers]
+    * #[Horizontal Lines]
+    * #[Lists]
+    
+      * #[Bullet List]
+      * #[Ordered List]
+      * #[Definition List]
+      
+    * #[Tables]
+    * #[Comment Block]
+    * #[Block Stopper]
+    * #[Aside Blocks]
+    * #[Reference Link Anchors]
+    * #[Class Label]
+    * #[ID Label]
+      
+  * #[Inline Level Elements]
+  
+    * #[Text Formatting]
+    * #[Hyperlinks & Images]
+    
+      * #[Images]
+      * #[Hyperlinks]
+      
+  * Others
+  
+    * #[Backslash Escape]
+
+
+
+Prelude 
+-------
+
+. HTML-Specific Issue
+=== HTML-Specific Issue ===
+
+One should never worry about HTML entity escaping when generating a HTML document. BakaBakaMark will automatically take care of the sanitization.
+
+"""
+&lt;script src="&quot;&amp;&quot;"&gt;
+alert("xss");
+&lt;/script&gt;
+"""
+
+
+. A Word on Indentation
+=== A Word on Indentation ===
+
+1. Indentation is syntactically significant in BakaBakaMark, which is used to control document structures.
+2. There is no """\\t""", or horizontal tabs in BakaBakaMark. **One tab key-press equates to one space character** for the purpose of determining indentation level.
+3. If you prefer to use the tab key to produce indentation, configure your text editor to insert X spaces instead of tab characters on tab key press, where X is your preferred indentation unit.
+4. There is no forced line break syntax, invisible or otherwise. Use #[Fenced Code Block] if line breaks and white spaces need to be preserved.
+
+
+Main Syntax
+-----------
+
+This section is a quick overview of everything you need to lookup about BakaBakaMark. For each basic element in this language, I will provide a short, but comprehensive demonstration for that element.
+
+
+
+. Block Level Elements
+=== Block Level Elements ===
+
+Block level elements in BakaBakaMark, like block elements in HTML, are elements that are displayed as 'blocks'. They're displayed as rectangular boxes that are stretched as high and wide as they can be, within reason. In general, they serve as containers for other elements in the document, such as plain text.
+
+|====
+!! Feature
+!! Sample Source Code
+!! HTML Render
+!! HTML Source
+|====
+!! Paragraph
+|| """
+   This is a paragraph
+
+   This is another paragraph. Paragraphs ends with a blank line in general.
+   """
+|| This is a paragraph
+
+   This is another paragraph. Paragraphs ends with a blank line in general.
+|| """
+   <p>
+   This is a paragraph
+   </p>
+   <p>
+   This is another paragraph. Paragraphs ends with a blank line in general.
+   </p>
+   """
+|====
+!! Fenced Code Block
+|| """
+   \"""
+   This 
+   
+     Is
+     
+   Fenced code block.
+   
+   
+   Spaces    and newlines are preserved.
+   \"""
+   """
+|| """
+   This 
+
+     Is
+
+   Fenced code block.
+
+
+   Spaces    and newlines are preserved.
+   """
+|| """
+   <pre><code>This 
+
+     Is
+
+   Fenced code block.
+
+
+   Spaces    and newlines are preserved.
+   </code></pre>
+   """
+|====
+!! Blockquote
+|| """
+   > Artillery adds dignity to what would otherwise be a vulgar brawl.
+
+     -- Frederick The Great
+   """
+|| > Artillery adds dignity to what would otherwise be a vulgar brawl.
+
+     \-- Frederick The Great
+|| """
+   <blockquote>
+    <p>
+   Artillery adds dignity to what would otherwise be a vulgar brawl.
+    </p>
+    <p>
+   -- Frederick The Great
+    </p>
+   </blockquote>
+   """
+|====
+!! Header (One-Liner, or ATX-style)
+|| """
+   ===== **Example One-Liner Header** =====
+   """
+|| ===== **Example One-Liner Header** =====
+|| """
+   <h5>
+   **Example One-Liner Header**
+   </h5>
+   """
+|====
+!! Header (Setext-Style)
+|| 
+|| 
+|| Please refer to the #[Headers]'s SeText section for more details.
+|====
+!! Horizontal Line
+|| """
+   ----
+   """
+|| ----
+|| """
+   <hr>
+   """
+|====
+!! Bullet List
+|| """
+   * A
+   + B
+   - C
+   """
+|| * A
+   + B
+   - C
+|| """
+   <ul>
+    <li>
+     <p>
+   A
+     </p>
+    </li>
+    <li>
+     <p>
+   B
+     </p>
+    </li>
+    <li>
+     <p>
+   C
+     </p>
+    </li>
+   </ul>
+   """
+|====
+!! Ordered List
+|| """
+   1. A
+   2. B
+   #. C
+   3. D
+   """
+|| 1. A
+   2. B
+   #. C
+   3. D
+|| """
+   <ol>
+    <li>
+     <p>
+   A
+     </p>
+    </li>
+    <li>
+     <p>
+   B
+     </p>
+    </li>
+    <li>
+     <p>
+   C
+     </p>
+    </li>
+    <li>
+     <p>
+   D
+     </p>
+    </li>
+   </ol>
+   """
+|====
+!! Definition List
+|| """
+   ; Term
+   : Description
+   """
+|| ; Term
+   : Description
+|| """
+   <dl>
+    <dt>
+   Term
+    </dt>
+    <dd>
+     <p>
+   Description
+     </p>
+    </dd>
+   </dl>
+   """
+|====
+!! Table
+|| """
+   !! Row 1 Col 1 Header Cell
+   || Row 1 Col 2
+   |====
+   !! Row 2 Col 1 Header Cell
+   || Row 2 Col 2
+   """
+|| !! Row 1 Col 1 Header Cell
+   || Row 1 Col 2
+   |====
+   !! Row 2 Col 1 Header Cell
+   || Row 2 Col 2
+|| """
+   <table>
+    <tr>
+     <th>
+      <p>
+   Row 1 Col 1 Header Cell
+      </p>
+     </th>
+     <td>
+      <p>
+   Row 1 Col 2
+      </p>
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <p>
+   Row 2 Col 1 Header Cell
+      </p>
+     </th>
+     <td>
+      <p>
+   Row 2 Col 2
+      </p>
+     </td>
+    </tr>
+   </table>
+   """
+|====
+!! Aside block
+|| """
+   ****
+   Arbitrary block-level container.
+   ****
+   """
+|| ****
+   Arbitrary block-level container.
+   ****
+|| """
+   <div>
+    <p>
+   Arbitrary block-level container.
+    </p>
+   </div>
+   """
+|====
+!! ID Label (For Cross-Referencing / Internal Links)
+|| """
+   . Label
+   A paragraph to be assigned an ID.
+   """
+|| ''This section is intentionally left blank.''
+|| """
+   <p id="bbm-Label">
+   A paragraph to be assigned an ID.
+   </p>
+   """
+|====
+!! Reference Link Anchor
+|| """
+   :{SomeID}: http://www.google.com/
+   
+   ?<SomeID>-[I'm going to visit Google]
+   """
+|| :{SomeID}: http://www.google.com/
+   
+   ?<SomeID>-[I'm going to visit Google]
+|| """
+   <p>
+   <a href="http://www.google.com/">I'm going to visit Google</a>
+   </p>
+   """
+|====
+
+
+. Paragraphs
+==== Paragraphs ====
+ 
+To generate a paragraph, type away. This is the basic building block of most 
+kinds of writing. To generate multiple paragraphs, put one or more blank 
+lines in between by pressing the **Enter** key at least twice.
+
+Paragraph text need to be lined up against the block's left margin, which 
+is determined by the indentation of first visible character that started 
+the paragraph block. Specifically:
+
+"""
+  Preferably, Everything is lining up
+  against the left margin. Alternatively, 
+  typing away and let the text editor's 
+  word wrapping do its magic.
+  
+  Use this format to ensure spaces are visible within the same paragraph. 
+   Useful for compatibility with the CJK alphabet, which renders line breaks 
+   as erroneous white space in the output.
+   
+  Insufficient indentation level
+breaks an ongoing paragraph into two.
+"""
+
+
+. Fenced Code Blocks
+==== Fenced Code Blocks ====
+
+Three or more typewriter's double quotes """\"""" on a blank line starts a fenced code block. No BakaBakaMark syntax will be parsed inside, and all white space as well as invisible line breaks shall be preserved.
+
+To end a fenced code block, use the same number of double quotes on another blank line, on the same column as the opening fence.
+
+"""
+\"""
+This
+  Is
+Fenced
+  Code Block
+\"""
+"""
+
+Any negatively indented text in the fenced code block shall be treated as having no indentation.
+
+Forgetting to close a fenced code block will turn the rest of the document into a code block.
+
+
+
+. Blockquotes
+==== Blockquotes ====
+
+Begin a line with a """>""", or greater than sign, followed by the content just like Usenet-style quoting. The blockquote element can contain any other block-level element, including nested blockquotes.
+
+> Artillery adds dignity to what would otherwise be a vulgar brawl.
+
+  -- Frederick The Great
+  
+"""
+> Artillery adds dignity to what would otherwise be a vulgar brawl.
+
+  -- Frederick The Great
+"""
+
+
+Unlike Usenet-style quoting, only the starting line needs to be prefixed. All other lines need to be left without a prefix. To indicate nesting, as well as blockquotes containing multiple blocks, use space-based indentation and make sure the blocks are aligned on the same column.
+
+> Joe wrote:
+
+  > I will be coming to see you on Tuesday.
+    Please invite your friends.
+    We're going to have a lot of fun.
+
+  Who should I invite exactly?
+  
+"""
+> Joe wrote:
+
+  > I will be coming to see you on Tuesday.
+    Please invite your friends.
+    We're going to have a lot of fun.
+
+  Who should I invite exactly?
+"""
+
+
+. Headers
+==== Headers ====
+
+BakaBakaMark supports two kinds of headers: The "One-Liner" and the multi-line SeTeXT style header. 
+
+For the One-Liner, begin a line with one or more equal signs """=""", followed by one space. If you're aesthetically inclined, you can end the one-liner with equal signs as well. These equal signs shall not be rendered in the output.
+
+===== **Bold One-Liner Header** =====
+"""
+===== **Bold One-Liner Header** =====
+"""
+
+If there are equal signs in your title, you may use them inside the text, or append an invisible space to force it to render.
+
+"""
+===== One-Liner = Quick and Easy ===== 
+"""
+
+The less equal signs there are, the more important the header is. 
+
+"""
+= <h1>
+== <h2>
+=== <h3>
+==== <h4>
+===== <h5>
+Six or more "=" -> <h6>
+"""
+
+
+
+The "SeTeXT" style header is done by underlining a paragraph with at least one equal sign """=""", or four or more hyphen-minus """-""". The equal sign shall yield the most important header <h1>, while the hyphens shall yield <h2>. 
+
+"""
+Good for Long Document Titles 
+and document source aesthetics.
+===========
+
+This is a Setext Header H2
+---------------
+"""
+
+
+
+. Horizontal Lines
+==== Horizontal Lines ====
+
+
+
+To produce a horizontal line, follow a blank line with four or more hyphen-minus and end the line immediately.
+
+---------------
+
+In HTML, this shall render as <hr>.
+
+"""
+---------------
+"""
+
+
+
+. Lists
+==== Lists ====
+
+There are three different types of list structures available in BakaBakaMark: Bullet Lists, Ordered Lists, and Definition Lists. 
+
+
+
+. Bullet List
+===== Bullet List =====
+
+Bullet lists are easy; Start a line with any of the characters {"""* + -"""} or a Unicode bullet symbol, followed by one white space. This creates a bullet, and consecutive bullets shall be merged together into a bullet list.
+
+* Item 1
++ Item 2
+- Item 3
+
+"""
+* Item 1
++ Item 2
+- Item 3
+"""
+
+
+Bullet lists can be nested in the same way as blockquotes. Use indentation to determine the logical structure.
+
+* Item 1
+
+  Item 1 continued.
+  
+  * Item 1 Bullet 1
+  * Item 1 Bullet 2
+  
+    > A blockquote.
+    
+    """
+    A code block
+      Positive indentation.
+    """
+    
+  * Item 1 Bullet 3.
+  
+  Item 1 epilogue.
+  
+* Item 2
+* Item 3
+
+
+
+"""
+* Item 1
+
+  Item 1 continued.
+  
+  * Item 1 Bullet 1
+  * Item 1 Bullet 2
+  
+    > A blockquote.
+    
+    """
+    A code block
+      Positive indentation.
+    """
+    
+  * Item 1 Bullet 3.
+  
+  Item 1 epilogue.
+  
+* Item 2
+* Item 3
+"""
+
+
+
+. Ordered List
+===== Ordered List =====
+
+Ordered List follow the same rule as bullet list, except you start a line with an Arabic number, a single period """.""", and a space. Alternatively, you may also use a number sign """#""" in place of Arabic numbers. You may even mix them within the same numbered list.
+
+1. One
+2. Two
+#. Three
+4. Four
+
+"""
+1. One
+2. Two
+#. Three
+4. Four
+"""
+
+
+
+Use a block comment to break a consecutive list into two, which will not 
+be rendered unless it's inside a code block.
+
+1. Item 1
+2. Item 2
+3. Item 3
+////
+////
+1. Not 4
+2. Not 5
+3. Not 6
+
+"""
+1. Item 1
+2. Item 2
+3. Item 3
+////
+////
+1. Not 4
+2. Not 5
+3. Not 6
+"""
+
+
+
+. Definition List
+===== Definition List =====
+
+A definition list is one or more pairs of terms and their descriptions.
+
+To specify a term, start a line with a semi-colon """;""" and a space, followed by the term to be defined. This term block may only contain inline elements such as hyperlinks.
+
+To specify a description, use the same syntax as a term, except use a colon """:""" instead. The description block may contain other block elements.
+
+
+; Term 1
+; Term 2
+; Term 3
+: Description 1
+
+  Another paragraph in description 1.
+  
+: Description 2
+: Description 3
+
+"""
+; Term 1
+; Term 2
+; Term 3
+: Description 1
+
+  Another paragraph in description 1.
+  
+: Description 2
+: Description 3
+"""
+
+; **Term A**
+: Description for ''Term A''
+; Term B
+: Description for Term B
+; __Term C__
+: Description for __Term C__
+
+"""
+; **Term A**
+: Description for ''Term A''
+; Term B
+: Description for Term B
+; __Term C__
+: Description for __Term C__
+"""
+
+
+
+Terms at the end of the list, and descriptions at the beginning of the list shall be removed, including the definition list itself if it becomes empty as a result.
+
+"""
+: Leading description removed.
+; Trailing term removed.
+"""
+
+
+
+. Tables
+==== Tables ====
+
+BakaBakaMark provides simple table support with two kinds of cells; A header cell and an ordinary data cell. They may be nested, and they may contain other block elements similar to the rules used by blockquotes and other block level elements.
+
+A table cell begins with two pipe symbols """||""", while a header cell uses exclaimation mark instead. """!!""". Consecutive table cells or header cells are merged into a table row, while a row separator consisting of a pipe and at least one equal signs """|===""" denotes a new row start.
+
+!! Row 1 Column 1
+!! Row 1 Column 2
+
+   > This cell has a blockquote.
+|====
+|| Row 2 Column 1
+|| Row 2 Column 2
+
+"""
+!! Row 1 Column 1
+!! Row 1 Column 2
+
+   > This cell has a blockquote.
+|====
+|| Row 2 Column 1
+|| Row 2 Column 2
+"""
+
+
+
+If you're aesthetically inclined, you may wrap a pair of row separators 
+around the table. This does not affect the output in any way.
+
+"""
+|====
+!! Row 1 Column 1
+!! Row 1 Column 2
+|====
+|| Row 2 Column 1
+|| Row 2 Column 2
+|====
+"""
+
+Here's a short list of table semantics:
+
+- The table's first row determines the number of columns the table shall 
+  have on each row.
+- Rows with too many columns (cells) shall be trimmed. 
+- Empty rows are dropped.
+- Rows with at least one cell declared shall be padded with empty cells, 
+  up to the table's declared column count.
+
+
+
+
+. Comment Block
+==== Comment Block ====
+
+Comment blocks are text that will not be rendered to the output.
+
+Begin the block by fencing the area off with at least four forward slashes. """////""" End the block in the same way as the beginning fence, with the slashes starting on the same column. If this block is to come after a paragraph, there needs to be a blank line in between them.
+
+"""
+Some paragraph...
+
+////
+This shall not be rendered in the output.
+////
+"""
+
+
+
+. Aside Blocks
+==== Aside Blocks ====
+
+This element is a generic block wrapper that can contain other block elements, used to apply presentational styles and provide link anchors in conjunction with #[ID Label] and #[ID Class].
+
+Begin a line with four or more asterisks, then fill in the block elements starting on the next line. End the Aside Block with the same number of asterisks on a blank line on the same column as the starting asterisks.
+
+"""
+****
+This is an Aside
+****
+
+-->
+
+<div>
+<p>this is an Aside</p>
+</div>
+"""
+
+
+
+. Reference Link Anchors
+==== Reference Link Anchors ====
+
+Instead of specifying a long URL, one may specify the identifier of a reference link anchor holding the actual URL. Start a line with a colon and an opening brace, """:{""", followed by the identifier, then close the ID with a closing brace and another colon. """}:""" The rest of the line is the URL with control characters stripped, and trailing and leading white space removed.
+
+This paragraph contains ?<google>-[A hyperlink to Google].
+
+:{google}: http://www.google.ca/
+
+"""
+This paragraph contains ?<google>-[A hyperlink to Google].
+
+:{google}: http://www.google.ca/
+"""
+
+The order of the Reference Link Anchor declaration doesn't matter. If anchors with identical IDs are declared, the most recently defined anchor shall be used.
+
+
+
+
+. Class Label
+==== Class Label ====
+
+This construct gives the next block-level element a type label. In HTML, this allows the element to be selected and modified by CSS for special visual effects, such as image blocks with text-wrapping. 
+
+Begin a line with two periods and a white space, followed by the name of the class on the rest of the line. Separate class names either by white space, or by using more Class Labels.
+
+"""
+.. left
+.. red
+****
+!<Image>-[Alt Text]
+
+Some caption text
+****
+"""
+
+Result sample code, which can be utilized by the CSS backend.
+
+"""
+<div class="left red">
+ <p>
+<img src="Image" alt="Alt Text">
+ </p>
+ <p>
+Some caption text
+ </p>
+</div>
+"""
+
+
+. ID Label
+==== ID Label ====
+
+Same effect as the Class Label, except that:
+
+- If this ID has been used before, the block will not get an ID.
+- In case of multiple IDs, only the first one defined will be used.
+- Use a single period, instead of two.
+
+"""
+. toc
+
+Table of Content
+================
+"""
+
+Result HTML:
+
+"""
+<div id="toc">
+ <h1>
+Table of Content
+ </h1>
+</div>
+"""
+
+
+
+
+. Inline Level Elements
+=== Inline Level Elements ===
+
+Inline elements are syntactical constructs that occur within lines of text. Their primary purpose here is to display hyperlinks, show images, and add visual effects and semantics to a block of text.
+
+
+
+
+. Text Formatting
+==== Text Formatting ====
+
+The following table details the text formatting elements available in BakaBakaMark.
+
+|====
+!! Effect Desired
+!! Sample Source Code
+!! Render
+!! HTML
+|====
+!! Italic (Emphasis)
+|| """''Two typewriter's single quotes.''"""
+|| ''Two typewriter's single quotes.''
+|| """<em>"""
+|====
+!! Bold (Strong Emphasis)
+|| """**Two asterisks.**"""
+|| **Two asterisks.**
+|| """<strong>"""
+|====
+!! Bold & Italic
+|| """''**Use both Bold & Italic**''"""
+|| ''**Use both Bold & Italic**''
+|| """<em><strong></strong></em>"""
+|====
+!! Strike-through
+|| """--Strike-through--"""
+|| --Strike-through--
+|| """<del>"""
+|====
+!! Superscript
+|| """September 20^^th^^"""
+|| September 20^^th^^.
+|| """<sup>"""
+|====
+!! Subscript
+|| """O,,2,,"""
+|| O,,2,,
+|| """<sub>"""
+|====
+!! Underline
+|| """The book __Frank & Beans__ [...]"""
+|| The book __Frank & Beans__ [...]
+|| """<u>"""
+|====
+!! Code Snippet (Literal Text)
+|| """\"""void **ptr;""\""""
+|| """void **ptr;"""
+|| """<code>"""
+|====
+
+There are a few simple rules to remember, which applies to images and 
+hyperlinks as well.
+
+- Proper Tag Nesting
+
+  Make sure the opening and closing formatting tags are properly nested. 
+  That is, it's wrong to have two different text formatting tags cross into 
+  each others' boundaries.
+  
+  """
+  **Bold ''**Not Italic''
+  """
+  
+  **Bold ''**Not Italic''
+  
+- Close Off Tags.
+
+  Remember to close the formatting tags. Failing to close the tag will apply 
+  the formatting effect to the rest of the paragraph.
+  
+  """**This is bold. ''This will be bold and italic.''
+  
+  """\"\"\"Code ''not'' emphasized.
+  
+- Text formatting can cross lines, but not paragraphs.
+
+  """
+  **This is bold.
+  Still bold.
+  """
+  
+  """
+  This is not bold**
+  """
+  
+- Matching Quote Counts for Code Snippets
+
+  Code Snippets can only be closed using the same number of double quote 
+  characters. (At least three)
+  
+  """
+  """Code """" Still Code""" No longer code.
+  """
+
+
+. Hyperlinks & Images
+==== Hyperlinks & Images Quick Summary ====
+
+|====
+!! Link Type
+!! Sample Source Code
+!! HTML Render
+!! HTML Source
+!! Notes
+|====
+!! Hyperlinked Image (No Alt Text)
+|| """
+   ?<about:blank>-[!<noImg.jpg>]
+   """
+|| ?<about:blank>-[!<noImg.jpg>]
+|| """
+   <a href="about:blank"><img src="noImg.jpg" alt=""></a>
+   """
+|| By default, image alt texts are left blank.
+|====
+!! External Link (No Custom Display Text)
+|| """
+   ?<about:blank>
+   """
+|| ?<about:blank>
+|| """
+   <a href="about:blank">about:blank</a>
+   """
+|| The display text shall be set to the destination URL by default.
+|====
+!! External Link
+|| """
+   ?<about:blank>-[**Bold** Custom display text.]
+   """
+|| ?<about:blank>-[**Bold** Custom display text.]
+|| """
+   <a href="about:blank"><strong>Bold</strong> Custom display text.</a>
+   """
+|| Standard web link syntax. Permits absolute URL as well as relative URL. 
+|====
+!! Image
+|| """
+   !<Image.jpg>-[Specify Alt Text Here]
+   """
+|| !<Image.jpg>-[Specify Alt Text Here]
+|| """
+   <img src="Image.jpg" alt="Specify Alt Text Here">
+   """
+|| Alt text attribute preserves white space & strips control characters.
+|====
+!! Internal Link (Within the document)
+|| """
+   #[toc]-[Go to Table of Content]
+   """
+|| #[toc]-[Go to Table of Content]
+|| """
+   <a href="#bbm-toc">Go to Table of Content</a>
+   """
+|| Jumps to anchor points defined by the **ID Label** Element.
+|====
+!! Wiki Link
+|| """
+   #<about:blank>-[Custom Display Text]
+   """
+|| #<about:blank>-[Custom Display Text]
+|| """
+   <a href="about:blank">Custom Display Text</a>
+   """
+|| By default, same as external link. Can be targeted by plugins to perform transformations, such as adding extra CSS classes.
+|====
+
+
+. Images
+==== Images ====
+
+To create an image, start with an exclaimation mark, followed by a """<""" or opening angle bracket. Place the URL inside the angle brackets, and end the URL with a closing angle bracket """>""". You may span the URL across multiple lines, so long as there's no blank lines in between them. **Empty URL values shall be discarded with no visible output**.
+
+"""
+!<http://www.somesite.com/
+some/path/to/image-file.jpg>
+"""
+
+Line break characters, trailing and leading space are automatically stripped from the output. Significant white space are preserved.
+
+If you want to specify an alt text, use a pair of square bracket, with the opening square bracket preceded by a hyphen. Put the alt text inside the square brackets. 
+
+If you need to use closing square brackets in the alt text, escape it with a backslash: (Also applies to display text in #[Hyperlinks] and the URL for Internal Links)
+
+"""
+!<http://www.somesite.com/some/path/to/image-file.jpg>-[Alt Text [...\\] Rest 
+omitted.]
+"""
+
+You may start the square brackets on a different line if you want a cleaner 
+looking source document, as long as the hyphen is right before the opening 
+square bracket, and there's no visible character between the hyperlink and 
+the closing angle bracket.
+
+"""
+!<http://[... Some very long URL]>
+-[This alt text is on a new line.]
+"""
+
+
+
+. Hyperlinks
+==== Hyperlinks ====
+
+Hyperlinks are created in largely the same manner as images with a few variations.
+
+"""?<>""" denotes standard **External Links** pointing to other URLs. The question mark denotes a mysterious location in the Internet.
+
+?<http://www.google.com>
+
+"""
+<p>
+<a href="http://www.google.com">http://www.google.com</a>
+</p>
+"""
+
+"""#<>""" denotes **Extensible External Links**, which may have special effects depending on the hosting backend. By default, they have the same behavior as an external link.
+
+"""#[]""" denotes **Internal Link**, which jumps a location in the same document defined by an #[ID Label] element.
+
+By default, the link's display text is the URL of the hyperlinks. They can be changed in the same way as image alt text: Add a hyphen-minus before the pair of square brackets around the display text.
+
+?<http://www.google.com>-[This hyperlink plus __...__ omitted content 
+points to --Yahoo-- Google.com]
+
+#[toc]-[Table of Content]
+
+"""
+?<http://www.google.com>-[This hyperlink plus __...__ omitted content 
+points to --Yahoo-- Google.com]
+
+#[toc]-[Table of Content]
+"""
+
+
+
+Unlike the Image Alt Text, inline formatting except hyperlink elements (which will be treated literally) are permitted inside the square brackets. To create clickable hyperlinked image**(s)**, put the images inside the square brackets of the hyperlink.
+
+"""
+?<URL>
+-[
+!<Image1>
+!<Image2>
+!<Image3>
+]
+"""
+
+
+
+
+=== Others ===
+
+Anything else not covered by the main syntax.
+
+
+. Backslash Escape
+==== Backslash Escape ====
+
+To render a visible character literally without intrepretation, prepend a 
+backslash """\\""" before the character. (Exception: Spaces and line breaks)
+
+\*\*This sentence is not bold.\*\*
+
+The backslash character will always be dropped from the output, so if you 
+need to type a backslash character itself, use two backslashes: """\\\\""". 
+Let's suppose we want to represent the popular regular expression for leading 
+and trailing spaces. Here's the input:
+
+"""
+[^\\\\s|\\\\s$]
+"""
+
+Which renders into """[^\\\\s|\\\\s$]""".
+
+
