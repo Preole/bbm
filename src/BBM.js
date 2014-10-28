@@ -256,7 +256,6 @@ Subtree Iteration
 
 /**
  * @desc Depth-first pre-order traversal.
- * TODO: thisContext should be equal to the calling node.
  */
 function eachPre(callback, params)
 {
@@ -275,8 +274,8 @@ function __eachPre(start, curr, callback, params)
 function find(callback, params)
 {
  var res = [];
- this.eachPre(function (){
-  if (callback(this, params))
+ this.eachPre(function (node){
+  if (callback.call(this, node, params))
   {
    res.push(this);
   }
