@@ -1076,11 +1076,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function eachPre(callback, params)
 	{
-	 callback(this, params);
-	 this.children().forEach(function (node){
-	  node.eachPre(callback, params);
+	 return __eachPre(this, this, callback, params);
+	}
+
+	function __eachPre(start, curr, callback, params)
+	{
+	 callback.call(start, curr, params);
+	 curr.children().forEach(function (node){
+	  __eachPre(start, node, callback, params);
 	 });
-	 return this;
+	 return start;
 	}
 
 	function find(callback, params)
@@ -1100,11 +1105,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function eachPost(callback, params)
 	{
-	 this.children().forEach(function (node){
-	  node.eachPost(callback, params);
+	 return __eachPost(this, this, callback, params);
+	}
+
+	function __eachPost(start, curr, callback, params)
+	{
+	 curr.children().forEach(function (node){
+	  __eachPost(start, node, callback, params);
 	 });
-	 callback(this, params);
-	 return this;
+	 callback.call(start, curr, params);
+	 return start;
 	}
 
 
