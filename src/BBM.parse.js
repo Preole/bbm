@@ -1,5 +1,4 @@
 
-(function (){
 "use strict";
 
 var BBM = require("./BBM.Lexer.js") && require("./BBM.fn.prune.js");
@@ -395,5 +394,4 @@ BBM.fn.parse = function (bbmStr, maxDepth)
 };
 
 module.exports = BBM;
-}());
 

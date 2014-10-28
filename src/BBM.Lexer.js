@@ -1,5 +1,4 @@
 
-(function (){
 "use strict";
 
 var BBM = require("./BBM.js");
@@ -284,29 +283,25 @@ function isLexer(obj)
 }
 
 
-BBM.Lexer = BBM.__.extend(Lexer,
+BBM.Lexer = Lexer;
+Lexer.ENUM = ENUM;
+Lexer.isLexer = isLexer;
+Lexer.prototype =
 {
-  ENUM : ENUM
-, REGEX : REGEX
-, isLexer : isLexer
-, prototype :
-  {
-    peek : peek
-  , peekUntil : peekUntil
-  , peekT : peekT
-  , isLineStart : isLineStart
-  , isLineEnd : isLineEnd
-  , isDelim : isDelim
+  peek : peek
+, peekUntil : peekUntil
+, peekT : peekT
+, isLineStart : isLineStart
+, isLineEnd : isLineEnd
+, isDelim : isDelim
 
-  , size : size
-  , next : next
-  , nextUntil : nextUntil
-  , nextPast : nextPast
-  , textUntil : textUntil
-  , textPast : textPast
-  }
-});
+, size : size
+, next : next
+, nextUntil : nextUntil
+, nextPast : nextPast
+, textUntil : textUntil
+, textPast : textPast
+};
 
 module.exports = BBM;
-}());
 

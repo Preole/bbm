@@ -1,7 +1,5 @@
 
-(function (){
 "use strict";
-
 
 var __ = require("./__.js");
 var ENUM =
@@ -444,5 +442,4 @@ BBM.fn = BBM.prototype =
 
 
 module.exports = BBM;
-}());
 

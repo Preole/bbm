@@ -1,5 +1,4 @@
 
-(function (){
 "use strict";
 
 var BBM = require("./BBM.js")
@@ -16,5 +15,5 @@ BBM.fn.prune = function (bbmStr, options)
 };
 
 module.exports = BBM;
-}());
+
 

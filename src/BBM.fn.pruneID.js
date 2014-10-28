@@ -1,5 +1,4 @@
 
-(function (){
 "use strict";
 
 var BBM = require("./BBM.js");
@@ -29,5 +28,4 @@ BBM.fn.pruneID = function (idList)
 };
 
 module.exports = BBM;
-}());
 

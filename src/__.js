@@ -1,5 +1,4 @@
 
-(function (){
 "use strict";
 
 function __extend(fromObj)
@@ -167,6 +166,4 @@ module.exports = {
 , get : get
 , extend : extend
 };
-
-}());
 

@@ -1,8 +1,7 @@
 
-(function (){
 "use strict";
 
-var BBM = require("./BBM.js");
+var BBM = module.exports = require("./BBM.js");
 var __ = BBM.__;
 var AST = BBM.ENUM;
 var XHTML = [AST.HR, AST.LINK_IMG];
@@ -150,9 +149,7 @@ function printComment(node, opts)
  + node.children().map(printHTML, opts).join("")
  + indent
  + "-->"
- + (node.isLastChild()
-   ? printIndent(node, opts)
-   : printBlockEnd(node, opts));
+ + (node.isLastChild() ? printIndent(node, opts) : printBlockEnd(node, opts));
 }
 
 function printText(node, opts)
@@ -189,5 +186,4 @@ BBM.fn.toHTML = function (options)
 };
 
 module.exports = BBM;
-}());
 
