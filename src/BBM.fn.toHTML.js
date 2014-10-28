@@ -1,7 +1,7 @@
 
 "use strict";
 
-var BBM = module.exports = require("./BBM.js");
+var BBM = require("./BBM.js");
 var __ = BBM.__;
 var AST = BBM.ENUM;
 var XHTML = [AST.HR, AST.LINK_IMG];
