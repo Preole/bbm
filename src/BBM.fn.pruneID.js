@@ -3,6 +3,7 @@
 "use strict";
 
 var BBM = require("./BBM.js");
+var __ = BBM.__;
 
 function pruneID(node, idList)
 {
@@ -24,7 +25,7 @@ function pruneID(node, idList)
 
 BBM.fn.pruneID = function (idList)
 {
- return this.eachPre(pruneID, BBM.isArray(idList) ? idList : []);
+ return this.eachPre(pruneID, __.isArray(idList) ? idList : []);
 };
 
 module.exports = BBM;

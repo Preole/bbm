@@ -404,7 +404,9 @@ function isNode(target)
 Export basic API
 ----------------
 */
-
+BBM.__ = __;
+BBM.ENUM = ENUM;
+BBM.isNode = isNode;
 BBM.fn = BBM.prototype =
 {
   splice : splice
@@ -441,6 +443,6 @@ BBM.fn = BBM.prototype =
 };
 
 
-module.exports = __.extend(BBM, __, {ENUM : ENUM, isNode : isNode});
+module.exports = BBM;
 }());
 

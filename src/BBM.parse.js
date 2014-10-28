@@ -3,6 +3,7 @@
 "use strict";
 
 var BBM = require("./BBM.Lexer.js") && require("./BBM.fn.prune.js");
+var __ = BBM.__;
 var Lexer = BBM.Lexer;
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
@@ -210,7 +211,7 @@ function parseDiv(lexer, lexTok)
 function parsePre(lexer, lexTok)
 {
  var text = lexer.nextPast(isNL).textPast(lexer.isDelim, lexTok, lexTok.col);
- text = BBM.rmNLTail(text);
+ text = __.rmNLTail(text);
  if (lexTok.type === LEX.PRE)
  {
   return BBM(AST.PRE).append(text);
@@ -237,7 +238,7 @@ function parseATX(lexer, lexTok)
 
 function parseLabel(lexer, lexTok)
 {
- var idClass = BBM.rmCTRL(lexer.next().textPast(isNL)).trim();
+ var idClass = __.rmCTRL(lexer.next().textPast(isNL)).trim();
  var isID = lexTok.type === LEX.ID;
  if (idClass.length > 0)
  { 
@@ -331,7 +332,7 @@ function parseInline(lexer, stack, node)
 function parseLink(lexer, lexTok, stack)
 {
  var callback = lexTok.type === LEX.LINK_INT ? isBracket : isAngle;
- var href = BBM.rmCTRL(lexer.textPast(callback)).trim();
+ var href = __.rmCTRL(lexer.textPast(callback)).trim();
  if (href.length === 0)
  {
   return;
@@ -349,7 +350,7 @@ function parseLink(lexer, lexTok, stack)
 
 function parseImg(lexer)
 {
- var src = BBM.rmCTRL(lexer.textPast(isAngle)).trim();
+ var src = __.rmCTRL(lexer.textPast(isAngle)).trim();
  if (src.length === 0)
  {
   return;

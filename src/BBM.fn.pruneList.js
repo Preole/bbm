@@ -3,6 +3,7 @@
 "use strict";
 
 var BBM = require("./BBM.js");
+var __ = BBM.__;
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
 var IDCLASS = {_ID : true, _CLASS : true};
@@ -21,7 +22,7 @@ var SWITCH =
 
 function isPrunable(node)
 {
- return BBM.has(SWITCH, node.type()) || BBM.has(IDCLASS, node.type());
+ return __.has(SWITCH, node.type()) || __.has(IDCLASS, node.type());
 }
 
 function pruneIDClass(prev, node)
@@ -83,11 +84,11 @@ function pruneSwitch(node)
  var pType = prev.type();
  var res = node;
  
- if (BBM.has(SWITCH, nType))
+ if (__.has(SWITCH, nType))
  {
   res = SWITCH[nType](prev, res);
  }
- if (BBM.has(IDCLASS, pType))
+ if (__.has(IDCLASS, pType))
  {
   res = pruneIDClass(prev, res);
  }

@@ -3,6 +3,7 @@
 "use strict";
 
 var BBM = require("./BBM.js");
+var __ = BBM.__;
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
 var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
@@ -27,7 +28,7 @@ var ALONE =
 
 function isBlank(node)
 {
- return BBM.isBlankString(node.text())
+ return __.isBlankString(node.text())
  && node.size() === 0
  && ALONE.indexOf(node.type()) === -1;
 }

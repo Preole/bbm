@@ -3,6 +3,7 @@
 "use strict";
 
 var BBM = require("./BBM.js");
+var __ = BBM.__;
 var AST = BBM.ENUM;
 var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
 
@@ -12,18 +13,18 @@ function pruneURL(node, symTable)
  var attr = node.attr();
  if (nType === AST.LINK_IMG)
  {
-  attr.src = BBM.get(symTable, attr.src) || attr.src;
+  attr.src = __.get(symTable, attr.src) || attr.src;
  }
  else if (LINKS.indexOf(nType) > -1)
  {
-  attr.href = BBM.get(symTable, attr.href) || attr.href;
+  attr.href = __.get(symTable, attr.href) || attr.href;
  }
 }
 
 
 BBM.fn.pruneURL = function ()
 {
- return BBM.isObject(this.symTable)
+ return __.isObject(this.symTable)
  ? this.eachPre(pruneURL, this.symTable)
  : this;
 };

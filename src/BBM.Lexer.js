@@ -284,7 +284,7 @@ function isLexer(obj)
 }
 
 
-BBM.Lexer = BBM.extend(Lexer,
+BBM.Lexer = BBM.__.extend(Lexer,
 {
   ENUM : ENUM
 , REGEX : REGEX

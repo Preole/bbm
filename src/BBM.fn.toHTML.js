@@ -3,6 +3,7 @@
 "use strict";
 
 var BBM = require("./BBM.js");
+var __ = BBM.__;
 var AST = BBM.ENUM;
 var XHTML = [AST.HR, AST.LINK_IMG];
 var INLINES =
@@ -65,7 +66,7 @@ function printXHTML(node, opts)
 function printIndent(node, opts)
 {
  return INLINES.indexOf(node.type()) === -1
- ? BBM.repeatString(" ", opts.depth)
+ ? __.repeatString(" ", opts.depth)
  : "";
 }
 
@@ -87,12 +88,12 @@ function printAttr(node, opts)
  
  for (var key in attr)
  {
-  if (BBM.has(attr, key))
+  if (__.has(attr, key))
   {
-   res += BBM.escapeATTR(key).substring(0, opts.maxAttrChars)
+   res += __.escapeATTR(key).substring(0, opts.maxAttrChars)
    + "=\""
    + ((node.type() === AST.LINK_INT && key === "href") ? "#" : "")
-   + BBM.escapeATTR(attr[key]).substring(0, opts.maxAttrChars)
+   + __.escapeATTR(attr[key]).substring(0, opts.maxAttrChars)
    + "\" ";
   }
  }
@@ -105,7 +106,7 @@ function printTagName(node, opts)
  ? printHeader(node, opts)
  : MAP_HTML[node.type()];
 
- return BBM.escapeATTR(tagName || "");
+ return __.escapeATTR(tagName || "");
 }
 
 function printTagOpen(node, opts)
@@ -156,7 +157,7 @@ function printComment(node, opts)
 
 function printText(node, opts)
 {
- return BBM.escapeHTML(opts.rmNL ? BBM.rmNL(node.text()) : node.text()); 
+ return __.escapeHTML(opts.rmNL ? __.rmNL(node.text()) : node.text()); 
 }
 
 function printHTML(node)
@@ -178,7 +179,7 @@ function printHTML(node)
 
 BBM.fn.toHTML = function (options)
 {
- var opts = BBM.extend({}, options);
+ var opts = __.extend({}, options);
  opts.depth = (parseInt(opts.depth, 10) || 0) + (printTagName(this) ? -1 : -2);
  opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
  opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
