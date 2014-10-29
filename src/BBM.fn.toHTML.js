@@ -134,9 +134,7 @@ function printTagClose(node, opts)
   + "</" 
   + tagName
   + ">" 
-  + (node.isLastChild()
-    ? printIndent(node, opts)
-    : printBlockEnd(node, opts));
+  + (node.isLastChild() ? "" : printBlockEnd(node, opts));
  }
  return "";
 }
@@ -149,7 +147,7 @@ function printComment(node, opts)
  + node.children().map(printHTML, opts).join("")
  + indent
  + "-->"
- + (node.isLastChild() ? printIndent(node, opts) : printBlockEnd(node, opts));
+ + (node.isLastChild() ? "" : printBlockEnd(node, opts));
 }
 
 function printText(node, opts)

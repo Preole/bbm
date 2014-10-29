@@ -6,7 +6,7 @@ var __ = BBM.__;
 
 function pruneID(node, idList)
 {
- var id = __.rmWS(__.rmCTRL(node.attr("id")));
+ var id = __.rmWS(__.rmCTRL(node.attr("id") || ""));
  if (!id)
  {
   return;

@@ -197,13 +197,12 @@ function parseDiv(lexer, lexTok)
  lexer.nextPast(isNL);
  while ((tok = lexer.peekUntil(notWSNL)) && tok.col >= col)
  {
-  if (lexer.isDelim(tok, lexTok))
+  if (lexer.isDelim(tok, lexTok) && lexer.nextPast(isNL))
   {
    break;
   }
   node.append(parseBlock(lexer));
  }
- lexer.nextPast(isNL);
  return node;
 }
 
