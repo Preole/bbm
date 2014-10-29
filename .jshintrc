@@ -3,4 +3,5 @@
 , "laxcomma" : true
 , "validthis" : true
 , "newcap" : false
+, "node" : true
 }

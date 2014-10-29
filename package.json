@@ -19,7 +19,9 @@
     "text-processing"
   ],
   "devDependencies": {
-    "diff": "^1.0.8"
+    "gulp": "^3.8.9",
+    "gulp-jshint": "^1.8.6",
+    "webpack": "^1.4.9"
   },
   "engines": {
     "node": ">=0.8.0"
