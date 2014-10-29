@@ -263,13 +263,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 lexer.nextPast(isNL);
 	 while ((tok = lexer.peekUntil(notWSNL)) && tok.col >= col)
 	 {
-	  if (lexer.isDelim(tok, lexTok))
+	  if (lexer.isDelim(tok, lexTok) && lexer.nextPast(isNL))
 	  {
 	   break;
 	  }
 	  node.append(parseBlock(lexer));
 	 }
-	 lexer.nextPast(isNL);
 	 return node;
 	}
 
@@ -1530,7 +1529,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function pruneID(node, idList)
 	{
-	 var id = node.attr("id");
+	 var id = __.rmWS(__.rmCTRL(node.attr("id") || ""));
 	 if (!id)
 	 {
 	  return;
@@ -1539,6 +1538,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 if (idList.indexOf(id) === -1)
 	 {
 	  idList.push(id);
+	  node.attr("id", id);
 	 }
 	 else
 	 {
@@ -1742,9 +1742,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  + "</" 
 	  + tagName
 	  + ">" 
-	  + (node.isLastChild()
-	    ? printIndent(node, opts)
-	    : printBlockEnd(node, opts));
+	  + (node.isLastChild() ? "" : printBlockEnd(node, opts));
 	 }
 	 return "";
 	}
@@ -1757,7 +1755,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 + node.children().map(printHTML, opts).join("")
 	 + indent
 	 + "-->"
-	 + (node.isLastChild() ? printIndent(node, opts) : printBlockEnd(node, opts));
+	 + (node.isLastChild() ? "" : printBlockEnd(node, opts));
 	}
 
 	function printText(node, opts)
@@ -1774,7 +1772,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 str = node.text().length > 0
 	 ? printText(node, opts)
 	 : node.type() === AST.COMMENT
-	 ? printComment(node, opts)
+	 ? (opts.comment ? printComment(node, opts) : "")
 	 : printTagOpen(node, opts)
 	   + node.children().map(printHTML, opts).join("")
 	   + printTagClose(node, opts);
@@ -1789,6 +1787,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
 	 opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
 	 opts.XHTML = !!opts.XHTML;
+	 opts.comment = !!opts.comment;
 	 opts.rmNL = !!opts.rmNL;
 	 return printHTML.call(opts, this);
 	};

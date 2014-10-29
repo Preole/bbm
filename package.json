@@ -1,30 +1,40 @@
 {
-  "name": "bbm",
-  "author": "Preole Soandso",
-  "version": "2.0.0",
-  "description": "BakaBakaMark: An Extensible LML-HTML Compiler.",
-  "main": "TODO",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/preole/bbm/"
-  },
-  "bugs": "https://github.com/preole/bbm/issues/",
-  "license": "BSD-2-Clause",
-  "keywords": [
-    "lml",
-    "html",
-    "bbm",
-    "bakabakamark",
-    "Lightweight markup language",
-    "text-processing"
-  ],
-  "devDependencies": {
-    "gulp": "^3.8.9",
-    "gulp-jshint": "^1.8.6",
-    "webpack": "^1.4.9"
-  },
-  "engines": {
-    "node": ">=0.8.0"
-  },
-  "scripts": {}
+  "name": "bbm"
+, "author": "Preole Soandso"
+, "version": "2.0.0"
+, "description": "TODO: Rewrite"
+, "main": "./dist/bbm.min.js"
+, "repository":
+  {
+    "type": "git"
+  , "url": "https://github.com/preole/bbm/"
+  }
+, "bugs": "https://github.com/preole/bbm/issues/"
+, "license": "BSD-2-Clause"
+, "keywords":
+  [
+    "lml"
+  , "html"
+  , "bbm"
+  , "TODO: Same acronym, but different name"
+  , "Lightweight markup language"
+  , "text-processing"
+  ]
+, "devDependencies":
+  {
+    "diff": "^1.0.8"
+  , "glob": "^4.0.6"
+  , "jshint": "^2.5.8"
+  , "markdox": "^0.1.7"
+  , "webpack": "^1.4.9"
+  }
+, "engines":
+  {
+    "node": ">=0.10.7"
+  }
+, "scripts":
+  {
+   "test" : "node s-test.js"
+   "prepublish" : "npm s-release.js"
+  }
 }
