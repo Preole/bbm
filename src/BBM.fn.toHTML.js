@@ -166,7 +166,7 @@ function printHTML(node)
  str = node.text().length > 0
  ? printText(node, opts)
  : node.type() === AST.COMMENT
- ? printComment(node, opts)
+ ? (opts.comment ? printComment(node, opts) : "")
  : printTagOpen(node, opts)
    + node.children().map(printHTML, opts).join("")
    + printTagClose(node, opts);
@@ -181,6 +181,7 @@ BBM.fn.toHTML = function (options)
  opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
  opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
  opts.XHTML = !!opts.XHTML;
+ opts.comment = !!opts.comment;
  opts.rmNL = !!opts.rmNL;
  return printHTML.call(opts, this);
 };
