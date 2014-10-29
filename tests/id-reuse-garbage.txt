@@ -1,8 +1,7 @@
 . 1
 . 2
 . 3
-This paragraph has ID """3""", since it keeps getting reassigned an ID.
+This paragraph has ID """1""".
 
 . 1
-This paragraph does not have an ID, because """1""" has already been used. 
-(Garbaged)
+This paragraph does not have an ID.

@@ -1,5 +1,5 @@
 . Identifier Rage
 #[Identifier Rage]
 
-. IdentifierRage
+. Identifier Rage
 Do these identifiers clash?

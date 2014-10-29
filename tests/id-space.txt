@@ -2,4 +2,4 @@
 #[Identifier Rage]
 
 .. Identifier Rage
-Should be class = """IdentifierRage"""
+Should be """Identifier Rage"""
