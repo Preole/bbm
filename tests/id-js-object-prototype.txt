@@ -1,9 +1,8 @@
 . hasOwnProperty
-I should have the ID "bbm-hasOwnProperty"
+I should have the ID "hasOwnProperty"
 
 .. hasOwnProperty
-I should have the class "bbm-hasOwnProperty", where "bbm" is the 
-namespace prefix. 
+I should have the class "hasOwnProperty".
 
 ////
 One should be able to use Javascript reserved keywords when 
