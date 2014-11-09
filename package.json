@@ -2,7 +2,7 @@
   "name": "bbm"
 , "author": "Preole Soandso"
 , "version": "2.0.0"
-, "description": "TODO: Rewrite"
+, "description": "BareBonesMarkup: Experimental Lightweight Markup Language"
 , "main": "./dist/bbm.min.js"
 , "repository":
   {
@@ -16,9 +16,8 @@
     "lml"
   , "html"
   , "bbm"
-  , "TODO: Same acronym, but different name"
+  , "BareBonesMarkup"
   , "Lightweight markup language"
-  , "text-processing"
   ]
 , "devDependencies":
   {
@@ -34,7 +33,7 @@
   }
 , "scripts":
   {
-   "test" : "node s-test.js"
-   "prepublish" : "npm s-release.js"
+    "test" : "node s-test.js"
+  , "prepublish" : "npm s-release.js"
   }
 }
