@@ -10,7 +10,7 @@
   , "url": "https://github.com/preole/bbm/"
   }
 , "bugs": "https://github.com/preole/bbm/issues/"
-, "license": "BSD-2-Clause"
+, "license": "MIT"
 , "keywords":
   [
     "lml"
@@ -23,7 +23,6 @@
   {
     "diff": "^1.0.8"
   , "glob": "^4.0.6"
-  , "jshint": "^2.5.8"
   , "markdox": "^0.1.7"
   , "webpack": "^1.4.9"
   }
