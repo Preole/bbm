@@ -1,7 +1,7 @@
 
 "use strict";
 
-var BBM = require("./BBM.js");
+var BBM = module.exports = require("./BBM.js");
 var DUMMY = BBM("_DUMMY");
 
 function isPrunable(node, index, sibs)
@@ -9,16 +9,16 @@ function isPrunable(node, index, sibs)
  return (sibs[index - 1] || DUMMY).text() && node.text();
 }
 
-function pruneTextWork(node)
+function pruneTextWork(parent, node)
 {
- var prev = this.last() || DUMMY;
+ var prev = parent.last() || DUMMY;
  if (prev.text() && node.text())
  {
   prev.text(prev.text() + node.text());
  }
  else
  {
-  this.append(node);
+  parent.append(node);
  }
 }
 
@@ -36,6 +36,4 @@ BBM.fn.pruneText = function ()
 {
  return this.eachPre(pruneText);
 };
-
-module.exports = BBM;
 

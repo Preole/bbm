@@ -1,87 +1,90 @@
 
 "use strict";
 
-var BBM = require("./BBM.js");
-
+var BBM = module.exports = require("./BBM.js");
 
 /*
-Private methods: Lexing
------------------------
+Private Variables
+-----------------
 */
 
 var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
 var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
 var EOL = "(?=" + NL + "|$)";
-var EMPTY = __LexToken();
-var RULES =
-[
-  __Rule("ESCAPE"   , "\\\\[\\S]")
-, __Rule("TH"       , "!!" + WS)
-, __Rule("TD"       , "\\|\\|" + WS)
-, __Rule("TRSEP"    , "\\|[=]+" + EOL)
-, __Rule("ATX_END"  , "=+" + EOL)
-, __Rule("ATX"      , "=+")
-, __Rule("HR"       , "-{4,}" + EOL)
-, __Rule("COMMENT"  , "/{4,}" + EOL)
-, __Rule("CLASS"    , "\\.\\." + WS)
-, __Rule("ID"       , "\\." + WS)
-, __Rule("GT"       , ">")
-, __Rule("REF"      , ":{")
-, __Rule("REF_END"  , "}:")
-, __Rule("DD"       , ":" + WS)
-, __Rule("DT"       , ";" + WS)
-, __Rule("OL"       , "[0-9]+\\." + WS)
-, __Rule("OL"       , "#\\." + WS)
-, __Rule("DIV"      , "\\*{4,}" + EOL)
-, __Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS)
-, __Rule("PRE"      , "\"{3,}" + EOL)
-, __Rule("CODE"     , "\"{3,}")
-, __Rule("DEL"      , "--")
-, __Rule("BOLD"     , "\\*{2}")
-, __Rule("SUP"      , "\\^{2}")
-, __Rule("SUB"      , ",,")
-, __Rule("UNDER"    , "__")
-, __Rule("EM"       , "''")
-, __Rule("LINK_EXT" , "\\?<")
-, __Rule("LINK_IMG" , "!<")
-, __Rule("LINK_WIKI", "#<")
-, __Rule("LINK_INT" , "#\\[")
-, __Rule("LINK_CONT", "-\\[")
-, __Rule("BRACKET_R", "\\]")
-, __Rule("NL"       , NL)
-, __Rule("WS"       , WS + "+")
-];
+var EMPTY = {};
+var RULES = (function (){
 
-var ENUM = RULES.reduce(__reduceRulesTypes, {TEXT : "TEXT"});
-var REGEX = new RegExp(RULES.map(__mapRules).join("|"), "g");
-
-
-function __Rule(name, pattern)
+function Rule(name, pattern)
 {
  return {name : name, pattern : pattern};
 }
 
-function __mapRules(rule)
+return [
+  Rule("ESCAPE"   , "\\\\[\\S]")
+, Rule("TH"       , "!!" + WS)
+, Rule("TD"       , "\\|\\|" + WS)
+, Rule("TRSEP"    , "\\|[=]+" + EOL)
+, Rule("ATX_END"  , "=+" + EOL)
+, Rule("ATX"      , "=+")
+, Rule("HR"       , "-{4,}" + EOL)
+, Rule("COMMENT"  , "/{4,}" + EOL)
+, Rule("CLASS"    , "\\.\\." + WS)
+, Rule("ID"       , "\\." + WS)
+, Rule("GT"       , ">")
+, Rule("REF"      , ":{")
+, Rule("REF_END"  , "}:")
+, Rule("DD"       , ":" + WS)
+, Rule("DT"       , ";" + WS)
+, Rule("OL"       , "[0-9]+\\." + WS)
+, Rule("OL"       , "#\\." + WS)
+, Rule("DIV"      , "\\*{4,}" + EOL)
+, Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS)
+, Rule("PRE"      , "\"{3,}" + EOL)
+, Rule("CODE"     , "\"{3,}")
+, Rule("DEL"      , "--")
+, Rule("BOLD"     , "\\*{2}")
+, Rule("SUP"      , "\\^{2}")
+, Rule("SUB"      , ",,")
+, Rule("UNDER"    , "__")
+, Rule("EM"       , "''")
+, Rule("LINK_EXT" , "\\?<")
+, Rule("LINK_IMG" , "!<")
+, Rule("LINK_WIKI", "#<")
+, Rule("LINK_INT" , "#\\[")
+, Rule("LINK_CONT", "-\\[")
+, Rule("BRACKET_R", "\\]")
+, Rule("NL"       , NL)
+, Rule("WS"       , WS + "+")
+];
+}());
+
+var REGEX = (function (){
+ var regexStr = RULES.map(function (rule){
+  return "(" + rule.pattern + ")";
+ });
+ 
+ return new RegExp(regexStr.join("|"), "g");
+}());
+
+
+
+/**
+ * TODO: constructor comments; Static methods & properties.
+ */
+var ENUM = (function (){
+ var obj = {TEXT : "TEXT"};
+ RULES.forEach(function (rule){
+  obj[rule.name] = rule.name;
+ });
+ return obj;
+}());
+
+var LexToken = function (lexeme, type, col)
 {
- return "(" + rule.pattern + ")";
+ return {lexeme : lexeme || "", type : type || "", col : col || 0};
 }
 
-function __reduceRulesTypes(acc, rule)
-{
- acc[rule.name] = rule.name;
- return acc;
-}
-
-function __LexToken(lexeme, type, col)
-{
- return {
-   lexeme : lexeme || ""
- , type : type || ""
- , col : col || -1
- };
-}
-
-function __Lexer(bbmStr)
+var LexTokens = function (bbmStr)
 {
  var regex = new RegExp(REGEX);
  var toks = [];
@@ -95,68 +98,75 @@ function __Lexer(bbmStr)
   
   if (pos < textEnd)
   {
-   toks.push(__LexToken(bbmStr.slice(pos, textEnd), ENUM.TEXT));
+   toks.push(LexToken(bbmStr.slice(pos, textEnd), ENUM.TEXT));
   }
   if (ruleObj)
   {
-   toks.push(__LexToken(res[0], ruleObj.name));
+   toks.push(LexToken(res[0], ruleObj.name));
   }
   pos = res ? (regex.lastIndex += pos > regex.lastIndex ? 1 : 0) : textEnd;
  }
+ 
+ toks.forEach(function (tok){
+  if (tok.type === ENUM.ESCAPE && tok.lexeme.length > 1)
+  {
+   tok.lexeme = tok.lexeme.slice(1);
+  }
+ });
+ 
+ toks.forEach(function (tok, index, tokens){
+  var prev = tokens[index - 1] || EMPTY;
+  tok.col = (index === 0 || prev.type === ENUM.NL)
+  ? 0
+  : prev.col + prev.lexeme.length;
+ });
+ 
+ 
  return toks;
 }
 
-/*
-Private methods: Iteration
---------------------------
-*/
-
-function __updateEscapes(tok)
+var Lexer = function (bbmStr, maxDepth)
 {
- if (tok.type === ENUM.ESCAPE && tok.lexeme.length > 1)
- {
-  tok.lexeme = tok.lexeme.slice(1);
- }
-}
+ var obj = Object.create(Lexer.prototype);
+ obj._tokens = LexTokens(bbmStr);
+ obj.minCol = 0;
+ obj.mark = -1;
+ obj.pos = 0;
+ obj.lvl = 0;
+ obj.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
 
-function __updateCols(tok, index, toks)
+
+ return obj;
+};
+
+var fn = Lexer.fn = Lexer.prototype;
+BBM.Lexer = Lexer;
+Lexer.LexToken = LexToken;
+Lexer.LexTokens = LexTokens;
+Lexer.ENUM = ENUM;
+Lexer.isLexer = function (obj)
 {
- var prev = toks[index - 1] || EMPTY;
- tok.col = (index === 0 || prev.type === ENUM.NL)
- ? 0
- : prev.col + prev.lexeme.length;
-}
+ return Lexer.prototype.isPrototypeOf(obj);
+};
 
+Lexer.fn = Lexer.prototype = (function (fn){
 
-
-
-
-/*
-Public Methods: peek
---------------------
-*/
-
-function peek(offset)
+fn.peek = function (offset)
 {
  return this._tokens[this.pos + (parseInt(offset, 10) || 0)];
-}
+};
 
-function peekT(type, offset)
+fn.peekT = function (type, offset)
 {
  return (this.peek(offset) || EMPTY).type === type;
-}
+};
 
-function peekUntil(callback, extras)
+fn.peekUntil = function (callback, extras)
 {
  return this._tokens[this.nextUntil(callback, extras).pos];
-}
+};
 
-/*
-Public Methods: peek extras
----------------------------
-*/
-
-function isLineStart(offset)
+fn.isLineStart = function (offset)
 {
  var off = parseInt(offset, 10) || 0;
  var prev1 = this.peek(off - 1);
@@ -165,9 +175,9 @@ function isLineStart(offset)
  return !prev1
  || prev1.type === ENUM.NL
  || prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
-}
+};
 
-function isLineEnd(offset)
+fn.isLineEnd = function (offset)
 {
  var off = parseInt(offset, 10) || 0;
  var now = this.peek(off);
@@ -176,9 +186,9 @@ function isLineEnd(offset)
  return !now
  || now.type === ENUM.NL 
  || now.type === ENUM.WS && (!next || next.type === ENUM.NL);
-}
+};
 
-function isDelim(currTok, sTok)
+fn.isDelim = function (currTok, sTok)
 {
  var now = (currTok || this.peek() || EMPTY);
  return now !== EMPTY
@@ -186,66 +196,59 @@ function isDelim(currTok, sTok)
  && sTok.lexeme === now.lexeme
  && sTok.col === now.col
  && this.isLineStart();
-}
+};
 
-
-
-
-/*
-Public Methods: next, text
---------------------------
-*/
-
-function size()
+fn.size = function ()
 {
  return this._tokens.length;
-}
+};
 
-function next(offset)
+fn.next = function (offset)
 {
  this.pos = Math.max(0, this.pos + (parseInt(offset, 10) || 1));
  return this;
-}
+};
 
-function nextUntil(callback, extras)
+fn.nextUntil = function (callback, extras)
 {
  while (this.peek())
  {
-  if (this.pos === this.mark || callback.call(this, this.peek(), extras))
+  if (this.pos === this.mark || callback(this.peek(), extras))
   {
    break;
   }
   this.next();
  }
  return this;
-}
+};
 
-function nextPast(callback, extras)
+fn.nextPast = function (callback, extras)
 {
  this.nextUntil(callback, extras);
  return this.pos === this.mark ? this : this.next();
-}
+};
 
-function textUntil(callback, extras, minCol)
+fn.textUntil = function (callback, extras, minCol)
 {
- var col = Number(minCol) || Number(this.minCol) || 0;
+ var self = this;
+ var col = Number(minCol) || Number(self.minCol) || 0;
  var text = "";
  
  this.nextUntil(function (tok){
-  if (callback.call(this, tok, extras))
+  if (callback(tok, extras))
   {
    return true;
   }
   
-  text += col > 0 && tok.type === ENUM.WS && this.isLineStart()
+  text += col > 0 && tok.type === ENUM.WS && self.isLineStart()
   ? tok.lexeme.slice(col)
   : tok.lexeme;
  });
  
  return text;
-}
+};
 
-function textPast(callback, extras, minCol)
+fn.textPast = function (callback, extras, minCol)
 {
  var text = this.textUntil(callback, extras, minCol);
  if (this.pos !== this.mark)
@@ -253,55 +256,8 @@ function textPast(callback, extras, minCol)
   this.next();
  }
  return text;
-}
-
-
-
-/*
-Public Method: Constructor
---------------------------
-*/
-
-function Lexer(bbmStr, maxDepth)
-{
- var obj = Object.create(Lexer.prototype);
- obj._tokens = __Lexer(bbmStr);
- obj.minCol = 0;
- obj.mark = -1;
- obj.pos = 0;
- obj.lvl = 0;
- obj.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
-
- obj._tokens.forEach(__updateEscapes);
- obj._tokens.forEach(__updateCols);
- return obj;
-}
-
-function isLexer(obj)
-{
- return Lexer.prototype.isPrototypeOf(obj);
-}
-
-
-BBM.Lexer = Lexer;
-Lexer.ENUM = ENUM;
-Lexer.isLexer = isLexer;
-Lexer.prototype =
-{
-  peek : peek
-, peekUntil : peekUntil
-, peekT : peekT
-, isLineStart : isLineStart
-, isLineEnd : isLineEnd
-, isDelim : isDelim
-
-, size : size
-, next : next
-, nextUntil : nextUntil
-, nextPast : nextPast
-, textUntil : textUntil
-, textPast : textPast
 };
 
-module.exports = BBM;
+return fn;
+}(Lexer.prototype));
 

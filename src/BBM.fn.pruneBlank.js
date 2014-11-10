@@ -1,7 +1,7 @@
 
 "use strict";
 
-var BBM = require("./BBM.js");
+var BBM = module.exports = require("./BBM.js");
 var __ = BBM.__;
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
@@ -96,6 +96,4 @@ BBM.fn.pruneBlank = function ()
 {
  return this.eachPost(pruneBlank);
 };
-
-module.exports = BBM;
 

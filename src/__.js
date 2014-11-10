@@ -1,32 +1,29 @@
 
 "use strict";
 
-function __extend(fromObj)
-{
- if (fromObj === this || !isObject(fromObj)) {return;}
- for (var key in fromObj)
- {
-  if (has(fromObj, key))
-  {
-   this[key] = fromObj[key];
-  }
- }
-}
+var __ = module.exports = {};
 
-function toString(obj)
+__.map = function (array, callback, extras)
+{
+ return array.map(function (element){
+  return callback(element, extras);
+ });
+};
+
+__.toString = function (obj)
 {
  return Object.prototype.toString.call(obj);
-}
+};
 
-function toArray(obj, sPos, ePos)
+__.toArray = function (obj, sPos, ePos)
 {
  return Array.prototype.slice.call(obj, sPos, ePos);
-}
+};
 
-function flatten(arr, shallow)
+__.flatten = function (arr, shallow)
 {
- var res = isArray(arr) ? arr : toArray(arr);
- while (res.some(isArray))
+ var res = __.isArray(arr) ? arr : __.toArray(arr);
+ while (res.some(__.isArray))
  {
   res = Array.prototype.concat.apply([], res);
   if (shallow)
@@ -35,39 +32,41 @@ function flatten(arr, shallow)
   }
  }
  return res;
-}
+};
 
-function isArray(obj)
+__.isArray = function (obj)
 {
- return Array.isArray ? Array.isArray(obj) : toString(obj) === "[object Array]";
-}
+ return Array.isArray
+ ? Array.isArray(obj)
+ : __.toString(obj) === "[object Array]";
+};
 
-function isObject(obj)
+__.isObject = function (obj)
 {
- return isFunction(obj) || (typeof obj === "object" && obj !== null);
-}
+ return __.isFunction(obj) || (typeof obj === "object" && obj !== null);
+};
 
-function isString(obj)
+__.isString = function (obj)
 {
- return typeof obj === "string" || toString(obj) === "[object String]";
-}
+ return typeof obj === "string" || __.toString(obj) === "[object String]";
+};
 
-function isNumber(obj)
+__.isNumber = function (obj)
 {
- return typeof obj === "number" || toString(obj) === "[object Number]";
-}
+ return typeof obj === "number" || __.toString(obj) === "[object Number]";
+};
 
-function isFunction(obj)
+__.isFunction = function (obj)
 {
- return typeof obj === "function" || toString(obj) === "[object Function]";
-}
+ return typeof obj === "function" || __.toString(obj) === "[object Function]";
+};
 
-function isBlankString(str)
+__.isBlankString = function (str)
 {
  return /^\s*$/.test(str);
-}
+};
 
-function repeatString(str, times)
+__.repeatString = function (str, times)
 {
  var many = Math.abs(parseInt(times, 10)) || 0;
  var res = "";
@@ -84,86 +83,73 @@ function repeatString(str, times)
   many = Math.floor(many / 2);
  }
  return res;
-}
+};
 
-function rmWS(str)
+__.rmWS = function (str)
 {
  return str.replace(/ \t\u00a0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000/g, "");
-}
+};
 
-function rmNL(str)
+__.rmNL = function (str)
 {
  return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+/g, "");
-}
+};
 
-function rmNLTail(str)
+__.rmNLTail = function (str)
 {
  return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+$/, "");
-}
+};
 
-function rmCTRL(str)
+__.rmCTRL = function (str)
 {
  return str.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, "");
-}
+};
 
-function escapeHTML(str)
+__.escapeHTML = function (str)
 {
  return str.replace(/&/g, "&amp;")
  .replace(/</g, "&lt;")
  .replace(/>/g, "&gt;");
-}
+};
 
-function escapeATTR(str)
+__.escapeATTR = function (str)
 {
- return escapeURI(rmCTRL(escapeHTML(str).replace(/"/g, "&quot;")
+ return __.escapeURI(__.rmCTRL(__.escapeHTML(str).replace(/"/g, "&quot;")
  .replace(/'/g, "&#x27;")
  .replace(/`/g, "&#x60;")));
-}
+};
 
-function escapeURI(str)
+__.escapeURI = function (str)
 {
  return str.replace(/^javascript:/i, "javascript;")
  .replace(/^data:/i, "data;");
-}
+};
 
-function has(obj, key)
+__.has = function (obj, key)
 {
  return Object.prototype.hasOwnProperty.call(obj, key);
-}
+};
 
-function get(obj, key)
+__.get = function (obj, key)
 {
- return has(obj, key) ? obj[key] : void(0);
-}
+ return __.has(obj, key) ? obj[key] : void(0);
+};
 
-function extend(others)
+__.extend = function (others)
 {
- var toObj = isObject(others) ? others : {};
- Array.prototype.forEach.call(arguments, __extend, toObj);
+ var toObj = __.isObject(others) ? others : {};
+
+ Array.prototype.forEach.call(arguments, function (fromObj){
+  if (fromObj === toObj || !__.isObject(fromObj)) {return;}
+  for (var key in fromObj)
+  {
+   if (__.has(fromObj, key))
+   {
+    toObj[key] = fromObj[key];
+   }
+  }
+ });
+
  return toObj;
-}
-
-
-
-module.exports = {
-  toArray : toArray
-, flatten : flatten
-, isObject : isObject
-, isArray : isArray
-, isString : isString
-, isNumber : isNumber
-, isFunction : isFunction
-, isBlankString : isBlankString
-, repeatString : repeatString
-, rmWS : rmWS
-, rmNL : rmNL
-, rmNLTail : rmNLTail
-, rmCTRL : rmCTRL
-, escapeHTML : escapeHTML
-, escapeATTR : escapeATTR
-, escapeURI : escapeURI
-, has : has
-, get : get
-, extend : extend
 };
 

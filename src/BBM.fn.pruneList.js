@@ -1,7 +1,7 @@
 
 "use strict";
 
-var BBM = require("./BBM.js");
+var BBM = module.exports = require("./BBM.js");
 var __ = BBM.__;
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
@@ -76,9 +76,9 @@ function pruneDL(prev, node)
  return pNode.append(node.type(type === AST._DD ? AST.DD : AST.DT));
 }
 
-function pruneSwitch(node)
+function pruneSwitch(parent, node)
 {
- var prev = this.last() || DUMMY;
+ var prev = parent.last() || DUMMY;
  var nType = node.type();
  var pType = prev.type();
  var res = node;
@@ -93,7 +93,7 @@ function pruneSwitch(node)
  }
  if (res !== prev)
  {
-  this.append(res);
+  parent.append(res);
  }
 }
 
@@ -110,6 +110,5 @@ BBM.fn.pruneList = function ()
  return this.eachPost(pruneList);
 };
 
-module.exports = BBM;
 
 

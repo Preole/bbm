@@ -1,7 +1,7 @@
 
 "use strict";
 
-var BBM = require("./BBM.Lexer.js") && require("./BBM.fn.prune.js");
+var BBM = module.exports = require("./BBM.Lexer.js") && require("./BBM.fn.prune.js");
 var __ = BBM.__;
 var Lexer = BBM.Lexer;
 var LEX = Lexer.ENUM;
@@ -79,13 +79,13 @@ function isATXEnd(tok)
  return tok.type === LEX.NL || tok.type === LEX.ATX_END;
 }
 
-function isParaEnd(tok, minCol)
+function isParaEnd(tok, lexer)
 {
- return this.isLineStart() &&
+ return lexer.isLineStart() &&
  (
-  this.isLineEnd()
+  lexer.isLineEnd()
   || LEX_DELIM.indexOf(tok.type) > -1
-  || (notWSNL(tok) && tok.col < minCol)
+  || (notWSNL(tok) && tok.col < lexer.minCol)
  );
 }
 
@@ -256,9 +256,9 @@ function parseRef(lexer)
 
 function parsePara(lexer, lexTok, forceType)
 {
- var minCol = lexTok.col || 0;
+ var minCol = lexer.minCol = lexTok.col || 0;
  var startPos = lexer.pos;
- var endPos = lexer.nextUntil(isParaEnd, minCol).pos;
+ var endPos = lexer.nextUntil(isParaEnd, lexer).pos;
  var endTok = lexer.peek() || EOF;
  var node = BBM(AST.P);
  
@@ -391,6 +391,4 @@ BBM.fn.parse = function (bbmStr, maxDepth)
 {
  return this.empty().append(BBM.parse(bbmStr, maxDepth).children());
 };
-
-module.exports = BBM;
 

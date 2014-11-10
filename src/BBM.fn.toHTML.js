@@ -1,7 +1,7 @@
 
 "use strict";
 
-var BBM = require("./BBM.js");
+var BBM = module.exports = require("./BBM.js");
 var __ = BBM.__;
 var AST = BBM.ENUM;
 var XHTML = [AST.HR, AST.LINK_IMG];
@@ -87,7 +87,7 @@ function printAttr(node, opts)
  
  for (var key in attr)
  {
-  if (__.has(attr, key))
+  if (__.has(attr, key) && !__.isBlankString(key))
   {
    res += __.escapeATTR(key).substring(0, opts.maxAttrChars)
    + "=\""
@@ -144,7 +144,7 @@ function printComment(node, opts)
  var indent = printIndent(node, opts);
  return indent
  + "<!--\n"
- + node.children().map(printHTML, opts).join("")
+ + __.map(node.children(), printHTML, opts).join("")
  + indent
  + "-->"
  + (node.isLastChild() ? "" : printBlockEnd(node, opts));
@@ -155,10 +155,9 @@ function printText(node, opts)
  return __.escapeHTML(opts.rmNL ? __.rmNL(node.text()) : node.text()); 
 }
 
-function printHTML(node)
+function printHTML(node, opts)
 {
  var str = "";
- var opts = this;
  
  opts.depth += 1;
  str = node.text().length > 0
@@ -166,9 +165,10 @@ function printHTML(node)
  : node.type() === AST.COMMENT
  ? (opts.comment ? printComment(node, opts) : "")
  : printTagOpen(node, opts)
-   + node.children().map(printHTML, opts).join("")
+   + __.map(node.children(), printHTML, opts).join("")
    + printTagClose(node, opts);
  opts.depth -= 1;
+ 
  return str;
 }
 
@@ -181,8 +181,6 @@ BBM.fn.toHTML = function (options)
  opts.XHTML = !!opts.XHTML;
  opts.comment = !!opts.comment;
  opts.rmNL = !!opts.rmNL;
- return printHTML.call(opts, this);
+ return printHTML(this, opts);
 };
-
-module.exports = BBM;
 
