@@ -10,12 +10,26 @@ var webpackOpt =
   , libraryTarget : "umd"
   }
 };
+var webpackOptMin =
+{
+  entry : "./src/main.js"
+, plugins : [new webpack.optimize.UglifyJsPlugin({minimize: true})]
+, output :
+  {
+    filename : "./dist/BBM.min.js"
+  , libraryTarget : "umd"
+  }
+};
 
-webpack(webpackOpt).run(function (err, stats){
+var runBuild = function (err, stats)
+{
  if (err)
  {
   throw new Error(err);
  }
  console.log(stats.toString());
-});
+};
+
+webpack(webpackOpt).run(runBuild);
+webpack(webpackOptMin).run(runBuild);
 
