@@ -3,33 +3,31 @@ var fs = require("fs");
 var fsOptR = {encoding: "utf-8"};
 var glob = require("glob");
 var hintOpt = JSON.parse(fs.readFileSync("./.jshintrc", fsOptR));
-var errMsgs = glob.sync("./src/*.js").map(onEachFile);
+var errMsgs = "";
 
-
-function onEachError(reportObj)
-{
- var err = reportObj.error;
- var fName = reportObj.file;
- return fName
-  + ": line "
+glob.sync("./src/*.js").forEach(function (fName){
+ jshint(fs.readFileSync(fName, fsOptR), hintOpt);
+ jshint.errors.forEach(function (err){
+  errMsgs += "line "
   + err.line 
   + ", col "
   + err.character 
   + ": "
-  + err.reason + "\n";
-}
+  + err.reason
+  + " @ "
+  + fName
+  + "\n";
+ });
+});
 
-function onEachFile(fName)
+if (errMsgs.length > 0)
 {
- jshint(fs.readFileSync(fName, fsOptR), hintOpt);
- 
+ console.log(errMsgs);
  //TODO: More elaborate error reporting for jshint
- return Array.isArray(jshint.data().error)
-  ? jshint.data().error.map(onEachError)
-  : "";
+ //TODO: Throw exceptions if there are errors.
 }
 
-console.log(errMsgs.join(""));
 
-//TODO: Throw exceptions if there are errors.
+
+
 
