@@ -5,7 +5,7 @@
 #[PointsToIdentifier]
 
 ?<Right>-[Goes to a website.]
-!<Right>-[]
+!<Right>
  
 :{Right}: http://www.title.com/
 

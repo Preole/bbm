@@ -1,7 +1,7 @@
 "use strict";
 
 var fs = require("fs");
-var BBM = require("../dist/bbm.js");
+var BBM = require("../src/main.js");
 var fsOptR = {encoding : "utf-8"};
 var tree = BBM.parse(fs.readFileSync("./input.txt", fsOptR));
  
