@@ -1,3 +1,5 @@
+"use strict";
+
 var jshint = require("jshint").JSHINT;
 var fs = require("fs");
 var fsOptR = {encoding: "utf-8"};

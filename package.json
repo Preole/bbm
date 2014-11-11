@@ -32,7 +32,10 @@
   }
 , "scripts":
   {
-    "test" : "node s-test.js"
+    "lint" : "node s-lint.js"
+  , "hint" : "node s-lint.js"
+  , "build" : "node s-lint.js && node s-build.js"
+  , "test" : "node s-lint.js && node s-build.js && node s-test.js"
   , "prepublish" : "npm s-release.js"
   }
 }

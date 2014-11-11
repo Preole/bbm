@@ -1,5 +1,7 @@
 "use strict";
 
+require("./s-build.js");
+
 var BBM = require("./dist/bbm.js");
 var fs = require("fs");
 var glob = require("glob");
@@ -14,13 +16,12 @@ var log = console.log;
 srcList.forEach(function (srcFile, index){
  var testCase = BBM.parse(fs.readFileSync(srcFile, fsOptR)).toHTML().trim();
  var expected = fs.readFileSync(destList[index], fsOptR).trim();
- var diffs = diff.diffLines(expected, testCase);
  var buffer = "";
  
- diffs.forEach(function (changeObj){
+ diff.diffLines(expected, testCase).forEach(function (changeObj, index){
   if (changeObj.added)
   {
-   buffer += "+ " + changeObj.value
+   buffer += "\n+ " + changeObj.value
    .replace(/[\r\n](?!$)/g, "\n+ ")
    .replace(/[\r\n]$/, "");
   }
@@ -36,7 +37,7 @@ srcList.forEach(function (srcFile, index){
  {
   log("\n\nTest case " + srcFile);
   log("\n>>>>>>>>");
-  log(buffer);
+  log(buffer.slice(1));
   log("<<<<<<<<\n");
   errCount += 1;
  }
