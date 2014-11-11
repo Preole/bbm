@@ -39,50 +39,60 @@ var BBM = module.exports = function (type)
  * @readonly
  * @static 
  */
-var ENUM = BBM.ENUM =
-{
-  _DT : "_DT"
-, _DD : "_DD"
-, _TH : "_TH"
-, _TD : "_TD"
-, _TR : "_TR"
-, _LI_UL : "_LI_UL"
-, _LI_OL : "_LI_OL"
-, _ID : "_ID"
-, _CLASS : "_CLASS"
-, _DUMMY : "_DUMMY"
+var ENUM = BBM.ENUM = (function (){
 
-, ROOT : "ROOT"
-, COMMENT : "COMMENT"
-, P : "P"
-, BLOCKQUOTE : "BLOCKQUOTE"
-, PRE : "PRE"
-, DIV : "DIV"
-, LI : "LI"
-, UL : "UL"
-, OL : "OL"
-, HEADER : "HEADER"
-, DT : "DT"
-, DD : "DD"
-, DL : "DL"
-, TH : "TH"
-, TD : "TD"
-, HR : "HR"
-, TR : "TR"
-, TABLE : "TABLE"
-, LINK_INT : "LINK_INT"
-, LINK_EXT : "LINK_EXT"
-, LINK_IMG : "LINK_IMG"
-, LINK_WIKI : "LINK_WIKI"
-, DEL : "DEL"
-, U : "U"
-, SUB : "SUB"
-, SUP : "SUP"
-, EM : "EM"
-, BOLD : "BOLD"
-, CODE : "CODE"
-, TEXT : "TEXT"
-};
+var obj = {};
+var enums =
+[
+  "_DT"
+, "_DD"
+, "_TH"
+, "_TD"
+, "_TR"
+, "_LI_UL"
+, "_LI_OL"
+, "_ID"
+, "_CLASS"
+, "_DUMMY"
+
+, "ROOT"
+, "COMMENT"
+, "P"
+, "BLOCKQUOTE"
+, "PRE"
+, "DIV"
+, "LI"
+, "UL"
+, "OL"
+, "HEADER"
+, "DT"
+, "DD"
+, "DL"
+, "TH"
+, "TD"
+, "HR"
+, "TR"
+, "TABLE"
+, "LINK_INT"
+, "LINK_EXT"
+, "LINK_IMG"
+, "LINK_WIKI"
+, "DEL"
+, "U"
+, "SUB"
+, "SUP"
+, "EM"
+, "BOLD"
+, "CODE"
+, "TEXT"
+];
+
+enums.forEach(function (name){
+ obj[name] = name;
+});
+
+return obj;
+}());
 
 
 
