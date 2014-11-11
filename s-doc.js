@@ -1,7 +1,7 @@
 /*
 Required tasks:
 
-lint
+lint, build
 */
 
 /*
