@@ -2,7 +2,7 @@
 "use strict";
 
 var BBM = module.exports = require("./BBM.Lexer.js") && require("./BBM.fn.prune.js");
-var __ = BBM.__;
+var __ = require("./__.js");
 var Lexer = BBM.Lexer;
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
@@ -54,10 +54,8 @@ var LEX_INLINE =
 
 
 
-/*
-Block-level iterators
----------------------
-*/
+// Block-level iterators
+// ---------------------
 
 function notWSNL(tok)
 {
@@ -91,10 +89,8 @@ function isParaEnd(tok, lexer)
 
 
 
-/*
-Inline-level Iterators
-----------------------
-*/
+// Inline-level Iterators
+// ----------------------
 
 function isCode(tok, tokStart)
 {
@@ -125,10 +121,8 @@ function isInline(tok, hasLink)
 
 
 
-/*
-Block-level Grammar
--------------------
-*/
+// Block-level Grammar
+// -------------------
 
 function parseBlock(lexer)
 {
@@ -208,7 +202,7 @@ function parseDiv(lexer, lexTok)
 
 function parsePre(lexer, lexTok)
 {
- var text = lexer.nextPast(isNL).textPast(lexer.isDelim, lexTok, lexTok.col);
+ var text = lexer.nextPast(isNL).textPast(Lexer.fn.isDelim, lexTok, lexTok.col);
  text = __.rmNLTail(text);
  if (lexTok.type === LEX.PRE)
  {
@@ -221,6 +215,7 @@ function parseATX(lexer, lexTok)
 {
  var startPos = lexer.next().pos;
  var endPos = lexer.nextUntil(isATXEnd).pos;
+ var endTok = lexer.peek() || EOF;
  var node = BBM(AST.HEADER);
  
  node.level = lexTok.lexeme.length;
@@ -229,7 +224,7 @@ function parseATX(lexer, lexTok)
  lexer.pos = startPos;
  parseInline(lexer, [], node);
  lexer.mark = -1;
- lexer.pos = endPos <= startPos ? endPos : endPos + 1;
+ lexer.pos = (endPos <= startPos || isATXEnd(endTok)) ? endPos + 1 : endPos;
  
  return node;
 }
@@ -261,6 +256,7 @@ function parsePara(lexer, lexTok, forceType)
  var endPos = lexer.nextUntil(isParaEnd, lexer).pos;
  var endTok = lexer.peek() || EOF;
  var node = BBM(AST.P);
+ var isSetext = LEX_SETEXT.indexOf(endTok.type) > -1;
  
  lexer.minCol = minCol;
  lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
@@ -271,7 +267,7 @@ function parsePara(lexer, lexTok, forceType)
  {
   node.type(forceType);
  }
- else if (LEX_SETEXT.indexOf(endTok.type) > -1)
+ else if (isSetext)
  {
   node.type(AST.HEADER);
   node.level = endTok.type === LEX.HR ? 2 : 1;
@@ -279,17 +275,15 @@ function parsePara(lexer, lexTok, forceType)
  
  lexer.minCol = 0;
  lexer.mark = -1;
- lexer.pos = endPos <= startPos ? endPos + 1 : endPos;
-
+ lexer.pos = (endPos <= startPos || isSetext) ? endPos + 1 : endPos;
+ 
  return node;
 }
 
 
 
-/*
-Inline-Level Grammar
---------------------
-*/
+// Inline-Level Grammar
+// --------------------
 
 function parseInline(lexer, stack, node)
 {
@@ -297,8 +291,7 @@ function parseInline(lexer, stack, node)
  while (lexer.pos < lexer.mark)
  {
   var text = lexer.textUntil(isInline, hasLink);
-  var tok = lexer.peek() || EOF;
-  lexer.next();
+  var tok = lexer.next().peek(-1) || EOF;
   node.append(text);
   
   if (tok.type === LEX.CODE || tok.type === LEX.PRE)
@@ -309,9 +302,9 @@ function parseInline(lexer, stack, node)
   {
    node.append(parseImg(lexer, tok));
   }
-  else if (!hasLink && LEX_LINKS.indexOf(tok.type) > -1)
+  else if (LEX_LINKS.indexOf(tok.type) > -1)
   {
-   node.append(parseLink(lexer, tok, stack));
+   node.append(hasLink ? tok.lexeme : parseLink(lexer, tok, stack));
   }
   else if (stack.indexOf(tok.type) === -1 && LEX_FMT.indexOf(tok.type) > -1)
   {
@@ -337,11 +330,16 @@ function parseLink(lexer, lexTok, stack)
  }
  
  var node = BBM(LEX_INLINE[lexTok.type]).attr({href : href});
+ var prevPos = lexer.pos;
  if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
  {
   stack.push(LEX.BRACKET_R);
   parseInline(lexer.next(), stack, node);
   stack.pop();
+ }
+ else
+ {
+  lexer.pos = prevPos;
  }
  return node;
 }
@@ -355,9 +353,14 @@ function parseImg(lexer)
  }
  
  var alt = "";
+ var prevPos = lexer.pos;
  if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
  {
   alt = lexer.next().textPast(isBracket).trim();
+ }
+ else
+ {
+  lexer.pos = prevPos;
  }
  return BBM(AST.LINK_IMG).attr({src : src, alt : alt});
 }
@@ -370,14 +373,34 @@ function parseCode(lexer, lexTok)
 
 
 
-/*
-Exporting
----------
-*/
-
+/**
+ * Parses a piece of text into its abstract syntax tree representation for
+ * further processing and manipulation.
+ * 
+ * @method parse
+ * @static
+ * @param {String} bbmStr The text to be parsed, written in BareBonesMarkup.
+ * @param {Number} [maxDepth=8] The maximum allowed nesting level. Text 
+   blocks exceeding this nesting limit shall be interpreted as paragraphs 
+   instead of a block capable of nesting, such as blockquotes and nested 
+   bullet lists.
+ * @return {BBM} The abstract syntax tree obtained from the parsing run.
+   The tree nodes, in addition to their the base instance properties, shall 
+   have the following properties for specific types of nodes:
+ 
+   - **HEADER**: (Number) headerLevel; The heading level of the node. "1" 
+     denotes the most important heading, while "2" and higher are increasingly 
+     less important heading, similar to HTML's `<h1>` ... `<h6>` tags.
+     
+   - **ROOT**: (Object) symTable; A key-value pair mapping between 
+     identifiers and URL values used for URL substitution within LINK_INT, 
+     LINK_EXT, LINK_WIKI and LINK_IMG elements. These key value pairs are 
+     guaranteed to be non-blank (Contains at least one visible character)
+ */
 BBM.parse = function (bbmStr, maxDepth)
 {
- var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, maxDepth);
+ var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr);
+ lexer.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
  lexer.root = BBM(AST.ROOT);
  lexer.root.symTable = {};
  while (lexer.peek())
@@ -387,6 +410,16 @@ BBM.parse = function (bbmStr, maxDepth)
  return lexer.root.prune();
 };
 
+/**
+ * Parses a piece of text into its abstract syntax tree representation, 
+ * replacing the current node's children list with the parsed syntax tree.
+ * 
+ * @method parse
+ * @param {String} bbmStr The text to be parsed, written in BareBonesMarkup.
+ * @param {Number} [maxDepth=8] The maximum allowed nesting level.
+ * @return {BBM} The current node with its subtree content replaced.
+ * @see BBM.parse
+ */
 BBM.fn.parse = function (bbmStr, maxDepth)
 {
  return this.empty().append(BBM.parse(bbmStr, maxDepth).children());

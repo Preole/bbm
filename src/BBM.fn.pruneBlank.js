@@ -2,7 +2,7 @@
 "use strict";
 
 var BBM = module.exports = require("./BBM.js");
-var __ = BBM.__;
+var __ = require("./__.js");
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
 var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
@@ -34,7 +34,7 @@ function isBlank(node)
 
 function isKept(node)
 {
- return node.text() || !isBlank(node);
+ return node.text().length > 0 || !isBlank(node);
 }
 
 function pruneTR(node)
@@ -91,7 +91,29 @@ function pruneBlank(node)
 }
 
 
-
+/**
+ * Removes blank subtrees and nodes from the current node. A subtree is 
+ * considered empty if it's not the following element, and it contains no 
+ * visible text content: (That is, only blank strings such as " ")
+ *
+ * - TD
+ * - TH
+ * - PRE
+ * - LI
+ * - BLOCKQUOTE
+ * - DD
+ * - DT
+ * - HR
+ * - DIV
+ * - LINK_* (Hyperlink and image nodes)
+ * - COMMENT 
+ *
+ * In short, nested inline formatting containing nothing but blank strings 
+ * shall be removed from the tree, such as `** -- __ __ -- **`.
+ *
+ * @method pruneBlank
+ * @return {BBM} The current node with empty subtrees pruned.
+ */
 BBM.fn.pruneBlank = function ()
 {
  return this.eachPost(pruneBlank);

@@ -125,7 +125,31 @@ var LexTokens = function (bbmStr)
  return toks;
 }
 
-var Lexer = function (bbmStr, maxDepth)
+/**
+ * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 
+ * tokens.
+ *
+ * @class Lexer
+ * @memberOf BBM
+ * @static
+ * @param {String} bbmStr The BareBonesMarkup string to analyze into tokens.
+ * @property {Array.LexToken} _tokens The array of analyzed lexical tokens.
+ * @property {Number} minCol The minimum required column count in certain
+   parsing contexts, such as bullet lists.
+ * @property {Number} mark The index to stop the iteration methods from 
+   going past. The affected methods are:
+   
+   - peekUntil(callback, extras)
+   - nextUntil(callback, extras)
+   - nextPast(callback, extras)
+   - textUntil(callback, extras, minCol)
+   - textPast(callback, extras, minCol)
+   
+ * @property {Number} pos The index of the token currently being pointed to.
+ * @property {Number} lvl The current nesting level; Used only by the parser.
+ * @return {Lexer} The newly created Lexer object.
+ */
+var Lexer = function (bbmStr)
 {
  var obj = Object.create(Lexer.prototype);
  obj._tokens = LexTokens(bbmStr);
@@ -133,13 +157,9 @@ var Lexer = function (bbmStr, maxDepth)
  obj.mark = -1;
  obj.pos = 0;
  obj.lvl = 0;
- obj.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
-
-
  return obj;
 };
 
-var fn = Lexer.fn = Lexer.prototype;
 BBM.Lexer = Lexer;
 Lexer.LexToken = LexToken;
 Lexer.LexTokens = LexTokens;
@@ -149,7 +169,7 @@ Lexer.isLexer = function (obj)
  return Lexer.prototype.isPrototypeOf(obj);
 };
 
-Lexer.fn = Lexer.prototype = (function (fn){
+Lexer.fn = (function (fn){
 
 fn.peek = function (offset)
 {
@@ -213,7 +233,7 @@ fn.nextUntil = function (callback, extras)
 {
  while (this.peek())
  {
-  if (this.pos === this.mark || callback(this.peek(), extras))
+  if (this.pos === this.mark || callback.call(this, this.peek(), extras))
   {
    break;
   }
@@ -235,7 +255,7 @@ fn.textUntil = function (callback, extras, minCol)
  var text = "";
  
  this.nextUntil(function (tok){
-  if (callback(tok, extras))
+  if (callback.call(self, tok, extras))
   {
    return true;
   }
@@ -260,4 +280,3 @@ fn.textPast = function (callback, extras, minCol)
 
 return fn;
 }(Lexer.prototype));
-

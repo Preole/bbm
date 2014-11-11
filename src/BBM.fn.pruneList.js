@@ -2,7 +2,7 @@
 "use strict";
 
 var BBM = module.exports = require("./BBM.js");
-var __ = BBM.__;
+var __ = require("./__.js");
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
 var IDCLASS = {_ID : true, _CLASS : true};
@@ -105,6 +105,14 @@ function pruneList(node)
  }
 }
 
+/**
+ * Fleshes out intermediate node type into officially recognized types, 
+ * such as collapsing bullet list blocks into a formal bullet list.
+ *
+ * @method pruneList
+ * @return {BBM} The current node, with subtrees containing nodes with 
+   leading underscore type name pruned.
+ */
 BBM.fn.pruneList = function ()
 {
  return this.eachPost(pruneList);
