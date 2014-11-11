@@ -67,8 +67,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	"use strict";
 
-	var BBM = __webpack_require__(2) && __webpack_require__(3);
-	var __ = BBM.__;
+	var BBM = module.exports = __webpack_require__(2) && __webpack_require__(3);
+	var __ = __webpack_require__(4);
 	var Lexer = BBM.Lexer;
 	var LEX = Lexer.ENUM;
 	var AST = BBM.ENUM;
@@ -120,10 +120,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 
-	/*
-	Block-level iterators
-	---------------------
-	*/
+	// Block-level iterators
+	// ---------------------
 
 	function notWSNL(tok)
 	{
@@ -145,22 +143,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return tok.type === LEX.NL || tok.type === LEX.ATX_END;
 	}
 
-	function isParaEnd(tok, minCol)
+	function isParaEnd(tok, lexer)
 	{
-	 return this.isLineStart() &&
+	 return lexer.isLineStart() &&
 	 (
-	  this.isLineEnd()
+	  lexer.isLineEnd()
 	  || LEX_DELIM.indexOf(tok.type) > -1
-	  || (notWSNL(tok) && tok.col < minCol)
+	  || (notWSNL(tok) && tok.col < lexer.minCol)
 	 );
 	}
 
 
 
-	/*
-	Inline-level Iterators
-	----------------------
-	*/
+	// Inline-level Iterators
+	// ----------------------
 
 	function isCode(tok, tokStart)
 	{
@@ -191,10 +187,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 
-	/*
-	Block-level Grammar
-	-------------------
-	*/
+	// Block-level Grammar
+	// -------------------
 
 	function parseBlock(lexer)
 	{
@@ -274,7 +268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function parsePre(lexer, lexTok)
 	{
-	 var text = lexer.nextPast(isNL).textPast(lexer.isDelim, lexTok, lexTok.col);
+	 var text = lexer.nextPast(isNL).textPast(Lexer.fn.isDelim, lexTok, lexTok.col);
 	 text = __.rmNLTail(text);
 	 if (lexTok.type === LEX.PRE)
 	 {
@@ -287,6 +281,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	{
 	 var startPos = lexer.next().pos;
 	 var endPos = lexer.nextUntil(isATXEnd).pos;
+	 var endTok = lexer.peek() || EOF;
 	 var node = BBM(AST.HEADER);
 	 
 	 node.level = lexTok.lexeme.length;
@@ -295,7 +290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 lexer.pos = startPos;
 	 parseInline(lexer, [], node);
 	 lexer.mark = -1;
-	 lexer.pos = endPos <= startPos ? endPos : endPos + 1;
+	 lexer.pos = (endPos <= startPos || isATXEnd(endTok)) ? endPos + 1 : endPos;
 	 
 	 return node;
 	}
@@ -322,11 +317,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function parsePara(lexer, lexTok, forceType)
 	{
-	 var minCol = lexTok.col || 0;
+	 var minCol = lexer.minCol = lexTok.col || 0;
 	 var startPos = lexer.pos;
-	 var endPos = lexer.nextUntil(isParaEnd, minCol).pos;
+	 var endPos = lexer.nextUntil(isParaEnd, lexer).pos;
 	 var endTok = lexer.peek() || EOF;
 	 var node = BBM(AST.P);
+	 var isSetext = LEX_SETEXT.indexOf(endTok.type) > -1;
 	 
 	 lexer.minCol = minCol;
 	 lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
@@ -337,7 +333,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 {
 	  node.type(forceType);
 	 }
-	 else if (LEX_SETEXT.indexOf(endTok.type) > -1)
+	 else if (isSetext)
 	 {
 	  node.type(AST.HEADER);
 	  node.level = endTok.type === LEX.HR ? 2 : 1;
@@ -345,17 +341,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 
 	 lexer.minCol = 0;
 	 lexer.mark = -1;
-	 lexer.pos = endPos <= startPos ? endPos + 1 : endPos;
-
+	 lexer.pos = (endPos <= startPos || isSetext) ? endPos + 1 : endPos;
+	 
 	 return node;
 	}
 
 
 
-	/*
-	Inline-Level Grammar
-	--------------------
-	*/
+	// Inline-Level Grammar
+	// --------------------
 
 	function parseInline(lexer, stack, node)
 	{
@@ -363,8 +357,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 while (lexer.pos < lexer.mark)
 	 {
 	  var text = lexer.textUntil(isInline, hasLink);
-	  var tok = lexer.peek() || EOF;
-	  lexer.next();
+	  var tok = lexer.next().peek(-1) || EOF;
 	  node.append(text);
 	  
 	  if (tok.type === LEX.CODE || tok.type === LEX.PRE)
@@ -375,9 +368,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  {
 	   node.append(parseImg(lexer, tok));
 	  }
-	  else if (!hasLink && LEX_LINKS.indexOf(tok.type) > -1)
+	  else if (LEX_LINKS.indexOf(tok.type) > -1)
 	  {
-	   node.append(parseLink(lexer, tok, stack));
+	   node.append(hasLink ? tok.lexeme : parseLink(lexer, tok, stack));
 	  }
 	  else if (stack.indexOf(tok.type) === -1 && LEX_FMT.indexOf(tok.type) > -1)
 	  {
@@ -403,11 +396,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 }
 	 
 	 var node = BBM(LEX_INLINE[lexTok.type]).attr({href : href});
+	 var prevPos = lexer.pos;
 	 if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
 	 {
 	  stack.push(LEX.BRACKET_R);
 	  parseInline(lexer.next(), stack, node);
 	  stack.pop();
+	 }
+	 else
+	 {
+	  lexer.pos = prevPos;
 	 }
 	 return node;
 	}
@@ -421,9 +419,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 }
 	 
 	 var alt = "";
+	 var prevPos = lexer.pos;
 	 if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
 	 {
 	  alt = lexer.next().textPast(isBracket).trim();
+	 }
+	 else
+	 {
+	  lexer.pos = prevPos;
 	 }
 	 return BBM(AST.LINK_IMG).attr({src : src, alt : alt});
 	}
@@ -436,14 +439,34 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 
-	/*
-	Exporting
-	---------
-	*/
-
+	/**
+	 * Parses a piece of text into its abstract syntax tree representation for
+	 * further processing and manipulation.
+	 * 
+	 * @method parse
+	 * @static
+	 * @param {String} bbmStr The text to be parsed, written in BareBonesMarkup.
+	 * @param {Number} [maxDepth=8] The maximum allowed nesting level. Text 
+	   blocks exceeding this nesting limit shall be interpreted as paragraphs 
+	   instead of a block capable of nesting, such as blockquotes and nested 
+	   bullet lists.
+	 * @return {BBM} The abstract syntax tree obtained from the parsing run.
+	   The tree nodes, in addition to their the base instance properties, shall 
+	   have the following properties for specific types of nodes:
+	 
+	   - **HEADER**: (Number) headerLevel; The heading level of the node. "1" 
+	     denotes the most important heading, while "2" and higher are increasingly 
+	     less important heading, similar to HTML's `<h1>` ... `<h6>` tags.
+	     
+	   - **ROOT**: (Object) symTable; A key-value pair mapping between 
+	     identifiers and URL values used for URL substitution within LINK_INT, 
+	     LINK_EXT, LINK_WIKI and LINK_IMG elements. These key value pairs are 
+	     guaranteed to be non-blank (Contains at least one visible character)
+	 */
 	BBM.parse = function (bbmStr, maxDepth)
 	{
-	 var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr, maxDepth);
+	 var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr);
+	 lexer.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
 	 lexer.root = BBM(AST.ROOT);
 	 lexer.root.symTable = {};
 	 while (lexer.peek())
@@ -453,12 +476,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return lexer.root.prune();
 	};
 
+	/**
+	 * Parses a piece of text into its abstract syntax tree representation, 
+	 * replacing the current node's children list with the parsed syntax tree.
+	 * 
+	 * @method parse
+	 * @param {String} bbmStr The text to be parsed, written in BareBonesMarkup.
+	 * @param {Number} [maxDepth=8] The maximum allowed nesting level.
+	 * @return {BBM} The current node with its subtree content replaced.
+	 * @see BBM.parse
+	 */
 	BBM.fn.parse = function (bbmStr, maxDepth)
 	{
 	 return this.empty().append(BBM.parse(bbmStr, maxDepth).children());
 	};
-
-	module.exports = BBM;
 
 
 
@@ -469,87 +500,90 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4);
-
+	var BBM = module.exports = __webpack_require__(5);
 
 	/*
-	Private methods: Lexing
-	-----------------------
+	Private Variables
+	-----------------
 	*/
 
 	var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
 	var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
 	var EOL = "(?=" + NL + "|$)";
-	var EMPTY = __LexToken();
-	var RULES =
-	[
-	  __Rule("ESCAPE"   , "\\\\[\\S]")
-	, __Rule("TH"       , "!!" + WS)
-	, __Rule("TD"       , "\\|\\|" + WS)
-	, __Rule("TRSEP"    , "\\|[=]+" + EOL)
-	, __Rule("ATX_END"  , "=+" + EOL)
-	, __Rule("ATX"      , "=+")
-	, __Rule("HR"       , "-{4,}" + EOL)
-	, __Rule("COMMENT"  , "/{4,}" + EOL)
-	, __Rule("CLASS"    , "\\.\\." + WS)
-	, __Rule("ID"       , "\\." + WS)
-	, __Rule("GT"       , ">")
-	, __Rule("REF"      , ":{")
-	, __Rule("REF_END"  , "}:")
-	, __Rule("DD"       , ":" + WS)
-	, __Rule("DT"       , ";" + WS)
-	, __Rule("OL"       , "[0-9]+\\." + WS)
-	, __Rule("OL"       , "#\\." + WS)
-	, __Rule("DIV"      , "\\*{4,}" + EOL)
-	, __Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS)
-	, __Rule("PRE"      , "\"{3,}" + EOL)
-	, __Rule("CODE"     , "\"{3,}")
-	, __Rule("DEL"      , "--")
-	, __Rule("BOLD"     , "\\*{2}")
-	, __Rule("SUP"      , "\\^{2}")
-	, __Rule("SUB"      , ",,")
-	, __Rule("UNDER"    , "__")
-	, __Rule("EM"       , "''")
-	, __Rule("LINK_EXT" , "\\?<")
-	, __Rule("LINK_IMG" , "!<")
-	, __Rule("LINK_WIKI", "#<")
-	, __Rule("LINK_INT" , "#\\[")
-	, __Rule("LINK_CONT", "-\\[")
-	, __Rule("BRACKET_R", "\\]")
-	, __Rule("NL"       , NL)
-	, __Rule("WS"       , WS + "+")
-	];
+	var EMPTY = {};
+	var RULES = (function (){
 
-	var ENUM = RULES.reduce(__reduceRulesTypes, {TEXT : "TEXT"});
-	var REGEX = new RegExp(RULES.map(__mapRules).join("|"), "g");
-
-
-	function __Rule(name, pattern)
+	function Rule(name, pattern)
 	{
 	 return {name : name, pattern : pattern};
 	}
 
-	function __mapRules(rule)
+	return [
+	  Rule("ESCAPE"   , "\\\\[\\S]")
+	, Rule("TH"       , "!!" + WS)
+	, Rule("TD"       , "\\|\\|" + WS)
+	, Rule("TRSEP"    , "\\|[=]+" + EOL)
+	, Rule("ATX_END"  , "=+" + EOL)
+	, Rule("ATX"      , "=+")
+	, Rule("HR"       , "-{4,}" + EOL)
+	, Rule("COMMENT"  , "/{4,}" + EOL)
+	, Rule("CLASS"    , "\\.\\." + WS)
+	, Rule("ID"       , "\\." + WS)
+	, Rule("GT"       , ">")
+	, Rule("REF"      , ":{")
+	, Rule("REF_END"  , "}:")
+	, Rule("DD"       , ":" + WS)
+	, Rule("DT"       , ";" + WS)
+	, Rule("OL"       , "[0-9]+\\." + WS)
+	, Rule("OL"       , "#\\." + WS)
+	, Rule("DIV"      , "\\*{4,}" + EOL)
+	, Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS)
+	, Rule("PRE"      , "\"{3,}" + EOL)
+	, Rule("CODE"     , "\"{3,}")
+	, Rule("DEL"      , "--")
+	, Rule("BOLD"     , "\\*{2}")
+	, Rule("SUP"      , "\\^{2}")
+	, Rule("SUB"      , ",,")
+	, Rule("UNDER"    , "__")
+	, Rule("EM"       , "''")
+	, Rule("LINK_EXT" , "\\?<")
+	, Rule("LINK_IMG" , "!<")
+	, Rule("LINK_WIKI", "#<")
+	, Rule("LINK_INT" , "#\\[")
+	, Rule("LINK_CONT", "-\\[")
+	, Rule("BRACKET_R", "\\]")
+	, Rule("NL"       , NL)
+	, Rule("WS"       , WS + "+")
+	];
+	}());
+
+	var REGEX = (function (){
+	 var regexStr = RULES.map(function (rule){
+	  return "(" + rule.pattern + ")";
+	 });
+	 
+	 return new RegExp(regexStr.join("|"), "g");
+	}());
+
+
+
+	/**
+	 * TODO: constructor comments; Static methods & properties.
+	 */
+	var ENUM = (function (){
+	 var obj = {TEXT : "TEXT"};
+	 RULES.forEach(function (rule){
+	  obj[rule.name] = rule.name;
+	 });
+	 return obj;
+	}());
+
+	var LexToken = function (lexeme, type, col)
 	{
-	 return "(" + rule.pattern + ")";
+	 return {lexeme : lexeme || "", type : type || "", col : col || 0};
 	}
 
-	function __reduceRulesTypes(acc, rule)
-	{
-	 acc[rule.name] = rule.name;
-	 return acc;
-	}
-
-	function __LexToken(lexeme, type, col)
-	{
-	 return {
-	   lexeme : lexeme || ""
-	 , type : type || ""
-	 , col : col || -1
-	 };
-	}
-
-	function __Lexer(bbmStr)
+	var LexTokens = function (bbmStr)
 	{
 	 var regex = new RegExp(REGEX);
 	 var toks = [];
@@ -563,68 +597,95 @@ return /******/ (function(modules) { // webpackBootstrap
 	  
 	  if (pos < textEnd)
 	  {
-	   toks.push(__LexToken(bbmStr.slice(pos, textEnd), ENUM.TEXT));
+	   toks.push(LexToken(bbmStr.slice(pos, textEnd), ENUM.TEXT));
 	  }
 	  if (ruleObj)
 	  {
-	   toks.push(__LexToken(res[0], ruleObj.name));
+	   toks.push(LexToken(res[0], ruleObj.name));
 	  }
 	  pos = res ? (regex.lastIndex += pos > regex.lastIndex ? 1 : 0) : textEnd;
 	 }
+	 
+	 toks.forEach(function (tok){
+	  if (tok.type === ENUM.ESCAPE && tok.lexeme.length > 1)
+	  {
+	   tok.lexeme = tok.lexeme.slice(1);
+	  }
+	 });
+	 
+	 toks.forEach(function (tok, index, tokens){
+	  var prev = tokens[index - 1] || EMPTY;
+	  tok.col = (index === 0 || prev.type === ENUM.NL)
+	  ? 0
+	  : prev.col + prev.lexeme.length;
+	 });
+	 
+	 
 	 return toks;
 	}
 
-	/*
-	Private methods: Iteration
-	--------------------------
-	*/
-
-	function __updateEscapes(tok)
+	/**
+	 * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 
+	 * tokens.
+	 *
+	 * @class Lexer
+	 * @memberOf BBM
+	 * @static
+	 * @param {String} bbmStr The BareBonesMarkup string to analyze into tokens.
+	 * @property {Array.LexToken} _tokens The array of analyzed lexical tokens.
+	 * @property {Number} minCol The minimum required column count in certain
+	   parsing contexts, such as bullet lists.
+	 * @property {Number} mark The index to stop the iteration methods from 
+	   going past. The affected methods are:
+	   
+	   - peekUntil(callback, extras)
+	   - nextUntil(callback, extras)
+	   - nextPast(callback, extras)
+	   - textUntil(callback, extras, minCol)
+	   - textPast(callback, extras, minCol)
+	   
+	 * @property {Number} pos The index of the token currently being pointed to.
+	 * @property {Number} lvl The current nesting level; Used only by the parser.
+	 * @return {Lexer} The newly created Lexer object.
+	 */
+	var Lexer = function (bbmStr)
 	{
-	 if (tok.type === ENUM.ESCAPE && tok.lexeme.length > 1)
-	 {
-	  tok.lexeme = tok.lexeme.slice(1);
-	 }
-	}
+	 var obj = Object.create(Lexer.prototype);
+	 obj._tokens = LexTokens(bbmStr);
+	 obj.minCol = 0;
+	 obj.mark = -1;
+	 obj.pos = 0;
+	 obj.lvl = 0;
+	 return obj;
+	};
 
-	function __updateCols(tok, index, toks)
+	BBM.Lexer = Lexer;
+	Lexer.LexToken = LexToken;
+	Lexer.LexTokens = LexTokens;
+	Lexer.ENUM = ENUM;
+	Lexer.isLexer = function (obj)
 	{
-	 var prev = toks[index - 1] || EMPTY;
-	 tok.col = (index === 0 || prev.type === ENUM.NL)
-	 ? 0
-	 : prev.col + prev.lexeme.length;
-	}
+	 return Lexer.prototype.isPrototypeOf(obj);
+	};
 
+	Lexer.fn = (function (fn){
 
-
-
-
-	/*
-	Public Methods: peek
-	--------------------
-	*/
-
-	function peek(offset)
+	fn.peek = function (offset)
 	{
 	 return this._tokens[this.pos + (parseInt(offset, 10) || 0)];
-	}
+	};
 
-	function peekT(type, offset)
+	fn.peekT = function (type, offset)
 	{
 	 return (this.peek(offset) || EMPTY).type === type;
-	}
+	};
 
-	function peekUntil(callback, extras)
+	fn.peekUntil = function (callback, extras)
 	{
 	 return this._tokens[this.nextUntil(callback, extras).pos];
-	}
+	};
 
-	/*
-	Public Methods: peek extras
-	---------------------------
-	*/
-
-	function isLineStart(offset)
+	fn.isLineStart = function (offset)
 	{
 	 var off = parseInt(offset, 10) || 0;
 	 var prev1 = this.peek(off - 1);
@@ -633,9 +694,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return !prev1
 	 || prev1.type === ENUM.NL
 	 || prev1.type === ENUM.WS && (!prev2 || prev2.type === ENUM.NL);
-	}
+	};
 
-	function isLineEnd(offset)
+	fn.isLineEnd = function (offset)
 	{
 	 var off = parseInt(offset, 10) || 0;
 	 var now = this.peek(off);
@@ -644,9 +705,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return !now
 	 || now.type === ENUM.NL 
 	 || now.type === ENUM.WS && (!next || next.type === ENUM.NL);
-	}
+	};
 
-	function isDelim(currTok, sTok)
+	fn.isDelim = function (currTok, sTok)
 	{
 	 var now = (currTok || this.peek() || EMPTY);
 	 return now !== EMPTY
@@ -654,28 +715,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	 && sTok.lexeme === now.lexeme
 	 && sTok.col === now.col
 	 && this.isLineStart();
-	}
+	};
 
-
-
-
-	/*
-	Public Methods: next, text
-	--------------------------
-	*/
-
-	function size()
+	fn.size = function ()
 	{
 	 return this._tokens.length;
-	}
+	};
 
-	function next(offset)
+	fn.next = function (offset)
 	{
 	 this.pos = Math.max(0, this.pos + (parseInt(offset, 10) || 1));
 	 return this;
-	}
+	};
 
-	function nextUntil(callback, extras)
+	fn.nextUntil = function (callback, extras)
 	{
 	 while (this.peek())
 	 {
@@ -686,34 +739,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.next();
 	 }
 	 return this;
-	}
+	};
 
-	function nextPast(callback, extras)
+	fn.nextPast = function (callback, extras)
 	{
 	 this.nextUntil(callback, extras);
 	 return this.pos === this.mark ? this : this.next();
-	}
+	};
 
-	function textUntil(callback, extras, minCol)
+	fn.textUntil = function (callback, extras, minCol)
 	{
-	 var col = Number(minCol) || Number(this.minCol) || 0;
+	 var self = this;
+	 var col = Number(minCol) || Number(self.minCol) || 0;
 	 var text = "";
 	 
 	 this.nextUntil(function (tok){
-	  if (callback.call(this, tok, extras))
+	  if (callback.call(self, tok, extras))
 	  {
 	   return true;
 	  }
 	  
-	  text += col > 0 && tok.type === ENUM.WS && this.isLineStart()
+	  text += col > 0 && tok.type === ENUM.WS && self.isLineStart()
 	  ? tok.lexeme.slice(col)
 	  : tok.lexeme;
 	 });
 	 
 	 return text;
-	}
+	};
 
-	function textPast(callback, extras, minCol)
+	fn.textPast = function (callback, extras, minCol)
 	{
 	 var text = this.textUntil(callback, extras, minCol);
 	 if (this.pos !== this.mark)
@@ -721,58 +775,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.next();
 	 }
 	 return text;
-	}
-
-
-
-	/*
-	Public Method: Constructor
-	--------------------------
-	*/
-
-	function Lexer(bbmStr, maxDepth)
-	{
-	 var obj = Object.create(Lexer.prototype);
-	 obj._tokens = __Lexer(bbmStr);
-	 obj.minCol = 0;
-	 obj.mark = -1;
-	 obj.pos = 0;
-	 obj.lvl = 0;
-	 obj.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
-
-	 obj._tokens.forEach(__updateEscapes);
-	 obj._tokens.forEach(__updateCols);
-	 return obj;
-	}
-
-	function isLexer(obj)
-	{
-	 return Lexer.prototype.isPrototypeOf(obj);
-	}
-
-
-	BBM.Lexer = Lexer;
-	Lexer.ENUM = ENUM;
-	Lexer.isLexer = isLexer;
-	Lexer.prototype =
-	{
-	  peek : peek
-	, peekUntil : peekUntil
-	, peekT : peekT
-	, isLineStart : isLineStart
-	, isLineEnd : isLineEnd
-	, isDelim : isDelim
-
-	, size : size
-	, next : next
-	, nextUntil : nextUntil
-	, nextPast : nextPast
-	, textUntil : textUntil
-	, textPast : textPast
 	};
 
-	module.exports = BBM;
-
+	return fn;
+	}(Lexer.prototype));
 
 
 /***/ },
@@ -782,21 +788,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4)
-	&& __webpack_require__(5)
+	var BBM = module.exports = __webpack_require__(5)
 	&& __webpack_require__(6)
 	&& __webpack_require__(7)
 	&& __webpack_require__(8)
 	&& __webpack_require__(9)
-	&& __webpack_require__(10);
+	&& __webpack_require__(10)
+	&& __webpack_require__(11);
 
-	BBM.fn.prune = function (bbmStr, options)
+	/**
+	 * Eliminate duplicate CSS identifiers, perform hyperlink URL substitution,
+	 * remove empty subtrees and collapse incomplete tree structures.
+	 *
+	 * @method prune
+	 * @return {BBM} The current node after pruning operation.
+	 */
+	BBM.fn.prune = function ()
 	{
 	 return this.pruneList().pruneBlank().pruneURL().pruneID();
 	};
-
-	module.exports = BBM;
-
 
 
 
@@ -807,8 +817,206 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	"use strict";
 
-	var __ = __webpack_require__(11);
-	var ENUM =
+	var __ = module.exports = {};
+
+	__.map = function (array, callback, extras)
+	{
+	 return array.map(function (element){
+	  return callback(element, extras);
+	 });
+	};
+
+	__.toString = function (obj)
+	{
+	 return Object.prototype.toString.call(obj);
+	};
+
+	__.toArray = function (obj, sPos, ePos)
+	{
+	 return Array.prototype.slice.call(obj, sPos, ePos);
+	};
+
+	__.flatten = function (arr, shallow)
+	{
+	 var res = __.isArray(arr) ? arr : __.toArray(arr);
+	 while (res.some(__.isArray))
+	 {
+	  res = Array.prototype.concat.apply([], res);
+	  if (shallow)
+	  {
+	   break;
+	  }
+	 }
+	 return res;
+	};
+
+	__.isArray = function (obj)
+	{
+	 return Array.isArray
+	 ? Array.isArray(obj)
+	 : __.toString(obj) === "[object Array]";
+	};
+
+	__.isObject = function (obj)
+	{
+	 return __.isFunction(obj) || (typeof obj === "object" && obj !== null);
+	};
+
+	__.isString = function (obj)
+	{
+	 return typeof obj === "string" || __.toString(obj) === "[object String]";
+	};
+
+	__.isNumber = function (obj)
+	{
+	 return typeof obj === "number" || __.toString(obj) === "[object Number]";
+	};
+
+	__.isFunction = function (obj)
+	{
+	 return typeof obj === "function" || __.toString(obj) === "[object Function]";
+	};
+
+	__.isBlankString = function (str)
+	{
+	 return /^\s*$/.test(str);
+	};
+
+	__.repeatString = function (str, times)
+	{
+	 var many = Math.abs(parseInt(times, 10)) || 0;
+	 var res = "";
+	 while (many > 0)
+	 {
+	  if (many % 2 === 1)
+	  {
+	   res += str;
+	  }
+	  if (many > 1)
+	  {
+	   str += str;
+	  }
+	  many = Math.floor(many / 2);
+	 }
+	 return res;
+	};
+
+	__.rmWS = function (str)
+	{
+	 return str.replace(/ \t\u00a0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000/g, "");
+	};
+
+	__.rmNL = function (str)
+	{
+	 return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+/g, "");
+	};
+
+	__.rmNLTail = function (str)
+	{
+	 return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+$/, "");
+	};
+
+	__.rmCTRL = function (str)
+	{
+	 return str.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, "");
+	};
+
+	__.escapeHTML = function (str)
+	{
+	 return str.replace(/&/g, "&amp;")
+	 .replace(/</g, "&lt;")
+	 .replace(/>/g, "&gt;");
+	};
+
+	__.escapeATTR = function (str)
+	{
+	 return __.escapeURI(__.rmCTRL(__.escapeHTML(str).replace(/"/g, "&quot;")
+	 .replace(/'/g, "&#x27;")
+	 .replace(/`/g, "&#x60;")));
+	};
+
+	__.escapeURI = function (str)
+	{
+	 return str.replace(/^javascript:/i, "javascript;")
+	 .replace(/^data:/i, "data;");
+	};
+
+	__.has = function (obj, key)
+	{
+	 return Object.prototype.hasOwnProperty.call(obj, key);
+	};
+
+	__.get = function (obj, key)
+	{
+	 return __.has(obj, key) ? obj[key] : void(0);
+	};
+
+	__.extend = function (others)
+	{
+	 var toObj = __.isObject(others) ? others : {};
+
+	 Array.prototype.forEach.call(arguments, function (fromObj){
+	  if (fromObj === toObj || !__.isObject(fromObj)) {return;}
+	  for (var key in fromObj)
+	  {
+	   if (__.has(fromObj, key))
+	   {
+	    toObj[key] = fromObj[key];
+	   }
+	  }
+	 });
+
+	 return toObj;
+	};
+
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	"use strict";
+
+	var __ = __webpack_require__(4);
+
+
+	/**
+	 * BareBonesMarkup node object. Each instance of this class represents a 
+	 * node within the abstract syntax tree. The `new` operator is not required. 
+	 * Instance properties prefixed with an underscore are meant for private use.
+	 *
+	 *     var BBM = BBM(BBM.ENUM.P).append("Text ").toHTML();
+	 *
+	 * @class BBM
+	 * @param {String} type The node's type name. @see BBM.ENUM
+	 * @property {String} _type The node's type name.
+	 * @property {Object} _attr Attribute key-value (String-String) pairs.
+	 * @property {Array.BBM} _nodes An array of child nodes.
+	 * @property {BBM} _parent The node's parent node.
+	 * @return {BBM} The newly created node with a specific type. 
+	 */
+	var BBM = module.exports = function (type)
+	{
+	 var obj = Object.create(BBM.prototype);
+	 obj._type = type.toLocaleUpperCase();
+	 obj._attr = {};
+	 obj._nodes = [];
+	 obj._parent = null;
+	 return obj;
+	};
+
+
+	/**
+	 * Enumeration of officially recognized node types. Names preceding with an 
+	 * underscore are private and for internal use only.
+	 * 
+	 * @member {Object} ENUM
+	 * @enum {String}
+	 * @readonly
+	 * @static 
+	 */
+	var ENUM = BBM.ENUM =
 	{
 	  _DT : "_DT"
 	, _DD : "_DD"
@@ -855,106 +1063,203 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 
-	/*
-	Private Methods
-	---------------
-	*/
 
-	function __mapArgs(node)
+	/**
+	 * Queries the target object if it is an instance of BBM.
+	 * 
+	 * @method isNode
+	 * @static
+	 * @param {anything} The object to check against.
+	 * @return {Boolean} True if instance of BBM; False otherwise.
+	 */
+	BBM.isNode = function (target)
 	{
-	 var res = node;
-	 if ((__.isString(res) && res.length > 0) || __.isNumber(res))
+	 return BBM.prototype.isPrototypeOf(target);
+	};
+
+	BBM.fn = (function (fn){
+
+	// Private Methods
+	// ---------------
+
+	function mapArgs(node, parent)
+	{
+	 if ((__.isString(node) && node.length > 0) || __.isNumber(node))
 	 {
-	  res = BBM(ENUM.TEXT).text(res + "");
+	  return BBM(ENUM.TEXT).text(node + "");
 	 }
-	 if (isNode(res))
+	 if (BBM.isNode(node))
 	 {
-	  res.replaceWith();
-	  res._parent = this;
+	  node.replaceWith();
+	  node._parent = parent;
 	 }
-	 return res;
+	 return node;
 	}
 
-	function __procArgs(elems, node)
+	function procArgs(elems, parent)
 	{
 	 return __.isArray(elems)
-	 ? __.flatten(elems).map(__mapArgs, node).filter(isNode)
-	 : __mapArgs.call(node, elems);
+	 ? __.map(__.flatten(elems), mapArgs, parent).filter(BBM.isNode)
+	 : mapArgs(elems, parent);
 	}
 
-	function __nullParent(node)
+	function nullParent(node)
 	{
-	 if (isNode(node))
+	 if (BBM.isNode(node))
 	 {
 	  node._parent = null;
 	 }
+	 return node;
 	}
 
-	function __empty(node)
+	function empty(node)
 	{
 	 var kids = node.children();
 	 var nodes = kids.length > 0 ? kids.splice(0, kids.length) : kids;
-	 nodes.forEach(__nullParent);
+	 nodes.forEach(nullParent);
 	 return nodes;
+	}
+
+	function eachPre(start, curr, callback, params)
+	{
+	 callback.call(start, curr, params);
+	 curr.children().forEach(function (node){
+	  eachPre(start, node, callback, params);
+	 });
+	 return start;
+	}
+
+	function eachPost(start, curr, callback, params)
+	{
+	 curr.children().forEach(function (node){
+	  eachPost(start, node, callback, params);
+	 });
+	 callback.call(start, curr, params);
+	 return start;
 	}
 
 
 
-	/*
-	Basic & Low-Level Accessors
-	---------------------------
-	*/
+	// Low Level Manipulation & Basic Accessors
+	// ----------------------------------------
 
-	function splice(from, count, elems)
+	/**
+	 * Low Level method for manipulating the node's children.
+	 * 
+	 * @method splice
+	 * @param {Number} from The index to begin manipulation. (Zero or more)
+	 * @param {Number} count The Number of children to remove. (Zero or more)
+	 * @param {(Array.BBM|BBM|String)} [elems] The new child nodes to insert. 
+	   Child nodes inserted in this manner will be detached from their belonging 
+	   parent nodes.
+
+	 * @return {BBM} The modified node instance.
+	 */
+	fn.splice = function (from, count, elems)
 	{
-	 var eles = __procArgs(elems, this);
+	 var eles = procArgs(elems, this);
 	 var kids = this.children();
 	 var args = __.isArray(eles) ? [from, count].concat(eles) : eles;
 	 var removed = __.isArray(args)
 	 ? kids.splice.apply(kids, args)
-	 : isNode(args)
+	 : BBM.isNode(args)
 	 ? kids.splice(from, count, args)
 	 : kids.splice(from, count);
 	 
-	 removed.forEach(__nullParent);
+	 removed.forEach(nullParent);
 	 return this;
-	}
+	};
 
-	function parent()
+
+
+	/**
+	 * Retrieves the node's parent node.
+	 * 
+	 * @method parent
+	 * @return {(BBM|undefined)} The parent node, or undefined if there's none.
+	 */
+	fn.parent = function ()
 	{
 	 return this._parent;
-	}
+	};
 
-	function children(shallow)
+
+
+	/**
+	 * Retrieves the node's children list.
+	 * 
+	 * @method children
+	 * @param {Boolean} [shallow] If true, retrieves a shallow copy instead.
+	 * @return {Array.BBM} The pointer to the children Array, or a copy of the 
+	   Array if the shallow parameter is truthy.
+	 */
+	fn.children = function (shallow)
 	{
 	 return shallow ? this._nodes.slice() : this._nodes;
-	}
+	};
 
-	function size()
+
+
+	/**
+	 * Retrieves the size of the node's children list.
+	 * 
+	 * @method size
+	 * @return {Number} The Number of children this node contains.
+	 */
+	fn.size = function ()
 	{
 	 return this.children().length;
-	}
+	};
 
-	function last()
-	{
-	 return this.children()[this.children().length - 1];
-	}
 
-	function first()
+	/**
+	 * Retrieves the node's first child node.
+	 * 
+	 * @method first
+	 * @return {(BBM|undefined)} The first child, or undefined if there's none.
+	 */
+	fn.first = function ()
 	{
 	 return this.children()[0];
-	}
+	};
 
-	function isFirstChild()
+
+	/**
+	 * Retrieves the node's last child node.
+	 * 
+	 * @method last
+	 * @return {(BBM|undefined)} The last child, or undefined if there's none.
+	 */
+	fn.last = function ()
+	{
+	 return this.children()[this.children().length - 1];
+	};
+
+
+	/**
+	 * Queries whether the node is the first sibling within its parent.
+	 * 
+	 * @method isFirstChild
+	 * @return {Boolean} True if the node has a parent, and it's the first sibling 
+	   within its subtree; False otherwise.
+	 */
+	fn.isFirstChild = function ()
 	{
 	 return this.parent() && this.parent().first() === this;
-	}
+	};
 
-	function isLastChild()
+
+	/**
+	 * Queries whether the node is the last sibling within its parent.
+	 * 
+	 * @method isLastChild
+	 * @return {Boolean} True if the node has a parent, and it's the last sibling 
+	   within its subtree; False otherwise.
+	 */
+	fn.isLastChild = function ()
 	{
 	 return this.parent() && this.parent().last() === this;
-	}
-
+	};
 
 
 
@@ -963,23 +1268,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	------------
 	*/
 
-	function pop()
+	/**
+	 * Removes the node's last child.
+	 * 
+	 * @method pop
+	 * @return {BBM|undefined} The node's last child, or undefined if there's none.
+	 */
+	fn.pop = function ()
 	{
-	 __nullParent(this.children().pop());
-	 return this;
-	}
+	 return nullParent(this.children().pop());
+	};
 
-	function shift()
+
+	/**
+	 * Removes the node's first child.
+	 * 
+	 * @method shift
+	 * @return {BBM|undefined} The node's first child, or undefined if there's none.
+	 */
+	fn.shift = function ()
 	{
-	 __nullParent(this.children().shift());
-	 return this;
-	}
+	 return nullParent(this.children().shift());
+	};
 
 
-	function append(content)
+	/**
+	 * Adds one or more nodes to the end of this node's children list.
+	 * 
+	 * @method append
+	 * @param {String|Array.BBM|BBM} [content] An Array of BBM nodes, a single 
+	   BBM node, or a non-empty String to append to the current node. If no 
+	   valid content is supplied, this operation does nothing.
+	 * @return {BBM} The modified BBM instance.
+	 */
+	fn.append = function (content)
 	{
-	 var eles = __procArgs(content, this), kids = this.children();
-	 if (isNode(eles))
+	 var eles = procArgs(content, this), kids = this.children();
+	 if (BBM.isNode(eles))
 	 {
 	  kids.push(eles);
 	 }
@@ -988,12 +1313,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  kids.push.apply(kids, eles);
 	 }
 	 return this;
-	}
+	};
 
-	function prepend(content)
+
+	/**
+	 * Adds one or more nodes to the beginning of this node's children list.
+	 * 
+	 * @method prepend
+	 * @param {String|Array.BBM|BBM} [content] @see BBM.append
+	 * @return {BBM} The modified BBM instance.
+	 */
+	fn.prepend = function (content)
 	{
-	 var eles = __procArgs(content, this), kids = this.children();
-	 if (isNode(eles))
+	 var eles = procArgs(content, this), kids = this.children();
+	 if (BBM.isNode(eles))
 	 {
 	  kids.unshift(eles);
 	 }
@@ -1002,9 +1335,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  kids.unshift.apply(kids, eles);
 	 }
 	 return this;
-	}
+	};
 
-	function replaceWith(content)
+
+	/**
+	 * Replaces the current node with some other content in its belonging subtree. 
+	 * If the current node has no parent, this operation does nothing.
+	 * 
+	 * @method replaceWith
+	 * @param {String|Array.BBM|BBM} [content] @see BBM.append
+	 * @return {BBM} The current node detached from its belonging subtree.
+	 */
+	fn.replaceWith = function (content)
 	{
 	 var pos = this.parent() ? this.parent().children().indexOf(this) : -1;
 	 if (pos > -1)
@@ -1012,70 +1354,140 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.parent().splice(pos, 1, content);
 	 }
 	 return this;
-	}
+	};
 
-	function replace(target)
+
+	/**
+	 * The inverse operation of BBM.replaceWith; The current node will take 
+	 * the place of the target node, if the target is a BBM instance and it 
+	 * has a parent node. Otherwise, this operation does nothing.
+	 *
+	 * @method replace
+	 * @param {BBM} [target] The target node to replace with the current node.
+	 * @return {BBM} The current node attached to the target's subtree.
+	 */
+	fn.replace = function (target)
 	{
-	 if (isNode(target))
+	 if (BBM.isNode(target))
 	 {
 	  target.replaceWith(this);
 	 }
 	 return this;
-	}
+	};
 
-	function empty()
+
+	/**
+	 * Detaches all child nodes from the current node.
+	 *
+	 * @method empty
+	 * @return {BBM} The current node with an empty children list.
+	 */
+	fn.empty = function ()
 	{
-	 __empty(this);
+	 empty(this);
 	 return this;
-	}
+	};
 
 
 
-	/*
-	Children Iteration
-	------------------
-	*/
 
-	function filterChild(callback)
+
+
+	// Children Modification
+	// ---------------------
+
+	/**
+	 * Rebuilds the current node's children list, reattaching each node that 
+	 * returns truthy in the callback function.
+	 *
+	 * @method filterChild
+	 * @param {BBM~filterChild} callback Called on each child node being visited.
+	 * @return {BBM} The current node after modification.
+	 */
+	fn.filterChild = function (callback)
 	{
 	 var that = this;
-	 __empty(that).forEach(function (node, index, sibs){
+	 empty(that).forEach(function (node, index, sibs){
 	  that.append(callback.call(that, node, index, sibs) ? node : null);
 	 });
 	 return that;
-	}
-
-	function rebuildChild(callback)
-	{
-	 __empty(this).forEach(callback, this);
-	 return this;
-	}
-
-
-
-	/*
-	Subtree Iteration
-	-----------------
-	*/
+	};
 
 	/**
-	 * @desc Depth-first pre-order traversal.
+	 * Callback used in BBM.filterChild(callback)
+	 * 
+	 * @callback BBM~filterChild
+	 * @this BBM The current node holding a partial list of child nodes that 
+	   has passed the callback test so far. It is initially empty.
+	 * @param {BBM} node The child node being visited.
+	 * @param {Number} index The child node's current index.
+	 * @param {Array} sibs The backing Array of the children node list.
+	 * @return {Boolean} Truthy to keep the child node; False to discard.
 	 */
-	function eachPre(callback, params)
-	{
-	 return __eachPre(this, this, callback, params);
-	}
 
-	function __eachPre(start, curr, callback, params)
+
+
+
+	/**
+	 * Rebuilds the current node's children list. As BBM.filterChild, except the 
+	 * callback function is responsible for explicitly adding the child nodes 
+	 * back.
+	 *
+	 * @method rebuildChild
+	 * @param {BBM~rebuildChild} callback Called on each child node being visited.
+	 * @return {BBM} The current node after modification.
+	 */
+	fn.rebuildChild = function (callback)
 	{
-	 callback.call(start, curr, params);
-	 curr.children().forEach(function (node){
-	  __eachPre(start, node, callback, params);
+	 var that = this;
+	 empty(that).forEach(function (node, index, sibs){
+	  callback(that, node, index, sibs);
 	 });
-	 return start;
-	}
+	 return that;
+	};
 
-	function find(callback, params)
+	/**
+	 * Callback used in BBM.rebuildChild(callback)
+	 * 
+	 * @callback BBM~rebuildChild
+	 * @param {BBM} parent The current node holding a partial list of child nodes.
+	 * @param {BBM} node The child node being visited.
+	 * @param {Number} index The child node's current index.
+	 * @param {Array} sibs The backing Array of the children node list.
+	 */
+
+
+
+
+	// Subtree Iteration
+	// -----------------
+
+	/**
+	 * Iterates the node's subtree using depth-first, pre-order traversal, 
+	 * executing the callback once per node.
+	 *
+	 * @method eachPre
+	 * @param {BBM~eachSubtree} callback Called on each child node being visited.
+	 * @param {anything} [params] Extra parameter to be supplied to the callback.
+	 * @return {BBM} The current node that started the traversal.
+	 */
+	fn.eachPre = function (callback, params)
+	{
+	 return eachPre(this, this, callback, params);
+	};
+
+
+	/**
+	 * As BBM.eachPre, but returns an Array of nodes that the returns a truthy 
+	 * value within the callback function.
+	 *
+	 * @method find
+	 * 
+	 * @param {BBM~eachFind} callback Called on each child node being visited.
+	 * @return {BBM} The current node that started the traversal.
+	 * @see BBM.eachPre 
+	 */
+	fn.find = function (callback, params)
 	{
 	 var res = [];
 	 this.eachPre(function (node){
@@ -1085,24 +1497,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	 });
 	 return res;
-	}
+	};
+
 
 	/**
-	 * @desc Depth-first post-order traversal.
+	 * Iterates the node's subtree using depth-first, post-order traversal, 
+	 * executing the callback once per node.
+	 *
+	 * @method eachPost
+	 * @param {BBM~eachSubtree} callback Called on each child node being visited.
+	 * @param {anything} [params] Extra parameter to be supplied to the callback.
+	 * @return {BBM} The current node that started the traversal.
 	 */
-	function eachPost(callback, params)
+	fn.eachPost = function (callback, params)
 	{
-	 return __eachPost(this, this, callback, params);
-	}
+	 return eachPost(this, this, callback, params);
+	};
 
-	function __eachPost(start, curr, callback, params)
-	{
-	 curr.children().forEach(function (node){
-	  __eachPost(start, node, callback, params);
-	 });
-	 callback.call(start, curr, params);
-	 return start;
-	}
+	/**
+	 * Callback used in BBM.eachPost() and BBM.eachPre()
+	 * 
+	 * @callback BBM~eachSubtree
+	 * @this {BBM} The node that started the traversal.
+	 * @param {BBM} node The current node being visited.
+	 * @param {anything} params Optional parameter provided to the callback.
+	 */
+	 
+	/**
+	 * Callback used in BBM.find()
+	 * 
+	 * @callback BBM~eachFind
+	 * @this {BBM} The node that started the traversal.
+	 * @param {BBM} node The current node being visited.
+	 * @param {anything} params Optional parameter provided to the callback.
+	 * @returns {Boolean} Truthy to include the node in the resulting array,
+	   false otherwise.
+	 */
+
 
 
 	/*
@@ -1110,7 +1541,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	-------------------------------------------
 	*/
 
-	function text(val)
+	/**
+	 * Retrieves or sets the text value of this node. If the text value retrieved
+	 * is not the empty String `""`, this node is considered a text node.
+	 *
+	 * This method adds an extra property `_value` to the current BBM instance.
+	 * 
+	 * @method text
+	 * @param {(String|Number|)} [val] The text value to set the node's value to.
+	 * @return {(this|String)} The current node if no parameter is supplied; 
+	   Returns the node's text value otherwise.
+	 */
+	fn.text = function (val)
 	{
 	 if (arguments.length === 0)
 	 {
@@ -1121,9 +1563,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._value = val;
 	 }
 	 return this;
-	}
+	};
 
-	function attr(key, val)
+
+	/**
+	 * Retrieves or sets the attributes of this node.
+	 * @method attr
+	 * @param {(String|Object)} [key] An object to merge its properties into
+	   the node's attributes, or a String denoting the attribute key to set.
+	 * @param {(String|Number)} [val] The attribute value for the corresponding 
+	   key. Omitted if the key parameter is an object.
+	 * @return {(Object|String|BBM} 
+	   - If no parameter is supplied, returns the node's attribute object.
+	   - If only the key is supplied and it's not an object, returns the 
+	     corresponding attribute value.
+	   - Returns the current node otherwise.
+	 */
+	fn.attr = function (key, val)
 	{
 	 if (__.isObject(key))
 	 {
@@ -1142,9 +1598,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._attr[key] = val + "";
 	 }
 	 return this;
-	}
+	};
 
-	function removeAttr(key)
+
+	/**
+	 * Removes attributes from the node.
+	 * 
+	 * @method removeAttr
+	 * @param {(String|Number)} [key] The attribute key to remove. If omitted,
+	   removes all attribute key value pairs instead.
+	 * @return {BBM} The modified BBM instance with attributes removed.
+	 */
+	fn.removeAttr = function (key)
 	{
 	 if (arguments.length === 1)
 	 {
@@ -1155,9 +1620,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this._attr = {};
 	 }
 	 return this;
-	}
+	};
 
-	function type(newType)
+
+	/**
+	 * Retrieves or sets the node's type.
+	 * 
+	 * @method type
+	 * @param {(String|Number)} [newType] The type String to set the node into.
+	 * @return {(String|BBM} If no parameters, the node's type String; Otherwise, 
+	   the modified BBM instance with a new type.
+	 */
+	fn.type = function (newType)
 	{
 	 if (arguments.length === 0)
 	 {
@@ -1165,101 +1639,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	 }
 	 this._type = (newType + "").toLocaleUpperCase();
 	 return this;
-	}
+	};
 
-	function extend(extendObj)
+
+	/**
+	 * Merge the contents of an object onto the BBM prototype to add BBM methods.
+	 *
+	 * @method extend
+	 * @param {Object} extendObj The object to merge into the prototype.
+	 * @return {BBM} The calling instance.
+	 */
+	fn.extend = function (extendObj)
 	{
 	 return __.extend(this, extendObj);
-	}
+	};
 
-	function toJSON()
+
+	/**
+	 * Converts the current node into JSON-compatible format for use with 
+	 * `JSON.stringify()`. Do not use this method to obtain a JSON string of the 
+	 * subtree; Use `JSON.stringify(node, null, " ")` instead.
+	 *
+	 * @method toJSON
+	 * @return {Object} A clone of the current node without the BBM prototype.
+	 */
+	fn.toJSON = function ()
 	{
 	 var obj = __.extend({}, this);
 	 delete obj._parent;
 	 return obj;
-	}
-
-
-
-	/*
-	Public: Constructors & Static Methods
-	-------------------------------------
-	*/
-
-	function BBM(type)
-	{
-	 var obj = Object.create(BBM.prototype);
-	 obj._type = (__.isString(type) ? type : "").toLocaleUpperCase();
-	 obj._attr = {};
-	 obj._nodes = [];
-	 obj._parent = null;
-	 return obj;
-	}
-
-	function isNode(target)
-	{
-	 return BBM.prototype.isPrototypeOf(target);
-	}
-
-
-
-
-	/*
-	Export basic API
-	----------------
-	*/
-	BBM.__ = __;
-	BBM.ENUM = ENUM;
-	BBM.isNode = isNode;
-	BBM.fn = BBM.prototype =
-	{
-	  splice : splice
-	, parent : parent
-	, children : children
-	 
-	, size : size
-	, last : last
-	, first : first
-	, isLastChild : isLastChild
-	, isFirstChild : isFirstChild
-
-	, pop : pop
-	, shift : shift
-	, append : append
-	, prepend : prepend
-	, replaceWith : replaceWith
-	, replace : replace
-	, empty : empty
-
-	, filterChild : filterChild
-	, rebuildChild : rebuildChild
-
-	, eachPre : eachPre
-	, find : find
-	, eachPost : eachPost
-
-	, text : text
-	, attr : attr
-	, type : type
-	, removeAttr : removeAttr
-	, extend : extend
-	, toJSON : toJSON
 	};
 
 
-	module.exports = BBM;
-
+	return fn;
+	}(BBM.prototype));
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4);
-	var __ = BBM.__;
+	var BBM = module.exports = __webpack_require__(5);
+	var __ = __webpack_require__(4);
 	var AST = BBM.ENUM;
 	var DUMMY = BBM("_DUMMY");
 	var IDCLASS = {_ID : true, _CLASS : true};
@@ -1333,9 +1757,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return pNode.append(node.type(type === AST._DD ? AST.DD : AST.DT));
 	}
 
-	function pruneSwitch(node)
+	function pruneSwitch(parent, node)
 	{
-	 var prev = this.last() || DUMMY;
+	 var prev = parent.last() || DUMMY;
 	 var nType = node.type();
 	 var pType = prev.type();
 	 var res = node;
@@ -1350,7 +1774,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 }
 	 if (res !== prev)
 	 {
-	  this.append(res);
+	  parent.append(res);
 	 }
 	}
 
@@ -1362,25 +1786,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	 }
 	}
 
+	/**
+	 * Fleshes out intermediate node type into officially recognized types, 
+	 * such as collapsing bullet list blocks into a formal bullet list.
+	 *
+	 * @method pruneList
+	 * @return {BBM} The current node, with subtrees containing nodes with 
+	   leading underscore type name pruned.
+	 */
 	BBM.fn.pruneList = function ()
 	{
 	 return this.eachPost(pruneList);
 	};
 
-	module.exports = BBM;
 
 
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4);
-	var __ = BBM.__;
+	var BBM = module.exports = __webpack_require__(5);
+	var __ = __webpack_require__(4);
 	var AST = BBM.ENUM;
 	var DUMMY = BBM("_DUMMY");
 	var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
@@ -1412,7 +1843,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function isKept(node)
 	{
-	 return node.text() || !isBlank(node);
+	 return node.text().length > 0 || !isBlank(node);
 	}
 
 	function pruneTR(node)
@@ -1469,25 +1900,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 
-
+	/**
+	 * Removes blank subtrees and nodes from the current node. A subtree is 
+	 * considered empty if it's not the following element, and it contains no 
+	 * visible text content: (That is, only blank strings such as " ")
+	 *
+	 * - TD
+	 * - TH
+	 * - PRE
+	 * - LI
+	 * - BLOCKQUOTE
+	 * - DD
+	 * - DT
+	 * - HR
+	 * - DIV
+	 * - LINK_* (Hyperlink and image nodes)
+	 * - COMMENT 
+	 *
+	 * In short, nested inline formatting containing nothing but blank strings 
+	 * shall be removed from the tree, such as `** -- __ __ -- **`.
+	 *
+	 * @method pruneBlank
+	 * @return {BBM} The current node with empty subtrees pruned.
+	 */
 	BBM.fn.pruneBlank = function ()
 	{
 	 return this.eachPost(pruneBlank);
 	};
 
-	module.exports = BBM;
-
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4);
-	var __ = BBM.__;
+	var BBM = module.exports = __webpack_require__(5);
+	var __ = __webpack_require__(4);
 	var AST = BBM.ENUM;
 	var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
 
@@ -1505,7 +1956,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 }
 	}
 
-
+	/**
+	 * Performs URL substitution within the subtree, changing ID-URL pairs in 
+	 * the symbol table to corresponding identifiers inside hyperlink and image
+	 * elements.
+	 *
+	 * @method pruneURL
+	 * @return {BBM} The current node after URL substitution.
+	 */
 	BBM.fn.pruneURL = function ()
 	{
 	 return __.isObject(this.symTable)
@@ -1513,19 +1971,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	 : this;
 	};
 
-	module.exports = BBM;
-
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4);
-	var __ = BBM.__;
+	var BBM = module.exports = __webpack_require__(5);
+	var __ = __webpack_require__(4);
 
 	function pruneID(node, idList)
 	{
@@ -1546,23 +2002,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	 }
 	}
 
-	BBM.fn.pruneID = function (idList)
+	/**
+	 * Eliminate duplicate CSS identifiers
+	 *
+	 * @method pruneID
+	 * @return {BBM} The current node with no duplicate IDs in its subtree.
+	 */
+	BBM.fn.pruneID = function ()
 	{
-	 return this.eachPre(pruneID, __.isArray(idList) ? idList : []);
+	 return this.eachPre(pruneID, []);
 	};
-
-	module.exports = BBM;
 
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4);
+	var BBM = module.exports = __webpack_require__(5);
 	var DUMMY = BBM("_DUMMY");
 
 	function isPrunable(node, index, sibs)
@@ -1570,16 +2030,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return (sibs[index - 1] || DUMMY).text() && node.text();
 	}
 
-	function pruneTextWork(node)
+	function pruneTextWork(parent, node)
 	{
-	 var prev = this.last() || DUMMY;
+	 var prev = parent.last() || DUMMY;
 	 if (prev.text() && node.text())
 	 {
 	  prev.text(prev.text() + node.text());
 	 }
 	 else
 	 {
-	  this.append(node);
+	  parent.append(node);
 	 }
 	}
 
@@ -1592,25 +2052,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 
-
+	/**
+	 * Collapses consecutive text nodes into a single text node in the subtree.
+	 *
+	 * @method pruneText
+	 * @return {BBM} The current node with consecutive text nodes in its subtree 
+	 * combined.
+	 */
 	BBM.fn.pruneText = function ()
 	{
 	 return this.eachPre(pruneText);
 	};
 
-	module.exports = BBM;
-
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
 	"use strict";
 
-	var BBM = __webpack_require__(4);
-	var __ = BBM.__;
+	var BBM = module.exports = __webpack_require__(5);
+	var __ = __webpack_require__(4);
 	var AST = BBM.ENUM;
 	var XHTML = [AST.HR, AST.LINK_IMG];
 	var INLINES =
@@ -1695,7 +2159,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 
 	 for (var key in attr)
 	 {
-	  if (__.has(attr, key))
+	  if (__.has(attr, key) && !__.isBlankString(key))
 	  {
 	   res += __.escapeATTR(key).substring(0, opts.maxAttrChars)
 	   + "=\""
@@ -1752,7 +2216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 var indent = printIndent(node, opts);
 	 return indent
 	 + "<!--\n"
-	 + node.children().map(printHTML, opts).join("")
+	 + __.map(node.children(), printHTML, opts).join("")
 	 + indent
 	 + "-->"
 	 + (node.isLastChild() ? "" : printBlockEnd(node, opts));
@@ -1763,10 +2227,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return __.escapeHTML(opts.rmNL ? __.rmNL(node.text()) : node.text()); 
 	}
 
-	function printHTML(node)
+	function printHTML(node, opts)
 	{
 	 var str = "";
-	 var opts = this;
 	 
 	 opts.depth += 1;
 	 str = node.text().length > 0
@@ -1774,9 +2237,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 : node.type() === AST.COMMENT
 	 ? (opts.comment ? printComment(node, opts) : "")
 	 : printTagOpen(node, opts)
-	   + node.children().map(printHTML, opts).join("")
+	   + __.map(node.children(), printHTML, opts).join("")
 	   + printTagClose(node, opts);
 	 opts.depth -= 1;
+	 
 	 return str;
 	}
 
@@ -1789,184 +2253,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 opts.XHTML = !!opts.XHTML;
 	 opts.comment = !!opts.comment;
 	 opts.rmNL = !!opts.rmNL;
-	 return printHTML.call(opts, this);
-	};
-
-	module.exports = BBM;
-
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	"use strict";
-
-	function __extend(fromObj)
-	{
-	 if (fromObj === this || !isObject(fromObj)) {return;}
-	 for (var key in fromObj)
-	 {
-	  if (has(fromObj, key))
-	  {
-	   this[key] = fromObj[key];
-	  }
-	 }
-	}
-
-	function toString(obj)
-	{
-	 return Object.prototype.toString.call(obj);
-	}
-
-	function toArray(obj, sPos, ePos)
-	{
-	 return Array.prototype.slice.call(obj, sPos, ePos);
-	}
-
-	function flatten(arr, shallow)
-	{
-	 var res = isArray(arr) ? arr : toArray(arr);
-	 while (res.some(isArray))
-	 {
-	  res = Array.prototype.concat.apply([], res);
-	  if (shallow)
-	  {
-	   break;
-	  }
-	 }
-	 return res;
-	}
-
-	function isArray(obj)
-	{
-	 return Array.isArray ? Array.isArray(obj) : toString(obj) === "[object Array]";
-	}
-
-	function isObject(obj)
-	{
-	 return isFunction(obj) || (typeof obj === "object" && obj !== null);
-	}
-
-	function isString(obj)
-	{
-	 return typeof obj === "string" || toString(obj) === "[object String]";
-	}
-
-	function isNumber(obj)
-	{
-	 return typeof obj === "number" || toString(obj) === "[object Number]";
-	}
-
-	function isFunction(obj)
-	{
-	 return typeof obj === "function" || toString(obj) === "[object Function]";
-	}
-
-	function isBlankString(str)
-	{
-	 return /^\s*$/.test(str);
-	}
-
-	function repeatString(str, times)
-	{
-	 var many = Math.abs(parseInt(times, 10)) || 0;
-	 var res = "";
-	 while (many > 0)
-	 {
-	  if (many % 2 === 1)
-	  {
-	   res += str;
-	  }
-	  if (many > 1)
-	  {
-	   str += str;
-	  }
-	  many = Math.floor(many / 2);
-	 }
-	 return res;
-	}
-
-	function rmWS(str)
-	{
-	 return str.replace(/ \t\u00a0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000/g, "");
-	}
-
-	function rmNL(str)
-	{
-	 return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+/g, "");
-	}
-
-	function rmNLTail(str)
-	{
-	 return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+$/, "");
-	}
-
-	function rmCTRL(str)
-	{
-	 return str.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g, "");
-	}
-
-	function escapeHTML(str)
-	{
-	 return str.replace(/&/g, "&amp;")
-	 .replace(/</g, "&lt;")
-	 .replace(/>/g, "&gt;");
-	}
-
-	function escapeATTR(str)
-	{
-	 return escapeURI(rmCTRL(escapeHTML(str).replace(/"/g, "&quot;")
-	 .replace(/'/g, "&#x27;")
-	 .replace(/`/g, "&#x60;")));
-	}
-
-	function escapeURI(str)
-	{
-	 return str.replace(/^javascript:/i, "javascript;")
-	 .replace(/^data:/i, "data;");
-	}
-
-	function has(obj, key)
-	{
-	 return Object.prototype.hasOwnProperty.call(obj, key);
-	}
-
-	function get(obj, key)
-	{
-	 return has(obj, key) ? obj[key] : void(0);
-	}
-
-	function extend(others)
-	{
-	 var toObj = isObject(others) ? others : {};
-	 Array.prototype.forEach.call(arguments, __extend, toObj);
-	 return toObj;
-	}
-
-
-
-	module.exports = {
-	  toArray : toArray
-	, flatten : flatten
-	, isObject : isObject
-	, isArray : isArray
-	, isString : isString
-	, isNumber : isNumber
-	, isFunction : isFunction
-	, isBlankString : isBlankString
-	, repeatString : repeatString
-	, rmWS : rmWS
-	, rmNL : rmNL
-	, rmNLTail : rmNLTail
-	, rmCTRL : rmCTRL
-	, escapeHTML : escapeHTML
-	, escapeATTR : escapeATTR
-	, escapeURI : escapeURI
-	, has : has
-	, get : get
-	, extend : extend
+	 return printHTML(this, opts);
 	};
 
 
