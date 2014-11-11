@@ -581,7 +581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var LexToken = function (lexeme, type, col)
 	{
 	 return {lexeme : lexeme || "", type : type || "", col : col || 0};
-	}
+	};
 
 	var LexTokens = function (bbmStr)
 	{
@@ -622,7 +622,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 
 	 
 	 return toks;
-	}
+	};
 
 	/**
 	 * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 
