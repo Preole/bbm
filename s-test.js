@@ -1,6 +1,6 @@
 "use strict";
 
-var BBM = require("./dist/bbm.js");
+var BBM = require("./dist/BBM.js");
 var fs = require("fs");
 var glob = require("glob");
 var diff = require("diff");

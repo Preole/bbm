@@ -22,7 +22,7 @@ var __ = require("./__.js");
 var BBM = module.exports = function (type)
 {
  var obj = Object.create(BBM.prototype);
- obj._type = type.toLocaleUpperCase();
+ obj._type = String(type).toLocaleUpperCase();
  obj._attr = {};
  obj._nodes = [];
  obj._parent = null;
@@ -34,6 +34,7 @@ var BBM = module.exports = function (type)
  * Enumeration of officially recognized node types. Names preceding with an 
  * underscore are private and for internal use only.
  * 
+ * @name BBM
  * @member {Object} ENUM
  * @enum {String}
  * @readonly
@@ -119,7 +120,7 @@ function mapArgs(node, parent)
 {
  if ((__.isString(node) && node.length > 0) || __.isNumber(node))
  {
-  return BBM(ENUM.TEXT).text(node + "");
+  return BBM(ENUM.TEXT).text(String(node));
  }
  if (BBM.isNode(node))
  {
@@ -329,7 +330,7 @@ fn.shift = function ()
  * Adds one or more nodes to the end of this node's children list.
  * 
  * @method append
- * @param {String|Array.BBM|BBM} [content] An Array of BBM nodes, a single 
+ * @param {(String|Array.BBM|BBM)} [content] An Array of BBM nodes, a single 
    BBM node, or a non-empty String to append to the current node. If no 
    valid content is supplied, this operation does nothing.
  * @return {BBM} The modified BBM instance.
@@ -353,7 +354,7 @@ fn.append = function (content)
  * Adds one or more nodes to the beginning of this node's children list.
  * 
  * @method prepend
- * @param {String|Array.BBM|BBM} [content] @see BBM.append
+ * @param {(String|Array.BBM|BBM)} [content] @see BBM.append
  * @return {BBM} The modified BBM instance.
  */
 fn.prepend = function (content)
@@ -376,7 +377,7 @@ fn.prepend = function (content)
  * If the current node has no parent, this operation does nothing.
  * 
  * @method replaceWith
- * @param {String|Array.BBM|BBM} [content] @see BBM.append
+ * @param {(String|Array.BBM|BBM)} [content] @see BBM.append
  * @return {BBM} The current node detached from its belonging subtree.
  */
 fn.replaceWith = function (content)
@@ -581,7 +582,7 @@ Attributes, Properties, and Class Extension
  * This method adds an extra property `_value` to the current BBM instance.
  * 
  * @method text
- * @param {(String|Number|)} [val] The text value to set the node's value to.
+ * @param {(String|Number)} [val] The text value to set the node's value to.
  * @return {(this|String)} The current node if no parameter is supplied; 
    Returns the node's text value otherwise.
  */
@@ -606,7 +607,7 @@ fn.text = function (val)
    the node's attributes, or a String denoting the attribute key to set.
  * @param {(String|Number)} [val] The attribute value for the corresponding 
    key. Omitted if the key parameter is an object.
- * @return {(Object|String|BBM} 
+ * @return {(Object|String|BBM)} 
    - If no parameter is supplied, returns the node's attribute object.
    - If only the key is supplied and it's not an object, returns the 
      corresponding attribute value.
@@ -628,7 +629,7 @@ fn.attr = function (key, val)
  }
  else if (arguments.length > 1)
  {
-  this._attr[key] = val + "";
+  this._attr[key] = String(val);
  }
  return this;
 };
@@ -661,7 +662,7 @@ fn.removeAttr = function (key)
  * 
  * @method type
  * @param {(String|Number)} [newType] The type String to set the node into.
- * @return {(String|BBM} If no parameters, the node's type String; Otherwise, 
+ * @return {(String|BBM)} If no parameters, the node's type String; Otherwise, 
    the modified BBM instance with a new type.
  */
 fn.type = function (newType)
@@ -670,7 +671,7 @@ fn.type = function (newType)
  {
   return this._type;
  }
- this._type = (newType + "").toLocaleUpperCase();
+ this._type = String(newType).toLocaleUpperCase();
  return this;
 };
 
