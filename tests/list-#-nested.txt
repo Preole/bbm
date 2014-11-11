@@ -11,8 +11,7 @@
    3. Green
    
 2. Second item.
-3. Third item. There's no fourth item because the 4th item is an empty 
-   item, which is discarded from the output. (Comment blocks do not count.)
+3. The fourth item should be an empty list item.
 4. ////
    This item should not be rendered in the output.
    ////
