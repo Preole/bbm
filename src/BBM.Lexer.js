@@ -3,22 +3,44 @@
 
 var BBM = module.exports = require("./BBM.js");
 
-/*
-Private Variables
------------------
-*/
+/**
+ * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 
+ * tokens.
+ *
+ * @class Lexer
+ * @memberOf BBM
+ * @static
+ * @param {String} bbmStr The BareBonesMarkup string to analyze into tokens.
+ * @property {Array.LexToken} _tokens The array of analyzed lexical tokens.
+ * @property {Number} minCol The minimum required column count in certain
+   parsing contexts, such as bullet lists.
+ * @property {Number} mark The index to stop the iteration methods from 
+   going past. The affected methods are:
+   
+   - peekUntil(callback, extras)
+   - nextUntil(callback, extras)
+   - nextPast(callback, extras)
+   - textUntil(callback, extras, minCol)
+   - textPast(callback, extras, minCol)
+   
+ * @property {Number} pos The index of the token currently being pointed to.
+ * @property {Number} lvl The current nesting level; Used only by the parser.
+ * @return {Lexer} The newly created Lexer object.
+ */
+var Lexer = BBM.Lexer = (function (){
+
+// Private Lexical Analysis Work
+// -----------------------------
 
 var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
 var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
 var EOL = "(?=" + NL + "|$)";
-var EMPTY = {};
-var RULES = (function (){
-
-function Rule(name, pattern)
+var Rule = function (name, pattern)
 {
  return {name : name, pattern : pattern};
-}
+};
 
+var RULES = (function (){
 return [
   Rule("ESCAPE"   , "\\\\[\\S]")
 , Rule("TH"       , "!!" + WS)
@@ -66,11 +88,6 @@ var REGEX = (function (){
  return new RegExp(regexStr.join("|"), "g");
 }());
 
-
-
-/**
- * TODO: constructor comments; Static methods & properties.
- */
 var ENUM = (function (){
  var obj = {TEXT : "TEXT"};
  RULES.forEach(function (rule){
@@ -115,7 +132,7 @@ var LexTokens = function (bbmStr)
  });
  
  toks.forEach(function (tok, index, tokens){
-  var prev = tokens[index - 1] || EMPTY;
+  var prev = tokens[index - 1];
   tok.col = (index === 0 || prev.type === ENUM.NL)
   ? 0
   : prev.col + prev.lexeme.length;
@@ -125,30 +142,6 @@ var LexTokens = function (bbmStr)
  return toks;
 };
 
-/**
- * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 
- * tokens.
- *
- * @class Lexer
- * @memberOf BBM
- * @static
- * @param {String} bbmStr The BareBonesMarkup string to analyze into tokens.
- * @property {Array.LexToken} _tokens The array of analyzed lexical tokens.
- * @property {Number} minCol The minimum required column count in certain
-   parsing contexts, such as bullet lists.
- * @property {Number} mark The index to stop the iteration methods from 
-   going past. The affected methods are:
-   
-   - peekUntil(callback, extras)
-   - nextUntil(callback, extras)
-   - nextPast(callback, extras)
-   - textUntil(callback, extras, minCol)
-   - textPast(callback, extras, minCol)
-   
- * @property {Number} pos The index of the token currently being pointed to.
- * @property {Number} lvl The current nesting level; Used only by the parser.
- * @return {Lexer} The newly created Lexer object.
- */
 var Lexer = function (bbmStr)
 {
  var obj = Object.create(Lexer.prototype);
@@ -156,20 +149,21 @@ var Lexer = function (bbmStr)
  obj.minCol = 0;
  obj.mark = -1;
  obj.pos = 0;
- obj.lvl = 0;
  return obj;
 };
 
-BBM.Lexer = Lexer;
-Lexer.LexToken = LexToken;
-Lexer.LexTokens = LexTokens;
 Lexer.ENUM = ENUM;
+return Lexer;
+}());
+
+
 Lexer.isLexer = function (obj)
 {
  return Lexer.prototype.isPrototypeOf(obj);
 };
 
 Lexer.fn = (function (fn){
+var ENUM = Lexer.ENUM;
 
 fn.peek = function (offset)
 {
@@ -178,7 +172,7 @@ fn.peek = function (offset)
 
 fn.peekT = function (type, offset)
 {
- return (this.peek(offset) || EMPTY).type === type;
+ return this.peek(offset) ? this.peek(offset).type === type : void(0);
 };
 
 fn.peekUntil = function (callback, extras)
@@ -210,8 +204,8 @@ fn.isLineEnd = function (offset)
 
 fn.isDelim = function (currTok, sTok)
 {
- var now = (currTok || this.peek() || EMPTY);
- return now !== EMPTY
+ var now = (currTok || this.peek());
+ return now
  && sTok.type === now.type
  && sTok.lexeme === now.lexeme
  && sTok.col === now.col
@@ -280,3 +274,4 @@ fn.textPast = function (callback, extras, minCol)
 
 return fn;
 }(Lexer.prototype));
+
