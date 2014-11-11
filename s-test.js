@@ -18,11 +18,11 @@ srcList.forEach(function (srcFile, index){
  diff.diffLines(expected, testCase).forEach(function (changeObj){
   if (changeObj.added)
   {
-   buffer += "+ " + changeObj.value + "";
+   buffer += "+ " + changeObj.value.replace(/[\r\n](?!$)/g, "\n+ ");
   }
   else if (changeObj.removed)
   {
-   buffer += "- " + changeObj.value + "";
+   buffer += "- " + changeObj.value.replace(/[\r\n](?!$)/g, "\n- ");
   }
  });
  
