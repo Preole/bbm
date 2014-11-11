@@ -1,7 +1,5 @@
 "use strict";
 
-require("./s-build.js");
-
 var BBM = require("./dist/bbm.js");
 var fs = require("fs");
 var glob = require("glob");
