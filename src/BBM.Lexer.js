@@ -82,7 +82,7 @@ var ENUM = (function (){
 var LexToken = function (lexeme, type, col)
 {
  return {lexeme : lexeme || "", type : type || "", col : col || 0};
-}
+};
 
 var LexTokens = function (bbmStr)
 {
@@ -123,7 +123,7 @@ var LexTokens = function (bbmStr)
  
  
  return toks;
-}
+};
 
 /**
  * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 

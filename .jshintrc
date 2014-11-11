@@ -1,0 +1,8 @@
+{
+  "laxbreak" : true
+, "laxcomma" : true
+, "newcap" : false
+, "undef" : true
+, "unused" : true
+, "node" : true
+}
