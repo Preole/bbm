@@ -7,10 +7,23 @@ var Lexer = BBM.Lexer;
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var EOF = {};
-var LEX_DELIM = [LEX.HR, LEX.ATX_END, LEX.DIV];
-var LEX_SETEXT = [LEX.HR, LEX.ATX_END];
-var LEX_FMT = [LEX.DEL, LEX.BOLD, LEX.EM, LEX.SUP, LEX.SUB, LEX.UNDER];
-var LEX_LINKS = [LEX.LINK_INT, LEX.LINK_WIKI, LEX.LINK_EXT];
+var LEX_FMT =
+{
+  DEL : 1
+, BOLD : 1
+, EM : 1
+, SUP : 1
+, SUB : 1
+, UNDER : 1
+};
+
+var LEX_LINKS =
+{
+  LINK_INT : 1
+, LINK_WIKI : 1
+, LINK_EXT : 1
+};
+
 var LEX_BLOCK =
 {
   HR : parseHRTR
@@ -82,9 +95,19 @@ function isParaEnd(tok, lexer)
  return lexer.isLineStart() &&
  (
   lexer.isLineEnd()
-  || LEX_DELIM.indexOf(tok.type) > -1
+  || isDelim(tok)
   || (notWSNL(tok) && tok.col < lexer.minCol)
  );
+}
+
+function isSetext(tok)
+{
+ return tok.type === LEX.ATX_END || tok.type === LEX.HR;
+}
+
+function isDelim(tok)
+{
+ return isSetext(tok) || tok.type === LEX.DIV;
 }
 
 
@@ -92,7 +115,7 @@ function isParaEnd(tok, lexer)
 // Inline-level Iterators
 // ----------------------
 
-function isCode(tok, tokStart)
+function isCodeEnd(tok, tokStart)
 {
  return (tok.type === LEX.CODE || tok.type === LEX.PRE)
  && (tokStart.type === LEX.CODE || tokStart.type === LEX.PRE)
@@ -126,8 +149,7 @@ function isInline(tok, hasLink)
 
 function parseBlock(lexer)
 {
- var tok = (lexer.peekUntil(notWSNL) || EOF);
- var isNotAbuse = lexer.lvl < lexer.maxDepth;
+ var tok = lexer.peekUntil(notWSNL) || EOF;
  var node = null;
  var func = LEX_LIST[tok.type]
  ? parseListPre
@@ -135,9 +157,8 @@ function parseBlock(lexer)
  ? LEX_BLOCK[tok.type]
  : null;
 
- 
  lexer.lvl += 1;
- if (func && isNotAbuse)
+ if (func && lexer.lvl <= lexer.maxDepth)
  {
   node = func(lexer, tok);
  }
@@ -222,7 +243,7 @@ function parseATX(lexer, lexTok)
  
  lexer.mark = endPos;
  lexer.pos = startPos;
- parseInline(lexer, [], node);
+ parseInline(lexer, node);
  lexer.mark = -1;
  lexer.pos = (endPos <= startPos || isATXEnd(endTok)) ? endPos + 1 : endPos;
  
@@ -233,7 +254,7 @@ function parseLabel(lexer, lexTok)
 {
  var idClass = __.rmCTRL(lexer.next().textPast(isNL)).trim();
  var isID = lexTok.type === LEX.ID;
- if (idClass.length > 0)
+ if (idClass)
  { 
   return BBM(isID ? AST._ID : AST._CLASS).attr(isID ? "id" : "class", idClass);
  }
@@ -243,7 +264,7 @@ function parseRef(lexer)
 {
  var id = lexer.next().textPast(isRefEnd).trim();
  var url = lexer.peekT(LEX.NL, -1) ? "" : lexer.textUntil(isNL).trim();
- if (url.length > 0 && id.length > 0)
+ if (url && id)
  {
   lexer.root.symTable[id] = url;
  }
@@ -256,18 +277,17 @@ function parsePara(lexer, lexTok, forceType)
  var endPos = lexer.nextUntil(isParaEnd, lexer).pos;
  var endTok = lexer.peek() || EOF;
  var node = BBM(AST.P);
- var isSetext = LEX_SETEXT.indexOf(endTok.type) > -1;
  
  lexer.minCol = minCol;
  lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
  lexer.pos = startPos;
  
- parseInline(lexer, [], node);
+ parseInline(lexer, node);
  if (forceType)
  {
   node.type(forceType);
  }
- else if (isSetext)
+ else if (isSetext(endTok))
  {
   node.type(AST.HEADER);
   node.level = endTok.type === LEX.HR ? 2 : 1;
@@ -275,7 +295,7 @@ function parsePara(lexer, lexTok, forceType)
  
  lexer.minCol = 0;
  lexer.mark = -1;
- lexer.pos = (endPos <= startPos || isSetext) ? endPos + 1 : endPos;
+ lexer.pos = (endPos <= startPos || isSetext(endTok)) ? endPos + 1 : endPos;
  
  return node;
 }
@@ -285,9 +305,9 @@ function parsePara(lexer, lexTok, forceType)
 // Inline-Level Grammar
 // --------------------
 
-function parseInline(lexer, stack, node)
+function parseInline(lexer, node)
 {
- var hasLink = stack.indexOf(LEX.BRACKET_R) > -1;
+ var hasLink = lexer.stack.indexOf(LEX.BRACKET_R) > -1;
  while (lexer.pos < lexer.mark)
  {
   var text = lexer.textUntil(isInline, hasLink);
@@ -302,15 +322,15 @@ function parseInline(lexer, stack, node)
   {
    node.append(parseImg(lexer, tok));
   }
-  else if (LEX_LINKS.indexOf(tok.type) > -1)
+  else if (LEX_LINKS[tok.type])
   {
-   node.append(hasLink ? tok.lexeme : parseLink(lexer, tok, stack));
+   node.append(hasLink ? tok.lexeme : parseLink(lexer, tok));
   }
-  else if (stack.indexOf(tok.type) === -1 && LEX_FMT.indexOf(tok.type) > -1)
+  else if (lexer.stack.indexOf(tok.type) === -1 && LEX_FMT[tok.type])
   {
-   stack.push(tok.type);
-   node.append(parseInline(lexer, stack, BBM(LEX_INLINE[tok.type])));
-   stack.pop();
+   lexer.stack.push(tok.type);
+   node.append(parseInline(lexer, BBM(LEX_INLINE[tok.type])));
+   lexer.stack.pop();
   }
   else
   {
@@ -320,54 +340,50 @@ function parseInline(lexer, stack, node)
  return node;
 }
 
-function parseLink(lexer, lexTok, stack)
+function parseLink(lexer, lexTok)
 {
  var callback = lexTok.type === LEX.LINK_INT ? isBracket : isAngle;
  var href = __.rmCTRL(lexer.textPast(callback)).trim();
- if (href.length === 0)
+ if (href)
  {
-  return;
+  var node = BBM(LEX_INLINE[lexTok.type]).attr({href : href});
+  var prevPos = lexer.pos;
+  if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
+  {
+   lexer.stack.push(LEX.BRACKET_R);
+   parseInline(lexer.next(), node);
+   lexer.stack.pop();
+  }
+  else
+  {
+   lexer.pos = prevPos;
+  }
+  return node;
  }
- 
- var node = BBM(LEX_INLINE[lexTok.type]).attr({href : href});
- var prevPos = lexer.pos;
- if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
- {
-  stack.push(LEX.BRACKET_R);
-  parseInline(lexer.next(), stack, node);
-  stack.pop();
- }
- else
- {
-  lexer.pos = prevPos;
- }
- return node;
 }
 
 function parseImg(lexer)
 {
  var src = __.rmCTRL(lexer.textPast(isAngle)).trim();
- if (src.length === 0)
+ if (src)
  {
-  return;
+  var alt = "";
+  var prevPos = lexer.pos;
+  if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
+  {
+   alt = lexer.next().textPast(isBracket).trim();
+  }
+  else
+  {
+   lexer.pos = prevPos;
+  }
+  return BBM(AST.LINK_IMG).attr({src : src, alt : alt});
  }
- 
- var alt = "";
- var prevPos = lexer.pos;
- if (lexer.nextUntil(isCont).peekT(LEX.LINK_CONT))
- {
-  alt = lexer.next().textPast(isBracket).trim();
- }
- else
- {
-  lexer.pos = prevPos;
- }
- return BBM(AST.LINK_IMG).attr({src : src, alt : alt});
 }
 
 function parseCode(lexer, lexTok)
 {
- return BBM(AST.CODE).append(lexer.textPast(isCode, lexTok));
+ return BBM(AST.CODE).append(lexer.textPast(isCodeEnd, lexTok));
 }
 
 
@@ -388,7 +404,7 @@ function parseCode(lexer, lexTok)
    The tree nodes, in addition to their the base instance properties, shall 
    have the following properties for specific types of nodes:
  
-   - **HEADER**: (Number) headerLevel; The heading level of the node. "1" 
+   - **HEADER**: (Number) level; The heading level of the node. "1" 
      denotes the most important heading, while "2" and higher are increasingly 
      less important heading, similar to HTML's `<h1>` ... `<h6>` tags.
      
@@ -403,6 +419,8 @@ BBM.parse = function (bbmStr, maxDepth)
  lexer.maxDepth = Math.abs(parseInt(maxDepth, 10) || 8);
  lexer.root = BBM(AST.ROOT);
  lexer.root.symTable = {};
+ lexer.stack = [];
+ lexer.lvl = 0;
  while (lexer.peek())
  {
   lexer.root.append(parseBlock(lexer));
