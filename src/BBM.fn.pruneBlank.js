@@ -5,36 +5,42 @@ var BBM = module.exports = require("./BBM.js");
 var __ = require("./__.js");
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
-var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
+var LINKS =
+{
+  LINK_EXT : 1
+, LINK_INT : 1
+, LINK_WIKI : 1
+};
+
 var ALONE =
-[
-  AST.PRE
-, AST.TD
-, AST.TH
-, AST.LI
-, AST.BLOCKQUOTE
-, AST.DD
-, AST.DT
-, AST.HR
-, AST.DIV
-, AST.LINK_EXT
-, AST.LINK_INT
-, AST.LINK_WIKI
-, AST.LINK_IMG
-, AST.COMMENT
-];
+{
+  PRE : 1
+, TD : 1
+, TH : 1
+, LI : 1
+, BLOCKQUOTE : 1
+, DD : 1
+, DT : 1
+, HR : 1
+, DIV : 1
+, LINK_EXT : 1
+, LINK_INT : 1
+, LINK_WIKI : 1
+, LINK_IMG : 1
+, COMMENT : 1
+};
 
 
 function isBlank(node)
 {
  return __.isBlankString(node.text())
  && node.size() === 0
- && ALONE.indexOf(node.type()) === -1;
+ && !ALONE[node.type()];
 }
 
 function isKept(node)
 {
- return node.text().length > 0 || !isBlank(node);
+ return node.text() || !isBlank(node);
 }
 
 function pruneTR(node)
@@ -74,7 +80,7 @@ function pruneBlank(node)
  var type = node.type();
  if (node.children().every(isBlank))
  {
-  node.empty().append(LINKS.indexOf(type) > -1 ? node.attr("href") : null);
+  node.empty().append(LINKS[type] ? node.attr("href") : null);
   return;
  }
  

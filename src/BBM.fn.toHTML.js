@@ -4,22 +4,21 @@
 var BBM = module.exports = require("./BBM.js");
 var __ = require("./__.js");
 var AST = BBM.ENUM;
-var XHTML = [AST.HR, AST.LINK_IMG];
 var INLINES =
-[
-  AST.DEL
-, AST.INS
-, AST.U
-, AST.SUB
-, AST.SUP
-, AST.EM
-, AST.BOLD
-, AST.CODE
-, AST.LINK_IMG
-, AST.LINK_INT
-, AST.LINK_WIKI
-, AST.LINK_EXT
-];
+{
+  U : 1
+, EM : 1
+, DEL : 1
+, INS : 1
+, SUB : 1
+, SUP : 1
+, BOLD : 1
+, CODE : 1
+, LINK_IMG : 1
+, LINK_INT : 1
+, LINK_WIKI : 1
+, LINK_EXT : 1
+};
 
 var MAP_HTML =
 {
@@ -52,26 +51,26 @@ var MAP_HTML =
 , CODE : "code"
 };
 
+
+
 function hasEndTag(node)
 {
- return XHTML.indexOf(node.type()) === -1;
+ return node.type() !== AST.LINK_IMG && node.type() !== AST.HR;
 }
 
 function printXHTML(node, opts)
 {
- return (opts.XHTML && XHTML.indexOf(node.type()) > -1) ? " /" : ""; 
+ return (opts.XHTML && !hasEndTag(node)) ? " /" : ""; 
 }
 
 function printIndent(node, opts)
 {
- return INLINES.indexOf(node.type()) === -1
- ? __.repeatString(" ", opts.depth)
- : "";
+ return INLINES[node.type()] ? "" : __.repeatString(" ", opts.depth);
 }
 
 function printBlockEnd(node)
 {
- return INLINES.indexOf(node.type()) === -1 ? "\n" : ""; 
+ return INLINES[node.type()] ? "" : "\n";
 }
 
 function printHeader(node, opts)
@@ -84,6 +83,7 @@ function printAttr(node, opts)
 {
  var res = "";
  var attr = node.attr();
+ var nType = node.type();
  
  for (var key in attr)
  {
@@ -91,7 +91,7 @@ function printAttr(node, opts)
   {
    res += __.escapeATTR(key).substring(0, opts.maxAttrChars)
    + "=\""
-   + ((node.type() === AST.LINK_INT && key === "href") ? "#" : "")
+   + ((nType === AST.LINK_INT && key === "href") ? "#" : "")
    + __.escapeATTR(attr[key]).substring(0, opts.maxAttrChars)
    + "\" ";
   }
@@ -172,9 +172,11 @@ function printHTML(node, opts)
  return str;
 }
 
+
+//TODO; Document this method.
 BBM.fn.toHTML = function (options)
 {
- var opts = __.extend({}, options);
+ var opts = __.isObject(options) ? options : {};
  opts.depth = (parseInt(opts.depth, 10) || 0) + (printTagName(this) ? -1 : -2);
  opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
  opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);

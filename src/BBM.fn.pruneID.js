@@ -7,15 +7,9 @@ var __ = require("./__.js");
 function pruneID(node, idList)
 {
  var id = __.rmWS(__.rmCTRL(node.attr("id") || ""));
- if (!id)
+ if (id && !__.has(idList, id))
  {
-  return;
- }
- 
- if (idList.indexOf(id) === -1)
- {
-  idList.push(id);
-  node.attr("id", id);
+  node.attr("id", (idList[id] = id));
  }
  else
  {
@@ -31,6 +25,6 @@ function pruneID(node, idList)
  */
 BBM.fn.pruneID = function ()
 {
- return this.eachPre(pruneID, []);
+ return this.eachPre(pruneID, {});
 };
 
