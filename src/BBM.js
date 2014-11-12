@@ -295,10 +295,8 @@ fn.isLastChild = function ()
 
 
 
-/*
-Manipulation
-------------
-*/
+// Manipulation
+// ------------
 
 /**
  * Removes the node's last child.
@@ -335,7 +333,8 @@ fn.shift = function ()
  */
 fn.append = function (content)
 {
- var eles = procArgs(content, this), kids = this.children();
+ var eles = procArgs(content, this);
+ var kids = this.children();
  if (BBM.isNode(eles))
  {
   kids.push(eles);
@@ -357,7 +356,8 @@ fn.append = function (content)
  */
 fn.prepend = function (content)
 {
- var eles = procArgs(content, this), kids = this.children();
+ var eles = procArgs(content, this);
+ var kids = this.children();
  if (BBM.isNode(eles))
  {
   kids.unshift(eles);
@@ -524,10 +524,9 @@ fn.eachPost = function (callback, params)
 };
 
 
-/*
-Attributes, Properties, and Class Extension
--------------------------------------------
-*/
+
+// Attributes, Properties, and Class Extension
+// -------------------------------------------
 
 /**
  * Retrieves or sets the text value of this node. If the text value retrieved
@@ -600,11 +599,11 @@ fn.attr = function (key, val)
  */
 fn.removeAttr = function (key)
 {
- if (arguments.length === 1)
+ if (arguments.length >= 1)
  {
   delete this._attr[key];
  }
- if (arguments.length === 0)
+ else
  {
   this._attr = {};
  }
@@ -629,20 +628,6 @@ fn.type = function (newType)
  this._type = String(newType).toLocaleUpperCase();
  return this;
 };
-
-
-/**
- * Merge the contents of an object onto the BBM prototype to add BBM methods.
- *
- * @method extend
- * @param {Object} extendObj The object to merge into the prototype.
- * @return {BBM} The calling instance.
- */
-fn.extend = function (extendObj)
-{
- return __.extend(this, extendObj);
-};
-
 
 /**
  * Converts the current node into JSON-compatible format for use with 

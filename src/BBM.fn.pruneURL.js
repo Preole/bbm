@@ -4,7 +4,7 @@
 var BBM = module.exports = require("./BBM.js");
 var __ = require("./__.js");
 var AST = BBM.ENUM;
-var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
+var LINKS = {LINK_EXT : 1, LINK_INT : 1, LINK_WIKI : 1};
 
 function pruneURL(node, symTable)
 {
@@ -14,7 +14,7 @@ function pruneURL(node, symTable)
  {
   attr.src = __.get(symTable, attr.src) || attr.src;
  }
- else if (LINKS.indexOf(nType) > -1)
+ else if (__.has(LINKS, nType))
  {
   attr.href = __.get(symTable, attr.href) || attr.href;
  }

@@ -73,12 +73,6 @@ function printBlockEnd(node)
  return INLINES[node.type()] ? "" : "\n";
 }
 
-function printHeader(node, opts)
-{
- var lvl = Math.abs(parseInt(node.level, 10) || 1);
- return "h" + Math.min(lvl + opts.headerOffset, 6);
-}
-
 function printAttr(node, opts)
 {
  var res = "";
@@ -89,10 +83,10 @@ function printAttr(node, opts)
  {
   if (__.has(attr, key) && !__.isBlankString(key))
   {
-   res += __.escapeATTR(key).substring(0, opts.maxAttrChars)
+   res += __.escapeATTR(key).substr(0, opts.maxAttrChars)
    + "=\""
    + ((nType === AST.LINK_INT && key === "href") ? "#" : "")
-   + __.escapeATTR(attr[key]).substring(0, opts.maxAttrChars)
+   + __.escapeATTR(attr[key]).substr(0, opts.maxAttrChars)
    + "\" ";
   }
  }
@@ -101,21 +95,22 @@ function printAttr(node, opts)
 
 function printTagName(node, opts)
 {
- var tagName = node.type() === AST.HEADER
- ? printHeader(node, opts)
- : MAP_HTML[node.type()];
-
- return __.escapeATTR(tagName || "");
+ var name = MAP_HTML[node.type()] || "";
+ if (name && node.level > 0)
+ {
+  name += Math.min(Math.floor(node.level) + opts.headerOffset, 6);
+ }
+ return name;
 }
 
 function printTagOpen(node, opts)
 {
- var tagName = printTagName(node, opts);
- if (tagName)
+ var name = printTagName(node, opts);
+ if (name)
  {
   return printIndent(node, opts)
   + "<"
-  + tagName
+  + name
   + printAttr(node, opts)
   + printXHTML(node, opts)
   + ">"
@@ -126,13 +121,13 @@ function printTagOpen(node, opts)
 
 function printTagClose(node, opts)
 {
- var tagName = printTagName(node, opts);
- if (tagName && hasEndTag(node, opts))
+ var name = printTagName(node, opts);
+ if (name && hasEndTag(node, opts))
  {
   return printBlockEnd(node, opts)
   + printIndent(node, opts)
   + "</" 
-  + tagName
+  + name
   + ">" 
   + (node.isLastChild() ? "" : printBlockEnd(node, opts));
  }
@@ -176,13 +171,10 @@ function printHTML(node, opts)
 //TODO; Document this method.
 BBM.fn.toHTML = function (options)
 {
- var opts = __.isObject(options) ? options : {};
- opts.depth = (parseInt(opts.depth, 10) || 0) + (printTagName(this) ? -1 : -2);
+ var opts = __.extend({}, options);
+ opts.depth = printTagName(this) ? -1 : -2;
  opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
  opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
- opts.XHTML = !!opts.XHTML;
- opts.comment = !!opts.comment;
- opts.rmNL = !!opts.rmNL;
  return printHTML(this, opts);
 };
 

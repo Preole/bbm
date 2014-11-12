@@ -28,6 +28,10 @@ var Lexer = module.exports = (function (){
 // Private Lexical Analysis Work
 // -----------------------------
 
+
+
+var RULES = (function (){
+
 var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
 var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
 var EOL = "(?=" + NL + "|$)";
@@ -35,8 +39,6 @@ var Rule = function (name, pattern)
 {
  return {name : name, pattern : pattern};
 };
-
-var RULES = (function (){
 return [
   Rule("ESCAPE"   , "\\\\[\\S]")
 , Rule("TH"       , "!!" + WS)
@@ -134,7 +136,6 @@ var LexTokens = function (bbmStr)
   : prev.col + prev.lexeme.length;
  });
  
- 
  return toks;
 };
 
@@ -163,7 +164,7 @@ var ENUM = Lexer.ENUM;
 
 fn.peek = function (offset)
 {
- return this._tokens[this.pos + (parseInt(offset, 10) || 0)];
+ return this._tokens[this.pos + (offset || 0)];
 };
 
 fn.peekT = function (type, offset)
@@ -178,7 +179,7 @@ fn.peekUntil = function (callback, extras)
 
 fn.isLineStart = function (offset)
 {
- var off = parseInt(offset, 10) || 0;
+ var off = offset || 0;
  var prev1 = this.peek(off - 1);
  var prev2 = this.peek(off - 2);
   
@@ -189,7 +190,7 @@ fn.isLineStart = function (offset)
 
 fn.isLineEnd = function (offset)
 {
- var off = parseInt(offset, 10) || 0;
+ var off = offset || 0;
  var now = this.peek(off);
  var next = this.peek(off + 1);
   
@@ -215,7 +216,7 @@ fn.size = function ()
 
 fn.next = function (offset)
 {
- this.pos = Math.max(0, this.pos + (parseInt(offset, 10) || 1));
+ this.pos += offset || 1;
  return this;
 };
 
@@ -241,7 +242,7 @@ fn.nextPast = function (callback, extras)
 fn.textUntil = function (callback, extras, minCol)
 {
  var self = this;
- var col = Number(minCol) || Number(self.minCol) || 0;
+ var col = minCol || self.minCol || 0;
  var text = "";
  
  this.nextUntil(function (tok){

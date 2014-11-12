@@ -2,6 +2,53 @@
 "use strict";
 
 var __ = module.exports = {};
+var arrayFN = Array.prototype;
+var objFN = Object.prototype;
+
+__.toString = function (obj)
+{
+ return objFN.toString.call(obj);
+};
+
+__.isArray = Array.isArray || function (obj)
+{
+ return __.toString(obj) === "[object Array]";
+};
+
+__.isString = function (obj)
+{
+ return typeof obj === "string";
+};
+
+__.isNumber = function (obj)
+{
+ return typeof obj === "number";
+};
+
+__.isFunction = function (obj)
+{
+ return typeof obj === "function";
+};
+
+__.isObject = function (obj)
+{
+ return __.isFunction(obj) || (typeof obj === "object" && obj !== null);
+};
+
+__.isBlankString = function (str)
+{
+ return /^\s*$/.test(str);
+};
+
+__.flatten = function (arr, shallow)
+{
+ arr = arrayFN.concat.apply([], arr);
+ while (!shallow && arr.some(__.isArray))
+ {
+  arr = arrayFN.concat.apply([], arr);
+ }
+ return arr;
+};
 
 __.map = function (array, callback, extras)
 {
@@ -10,77 +57,14 @@ __.map = function (array, callback, extras)
  });
 };
 
-__.toString = function (obj)
-{
- return Object.prototype.toString.call(obj);
-};
-
-__.toArray = function (obj, sPos, ePos)
-{
- return Array.prototype.slice.call(obj, sPos, ePos);
-};
-
-__.flatten = function (arr, shallow)
-{
- var res = __.isArray(arr) ? arr : __.toArray(arr);
- while (res.some(__.isArray))
- {
-  res = Array.prototype.concat.apply([], res);
-  if (shallow)
-  {
-   break;
-  }
- }
- return res;
-};
-
-__.isArray = function (obj)
-{
- return Array.isArray
- ? Array.isArray(obj)
- : __.toString(obj) === "[object Array]";
-};
-
-__.isObject = function (obj)
-{
- return __.isFunction(obj) || (typeof obj === "object" && obj !== null);
-};
-
-__.isString = function (obj)
-{
- return typeof obj === "string" || __.toString(obj) === "[object String]";
-};
-
-__.isNumber = function (obj)
-{
- return typeof obj === "number" || __.toString(obj) === "[object Number]";
-};
-
-__.isFunction = function (obj)
-{
- return typeof obj === "function" || __.toString(obj) === "[object Function]";
-};
-
-__.isBlankString = function (str)
-{
- return /^\s*$/.test(str);
-};
-
 __.repeatString = function (str, times)
 {
- var many = Math.abs(parseInt(times, 10)) || 0;
  var res = "";
- while (many > 0)
+ while (times > 0)
  {
-  if (many % 2 === 1)
-  {
-   res += str;
-  }
-  if (many > 1)
-  {
-   str += str;
-  }
-  many = Math.floor(many / 2);
+  res += (times % 2 === 1) ? str : "";
+  str += times > 1 ? str : "";
+  times = Math.floor(times / 2);
  }
  return res;
 };
@@ -127,7 +111,7 @@ __.escapeURI = function (str)
 
 __.has = function (obj, key)
 {
- return Object.prototype.hasOwnProperty.call(obj, key);
+ return objFN.hasOwnProperty.call(obj, key);
 };
 
 __.get = function (obj, key)
@@ -139,7 +123,7 @@ __.extend = function (others)
 {
  var toObj = __.isObject(others) ? others : {};
 
- Array.prototype.forEach.call(arguments, function (fromObj){
+ arrayFN.forEach.call(arguments, function (fromObj){
   if (fromObj === toObj || !__.isObject(fromObj)) {return;}
   for (var key in fromObj)
   {

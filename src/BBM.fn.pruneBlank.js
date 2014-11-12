@@ -4,7 +4,6 @@
 var BBM = module.exports = require("./BBM.js");
 var __ = require("./__.js");
 var AST = BBM.ENUM;
-var DUMMY = BBM("_DUMMY");
 var LINKS =
 {
   LINK_EXT : 1
@@ -45,7 +44,7 @@ function isKept(node)
 
 function pruneTR(node)
 {
- var maxCol = Math.min((node.first() || DUMMY).size(), 64);
+ var maxCol = node.first() ? node.first().size() : 0;
  node.children().forEach(function (rNode){
   if (rNode.size() > 0)
   {
@@ -80,8 +79,7 @@ function pruneBlank(node)
  var type = node.type();
  if (node.children().every(isBlank))
  {
-  node.empty().append(LINKS[type] ? node.attr("href") : null);
-  return;
+  return node.empty().append(LINKS[type] ? node.attr("href") : null);
  }
  
  

@@ -5,7 +5,7 @@ var BBM = module.exports = require("./BBM.js");
 var __ = require("./__.js");
 var AST = BBM.ENUM;
 var DUMMY = BBM("_DUMMY");
-var IDCLASS = {_ID : true, _CLASS : true};
+var IDCLASS = {_ID : 1, _CLASS : 1};
 var SWITCH =
 {
   _DT : pruneDL

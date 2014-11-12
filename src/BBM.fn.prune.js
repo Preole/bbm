@@ -18,6 +18,6 @@ var BBM = module.exports = require("./BBM.js")
  */
 BBM.fn.prune = function ()
 {
- return this.pruneList().pruneBlank().pruneURL().pruneID();
+ return this.pruneList().pruneBlank().pruneURL().pruneID().pruneText();
 };
 
