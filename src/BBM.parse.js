@@ -1,9 +1,9 @@
 
 "use strict";
 
-var BBM = module.exports = require("./BBM.Lexer.js") && require("./BBM.fn.prune.js");
+var BBM = module.exports = require("./BBM.fn.prune.js");
 var __ = require("./__.js");
-var Lexer = BBM.Lexer;
+var Lexer = require("./Lexer.js");
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;
 var EOF = {};

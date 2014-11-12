@@ -9,13 +9,12 @@ var __ = require("./__.js");
  * node within the abstract syntax tree. The `new` operator is not required. 
  * Instance properties prefixed with an underscore are meant for private use.
  *
- *     var BBM = BBM(BBM.ENUM.P).append("Text ").toHTML();
- *
- * @class BBM
+ * @constructor
+ * @type BBM
  * @param {String} type The node's type name. @see BBM.ENUM
  * @property {String} _type The node's type name.
  * @property {Object} _attr Attribute key-value (String-String) pairs.
- * @property {Array.BBM} _nodes An array of child nodes.
+ * @property {BBM[]} _nodes An array of child nodes.
  * @property {BBM} _parent The node's parent node.
  * @return {BBM} The newly created node with a specific type. 
  */
@@ -34,8 +33,7 @@ var BBM = module.exports = function (type)
  * Enumeration of officially recognized node types. Names preceding with an 
  * underscore are private and for internal use only.
  * 
- * @name BBM
- * @member {Object} ENUM
+ * @memberOf BBM {Object} ENUM
  * @enum {String}
  * @readonly
  * @static 
@@ -183,7 +181,7 @@ function eachPost(start, curr, callback, params)
  * @method splice
  * @param {Number} from The index to begin manipulation. (Zero or more)
  * @param {Number} count The Number of children to remove. (Zero or more)
- * @param {(Array.BBM|BBM|String)} [elems] The new child nodes to insert. 
+ * @param {(BBM[]|BBM|String)} [elems] The new child nodes to insert. 
    Child nodes inserted in this manner will be detached from their belonging 
    parent nodes.
 
@@ -224,7 +222,7 @@ fn.parent = function ()
  * 
  * @method children
  * @param {Boolean} [shallow] If true, retrieves a shallow copy instead.
- * @return {Array.BBM} The pointer to the children Array, or a copy of the 
+ * @return {BBM[]} The pointer to the children Array, or a copy of the 
    Array if the shallow parameter is truthy.
  */
 fn.children = function (shallow)
@@ -306,7 +304,7 @@ Manipulation
  * Removes the node's last child.
  * 
  * @method pop
- * @return {BBM|undefined} The node's last child, or undefined if there's none.
+ * @return {(BBM|undefined)} The node's last child, or undefined if there's none.
  */
 fn.pop = function ()
 {
@@ -318,7 +316,7 @@ fn.pop = function ()
  * Removes the node's first child.
  * 
  * @method shift
- * @return {BBM|undefined} The node's first child, or undefined if there's none.
+ * @return {(BBM|undefined)} The node's first child, or undefined if there's none.
  */
 fn.shift = function ()
 {
@@ -330,7 +328,7 @@ fn.shift = function ()
  * Adds one or more nodes to the end of this node's children list.
  * 
  * @method append
- * @param {(String|Array.BBM|BBM)} [content] An Array of BBM nodes, a single 
+ * @param {(String|BBM[]|BBM)} [content] An Array of BBM nodes, a single 
    BBM node, or a non-empty String to append to the current node. If no 
    valid content is supplied, this operation does nothing.
  * @return {BBM} The modified BBM instance.
@@ -354,7 +352,7 @@ fn.append = function (content)
  * Adds one or more nodes to the beginning of this node's children list.
  * 
  * @method prepend
- * @param {(String|Array.BBM|BBM)} [content] @see BBM.append
+ * @param {(String|BBM[]|BBM)} [content] @see BBM.append
  * @return {BBM} The modified BBM instance.
  */
 fn.prepend = function (content)
@@ -377,7 +375,7 @@ fn.prepend = function (content)
  * If the current node has no parent, this operation does nothing.
  * 
  * @method replaceWith
- * @param {(String|Array.BBM|BBM)} [content] @see BBM.append
+ * @param {(String|BBM[]|BBM)} [content] @see BBM.append
  * @return {BBM} The current node detached from its belonging subtree.
  */
 fn.replaceWith = function (content)
@@ -435,7 +433,7 @@ fn.empty = function ()
  * returns truthy in the callback function.
  *
  * @method filterChild
- * @param {BBM~filterChild} callback Called on each child node being visited.
+ * @param {function} callback Called on each child node being visited.
  * @return {BBM} The current node after modification.
  */
 fn.filterChild = function (callback)
@@ -447,19 +445,6 @@ fn.filterChild = function (callback)
  return that;
 };
 
-/**
- * Callback used in BBM.filterChild(callback)
- * 
- * @callback BBM~filterChild
- * @this BBM The current node holding a partial list of child nodes that 
-   has passed the callback test so far. It is initially empty.
- * @param {BBM} node The child node being visited.
- * @param {Number} index The child node's current index.
- * @param {Array} sibs The backing Array of the children node list.
- * @return {Boolean} Truthy to keep the child node; False to discard.
- */
-
-
 
 
 /**
@@ -468,7 +453,7 @@ fn.filterChild = function (callback)
  * back.
  *
  * @method rebuildChild
- * @param {BBM~rebuildChild} callback Called on each child node being visited.
+ * @param {function} callback Called on each child node being visited.
  * @return {BBM} The current node after modification.
  */
 fn.rebuildChild = function (callback)
@@ -479,16 +464,6 @@ fn.rebuildChild = function (callback)
  });
  return that;
 };
-
-/**
- * Callback used in BBM.rebuildChild(callback)
- * 
- * @callback BBM~rebuildChild
- * @param {BBM} parent The current node holding a partial list of child nodes.
- * @param {BBM} node The child node being visited.
- * @param {Number} index The child node's current index.
- * @param {Array} sibs The backing Array of the children node list.
- */
 
 
 
@@ -501,7 +476,7 @@ fn.rebuildChild = function (callback)
  * executing the callback once per node.
  *
  * @method eachPre
- * @param {BBM~eachSubtree} callback Called on each child node being visited.
+ * @param {function} callback Called on each child node being visited.
  * @param {anything} [params] Extra parameter to be supplied to the callback.
  * @return {BBM} The current node that started the traversal.
  */
@@ -516,8 +491,8 @@ fn.eachPre = function (callback, params)
  * value within the callback function.
  *
  * @method find
- * 
- * @param {BBM~eachFind} callback Called on each child node being visited.
+ * @param {function} callback Called on each child node being visited.
+ * @param {anything} [params] Extra parameter to be supplied to the callback.
  * @return {BBM} The current node that started the traversal.
  * @see BBM.eachPre 
  */
@@ -539,7 +514,7 @@ fn.find = function (callback, params)
  * executing the callback once per node.
  *
  * @method eachPost
- * @param {BBM~eachSubtree} callback Called on each child node being visited.
+ * @param {function} callback Called on each child node being visited.
  * @param {anything} [params] Extra parameter to be supplied to the callback.
  * @return {BBM} The current node that started the traversal.
  */
@@ -547,27 +522,6 @@ fn.eachPost = function (callback, params)
 {
  return eachPost(this, this, callback, params);
 };
-
-/**
- * Callback used in BBM.eachPost() and BBM.eachPre()
- * 
- * @callback BBM~eachSubtree
- * @this {BBM} The node that started the traversal.
- * @param {BBM} node The current node being visited.
- * @param {anything} params Optional parameter provided to the callback.
- */
- 
-/**
- * Callback used in BBM.find()
- * 
- * @callback BBM~eachFind
- * @this {BBM} The node that started the traversal.
- * @param {BBM} node The current node being visited.
- * @param {anything} params Optional parameter provided to the callback.
- * @returns {Boolean} Truthy to include the node in the resulting array,
-   false otherwise.
- */
-
 
 
 /*
@@ -602,6 +556,7 @@ fn.text = function (val)
 
 /**
  * Retrieves or sets the attributes of this node.
+ * @name BBM
  * @method attr
  * @param {(String|Object)} [key] An object to merge its properties into
    the node's attributes, or a String denoting the attribute key to set.
@@ -662,7 +617,7 @@ fn.removeAttr = function (key)
  * 
  * @method type
  * @param {(String|Number)} [newType] The type String to set the node into.
- * @return {(String|BBM)} If no parameters, the node's type String; Otherwise, 
+ * @return {(String|BBM)} If no parameters, the node's type name; Otherwise, 
    the modified BBM instance with a new type.
  */
 fn.type = function (newType)

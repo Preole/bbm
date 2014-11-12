@@ -1,19 +1,17 @@
 
 "use strict";
 
-var BBM = module.exports = require("./BBM.js");
-
 /**
  * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 
  * tokens.
  *
- * @class Lexer
- * @memberOf BBM
+ * @class BBM.Lexer
  * @static
  * @param {String} bbmStr The BareBonesMarkup string to analyze into tokens.
  * @property {Array.LexToken} _tokens The array of analyzed lexical tokens.
  * @property {Number} minCol The minimum required column count in certain
    parsing contexts, such as bullet lists.
+ * @property {Number} pos The index of the token currently being pointed to.
  * @property {Number} mark The index to stop the iteration methods from 
    going past. The affected methods are:
    
@@ -23,11 +21,9 @@ var BBM = module.exports = require("./BBM.js");
    - textUntil(callback, extras, minCol)
    - textPast(callback, extras, minCol)
    
- * @property {Number} pos The index of the token currently being pointed to.
- * @property {Number} lvl The current nesting level; Used only by the parser.
  * @return {Lexer} The newly created Lexer object.
  */
-var Lexer = BBM.Lexer = (function (){
+var Lexer = module.exports = (function (){
 
 // Private Lexical Analysis Work
 // -----------------------------
