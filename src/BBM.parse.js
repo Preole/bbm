@@ -151,11 +151,7 @@ function parseBlock(lexer)
 {
  var tok = lexer.peekUntil(notWSNL) || EOF;
  var node = null;
- var func = LEX_LIST[tok.type]
- ? parseListPre
- : LEX_BLOCK[tok.type]
- ? LEX_BLOCK[tok.type]
- : null;
+ var func = LEX_LIST[tok.type] ? parseListPre : LEX_BLOCK[tok.type];
 
  lexer.lvl += 1;
  if (func && lexer.lvl <= lexer.maxDepth)
@@ -234,18 +230,17 @@ function parsePre(lexer, lexTok)
 
 function parseATX(lexer, lexTok)
 {
- var startPos = lexer.next().pos;
+ var startPos = lexer.next().peekT(LEX.WS) ? lexer.next().pos : lexer.pos;
  var endPos = lexer.nextUntil(isATXEnd).pos;
- var endTok = lexer.peek() || EOF;
  var node = BBM(AST.HEADER);
  
  node.level = lexTok.lexeme.length;
  
- lexer.mark = endPos;
+ lexer.mark = lexer.peekT(LEX.WS, -1) ? endPos - 1 : endPos;
  lexer.pos = startPos;
  parseInline(lexer, node);
  lexer.mark = -1;
- lexer.pos = (endPos <= startPos || isATXEnd(endTok)) ? endPos + 1 : endPos;
+ lexer.pos = endPos + 1;
  
  return node;
 }
@@ -278,8 +273,7 @@ function parsePara(lexer, lexTok, forceType)
  var endTok = lexer.peek() || EOF;
  var node = BBM(AST.P);
  
- lexer.minCol = minCol;
- lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
+ lexer.mark = endTok === EOF ? endPos : lexer.next(-2).nextUntil(isNL).pos;
  lexer.pos = startPos;
  
  parseInline(lexer, node);
@@ -293,10 +287,8 @@ function parsePara(lexer, lexTok, forceType)
   node.level = endTok.type === LEX.HR ? 2 : 1;
  }
  
- lexer.minCol = 0;
  lexer.mark = -1;
  lexer.pos = (endPos <= startPos || isSetext(endTok)) ? endPos + 1 : endPos;
- 
  return node;
 }
 
