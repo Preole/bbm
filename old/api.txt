@@ -1,0 +1,532 @@
+BakaBakaMark Javascript API
+===========================
+
+Application Functions
+---------------------
+
+For general, application-level use cases, these functions should suffice.
+
+
+=== compile(BBMCode, options) ===
+==== Parameters ====
+
+; """BBMCode"""
+: ; Type
+  : """string"""
+  ; Description
+  : A block of BakaBakaMark String to compile into HTML.
+  
+; """options"""
+: ; Type
+  : """object"""
+  ; Description
+  : A hash map of options to pass to the compiler. Options passed in this 
+    manner shall be used only for this parsing run. For permanent settings, 
+    use """.setOptions()""" instead.
+
+==== Returns ====
+
+"""string"""; Valid (X)HTML snippet.
+
+
+
+
+=== setOptions(options) ===
+==== Parameters ====
+
+; options
+: ; Type
+  : """object"""
+  ; Description
+  : A Javascript object (hash map) of compilation options. Refer to
+    """README.txt""" @ **OPTIONS (COMPILERS)** for further details.
+    
+    Necessary fields will be filled in with defaults if left unspecified, 
+    while filled fields shall overwrite the defaults of the parser.
+    
+==== Returns ====
+
+"""object"""; The current option object that will be used for all future 
+parses, until changed otherwise. Modifying this object is effectively the 
+same as additional calls to """.setOptions()""" with different objects.
+
+
+
+
+
+Advanced Functions & Objects
+----------------------------
+
+Provides direct access to the front-end portion of the compiler, such as the 
+lexer and the parser. Only manipulate these functions if some really, really 
+special processing is necessary.
+
+=== lexer(BBMCode) ===
+==== Parameters ====
+
+; BBMCode
+: ; Type
+  : """string"""
+  ; Description
+  : A block of BakaBakaMark String to compile into HTML.
+  
+==== Returns ====
+
+"""array"""; An array of """LexToken""" objects.
+
+
+
+=== parser(lexTokenArray) ===
+==== Parameters ====
+
+; lexTokenArray
+: ; Type
+  : """array"""
+  ; Description
+  : An array containing """LexToken""" objects.
+  
+==== Returns ====
+
+"""[object ASTNode]"""; The root node of the parsed abstract syntax tree. This 
+root node is of the special type """ROOT""".
+
+
+
+=== filter(ASTNode) ===
+==== Parameters ====
+
+; ASTNode
+: ; Type
+  : """[object ASTNode]"""
+  ; Description
+  : The root ASTNode object, which is the parsed syntax tree from parser(1).
+  
+==== Returns ====
+
+"""[object ASTNode]"""; Modified syntax tree with semantically incorrect nodes pruned.
+
+
+
+=== ASTNode(type, meta) ===
+==== Parameters ====
+
+; type
+: ; Type
+  : """string"""
+  ; Description
+  : The type of ASTNode being produced.
+; meta
+: ; Type
+  : """[object Object]"""
+  ; Description
+  : The node's meta data. Refer to ASTNode @ **Important Classes** Section
+    for further details.
+    
+==== Returns ====
+
+"""[object ASTNode]"""; A newly created ASTNode with no children and some 
+meta data already set. (No """new""" operator necessary)
+
+
+
+=== LexToken(type, lexeme, col) ===
+==== Parameters ====
+
+; type
+: ; Type
+  : """string"""
+  ; Description
+  : The type of LexToken being produced.
+; lexeme
+: ; Type
+  : """string"""
+  ; Description
+  : The string value of this LexToken.
+; col
+: ; Type
+  : """number""" (Integer)
+  ; Description
+  : The column number where this token starts.
+    
+==== Returns ====
+
+"""[object LexToken]"""; A newly created LexToken object of a specific type, 
+containing some String data and starts at some column number in the input 
+stream.
+
+
+
+
+Important Classes
+-----------------
+
+=== LexToken ===
+
+"""
+function LexToken(col, lexeme, type)
+{
+ this.col = col;  //number
+ this.lexeme = lexeme; //string
+ this.type = type; //string: One of the LEX_ENUM types.
+}
+
+LexToken.prototype =
+{
+ isType : function(lexType)
+ {
+  return this.type === lexType;
+ },
+
+ isSameType : function(lexToken)
+ {
+  return this.type === lexToken.type;
+ },
+
+ substring : function(startPos, endPos)
+ {
+  return this.lexeme.substring(startPos, endPos);
+ },
+
+ getLength : function()
+ {
+  return this.lexeme.length;
+ }
+};
+"""
+
+
+
+=== ASTNode ===
+
+"""
+/* Abstract Syntax Tree node constructor
+* The meta (Meta Data) property has the following key-value pairs:
+*
+* HEADERLVL: For HEADER nodes. Range: [1-6] Integer inclusive
+* TEXT: For TEXT nodes. A block of text.
+* URL: For LINK_WIKI, LINK_INT, LINK_EXT, and LINK_IMG nodes:
+   Denotes the source URL attribute for images and external links.
+* ALT: For LINK_IMG nodes:
+   ALT text of the image element.
+* ID: For CLASS and ID nodes, it's the CSS Class or ID identifier they
+   will bestow upon the next sibling within the syntax tree. If there's
+   no next sibling, this attribute has no effect.
+* REF_ID: For LINK_REF nodes:
+   The reference identifier for the URL the node contains, which is stored
+   in the URL attribute. (Will never actually appear in the AST)
+* SYM_TABLE:
+   ID-URL Mapping symbol table for URL substitution in links and image
+   elements. These elements will first look in the symbol table of their
+   containing node and their parents, before using that ID as the URL.
+*/
+function ASTNode(type, meta)
+{
+ this.children = []; //Array of ASTNode
+ this.type = type; //One of the AST_ENUM Types
+ this.err = false;
+ this.meta = meta || {};
+ this.parent = null; //ASTNode
+ this.isDeleted = false;
+}
+
+ASTNode.prototype =
+{
+ getLast : function()
+ {
+  return this.children[this.children.length - 1];
+ },
+
+ getFirst : function()
+ {
+  return this.children[0];
+ },
+
+ getLength : function()
+ {
+  return this.children.length;
+ },
+
+ isType : function(ASTEnumType)
+ {
+  return this.type === ASTEnumType;
+ },
+
+ isSameType : function(child)
+ {
+  return this.type === child.type;
+ },
+
+ pop : function()
+ {
+  this.children.pop();
+ },
+
+ popFirst : function()
+ {
+  this.children.shift();
+ },
+
+ addNode_simple : function(child)
+ { //(Private) The function that does the actual insertion.
+  var last = this.getLast();
+  if (last && last.isType(AST_ENUM.TEXT) && last.isSameType(child))
+  {
+   last.meta.TEXT += child.meta.TEXT;
+   return;
+  }
+  child.parent = this;
+  this.children.push(child);
+ },
+
+ addNode_table : function(child)
+ { //(Private) Special case handling for table elements.
+  var last = this.getLast();
+  if (!last || !last.isType(AST_ENUM.TABLE))
+  {
+   if (child.isType(AST_ENUM.TR))
+   {
+    return; //Table row delimiters should not start a table.
+   }
+   last = new ASTNode(AST_ENUM.TABLE);
+   this.addNode_simple(last);
+  }
+  if (last.getLength() <= 0)
+  {
+   last.addNode_simple(new ASTNode(AST_ENUM.TR));
+  }
+
+  var rowNode = last.getLast();
+  if (child.isType(AST_ENUM.TH) || child.isType(AST_ENUM.TD))
+  {
+   rowNode.addNode_simple(child);
+  }
+  else if (child.isType(AST_ENUM.TR) && rowNode.getLength() > 0)
+  {
+   last.addNode_simple(child);//New row, if previous row is not empty
+  }
+ },
+
+ addNode_ul_ol : function(child)
+ { //(Private) Special case for ordered list, and unordered list items.
+  var listType = child.isType(AST_ENUM.UL_LI) ? AST_ENUM.UL : AST_ENUM.OL;
+  var last = this.getLast();
+  if (!last || !last.isType(listType))
+  {
+   last = new ASTNode(listType);
+   this.addNode_simple(last);
+  }
+  last.addNode_simple(child);
+ },
+
+ addNode_dl : function(child)
+ { //(Private) Special case for definition list.
+  var last = this.getLast();
+  if (!last || !last.isType(AST_ENUM.DL))
+  {
+   last = new ASTNode(AST_ENUM.DL);
+   this.addNode_simple(last);
+  }
+  last.addNode_simple(child);
+ },
+
+ addNode : function(child)
+ { //Append an ASTNode object.
+  if ((child instanceof ASTNode) && child !== this)
+  {
+   if (child.isType(AST_ENUM.LINK_REF))
+   {
+    if (!this.meta.SYM_TABLE)
+    {
+     this.meta.SYM_TABLE = {};
+    }
+    this.meta.SYM_TABLE[child.meta.REF_ID] = child.meta.URL;
+   }
+   else if (this.isType(AST_ENUM.PARA) && this.isSameType(child))
+   {
+    this.addNodes(child); //Flatten nested paragraphs.
+   }
+   else if (child.isType(AST_ENUM.UL_LI) || child.isType(AST_ENUM.OL_LI))
+   {
+    this.addNode_ul_ol(child);
+   }
+   else if (child.isType(AST_ENUM.TR) || child.isType(AST_ENUM.TH) ||
+   child.isType(AST_ENUM.TD))
+   {
+    this.addNode_table(child);
+   }
+   else if (child.isType(AST_ENUM.DD) || child.isType(AST_ENUM.DT))
+   {
+    this.addNode_dl(child);
+   }
+   else
+   {
+    this.addNode_simple(child);
+   }
+  }
+ },
+
+ addText : function(rawText)
+ { //Append a TEXT ASTNode, given some raw string.
+  if (rawText && rawText.length > 0)
+  {
+   this.addNode_simple(new ASTNode(AST_ENUM.TEXT, {TEXT : rawText}));
+  }
+ },
+
+ addNodes : function(child)
+ { //Append the descendants of the child into this node.
+  if ((child instanceof ASTNode) && child !== this)
+  { //No invalid object type, and no circular reference permitted.
+   for (var ci = 0, clen = child.children.length; ci < clen; ci += 1)
+   { //Flatten.
+    this.addNode_simple(child.children[ci]);
+   }
+  }
+ }
+};
+"""
+
+
+
+
+Important Constants & Enums
+---------------------------
+
+=== LEX_ENUM ===
+
+An enumeration of possible types of Lexical Tokens.
+
+"""
+LEX_ENUM =
+{
+ SPACES : "SPACES",
+ NL : "NL",
+ TEXT : "TEXT",
+ UNDER : "UNDER",
+ SUB : "SUB",
+ SUP : "SUP",
+ CODE : "CODE",
+ ITAL : "ITAL",
+ BOLD : "BOLD",
+ INS : "INS",
+ INS_END : "INS_END",
+ DEL : "DEL",
+ DEL_END : "DEL_END",
+ DIV_LINE : "DIV_LINE",
+ COMMENT_DELIM : "COMMENT_DELIM",
+ ASIDE_DELIM : "ASIDE_DELIM",
+ TH : "TH", //Table Head
+ TD : "TD", //Table Cell
+ TR_DELIM : "TR_DELIM", //Table Row Delimiter
+ ATX : "ATX",
+ ATX_END : "ATX_END",
+ OL_ITEM : "OL_ITEM",
+ UL_ITEM : "UL_ITEM",
+ DT_MARK : "DT_MARK",
+ DD_MARK : "DD_MARK",
+ LABEL_CLASS : "LABEL_CLASS",
+ LABEL_ID : "LABEL_ID",
+ LABEL_STOP : "LABEL_STOP",
+ LINK_REF_END : "LINK_REF_END",
+ LINK_REF : "LINK_REF",
+ LINK_CONT : "LINK_CONT",
+ LINK_INT : "LINK_INT",
+ LINK_WIKI : "LINK_WIKI",
+ LINK_EXT : "LINK_EXT",
+ LINK_IMG : "LINK_IMG",
+ GT_THAN : "GT_THAN",
+ BRACKET_L : "BRACKET_L",
+ BRACKET_R : "BRACKET_R",
+ EOF : "EOF"
+}
+"""
+
+
+
+=== AST_ENUM ===
+
+An enumeration of possible AST (Abstract Syntax Tree) node types.
+
+"""
+AST_ENUM =
+{
+ ROOT : "ROOT",
+ PARA : "PARA",
+ STOP : "STOP",
+ BLOCKQUOTE : "BLOCKQUOTE",
+ CODE_BLOCK : "CODE_BLOCK",
+ ASIDE : "ASIDE",
+ ID : "ID",
+ CLASS : "CLASS",
+ UL : "UL",
+ OL : "OL",
+ UL_LI : "UL_LI",
+ OL_LI : "OL_LI",
+ HEADER : "HEADER",
+ DIV_LINE : "DIV_LINE",
+ DT : "DT",
+ DD : "DD",
+ DL : "DL",
+ TH : "TH",
+ TD : "TD",
+ TR : "TR",
+ TABLE : "TABLE",
+ LINK_REF : "LINK_REF",
+ LINK_INT : "LINK_INT",
+ LINK_EXT : "LINK_EXT",
+ LINK_IMG : "LINK_IMG",
+ LINK_WIKI : "LINK_WIKI",
+ TEXT : "TEXT",
+ DEL : "DEL",
+ INS : "INS",
+ UNDER : "UNDER",
+ SUB : "SUB",
+ SUP : "SUP",
+ ITAL : "ITAL",
+ BOLD : "BOLD",
+ CODE : "CODE"
+}
+"""
+
+
+
+=== AST_HTML_MAP ===
+
+Direct AST Node type to HTML tag name map. (Incomplete, as some AST nodes 
+types do not have a perfect one-to-one mapping relationship, such as the 
+"""CODE_BLOCK""" node which should map to """<pre><code>""")
+
+"""
+AST_HTML_MAP =
+{
+ PARA : "p",
+ BLOCKQUOTE : "blockquote",
+ CODE_BLOCK : "pre",
+ ASIDE : "div", //Arbitrary div.
+ UL_LI : "li",
+ OL_LI : "li",
+ OL : "ol",
+ UL : "ul",
+ DL : "dl",
+ DD : "dd",
+ DT : "dt",
+ DIV_LINE : "hr",
+ TH : "th",
+ TD : "td",
+ TR : "tr",
+ TABLE : "table",
+ LINK_INT : "a",
+ LINK_EXT : "a",
+ LINK_WIKI : "a", //Extensible, clickable link.
+ LINK_IMG : "img",
+ SUB : "sub",
+ SUP : "sup",
+ ITAL : "em",
+ BOLD : "strong",
+ DEL : "del",
+ INS : "ins",
+ UNDER : "u",
+ CODE : "code",
+ HEADER : "h" //h1-h6
+}
+"""

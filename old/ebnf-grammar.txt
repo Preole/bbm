@@ -1,0 +1,1309 @@
+BakaBakaMark EBNF Grammar
+=========================
+
+
+Start Symbols
+-------------
+
+"""
+BakaBakaMark
+ | Blocks EOF
+ ;
+
+Blocks
+ | (BlockStart Block)*
+ ;
+ 
+BlockStart
+ | (NL (SPACES)?)*
+ ;
+ 
+Block
+ | SPACES?
+   (
+   | Aside
+   | CodeBlock 
+   | BlockQuote 
+   | List 
+   | DefList
+   | Table
+   | DividerLine
+   | ATXHeader
+   | BlockID
+   | BlockClass
+   | BlockStop
+   | URLAnchor
+   | Paragraph
+   )
+ ;
+"""
+
+If all above matches fail, it's a paragraph.
+
+**OL_ListItem, UL_ListItem, Blockquote, Aside, DefTerm, DefDesc, and 
+CodeBlock** must contain at least one child node to be considered as 
+part of the syntax tree. **TableHead** and **TableCell** are exempt from 
+this requirement.
+
+
+
+Block-level Grammar
+-------------------
+
+"""
+Aside
+ | SPACE{N} ASIDE_DELIM NL Blocks SPACE{N} ASIDE_DELIM NL
+ ;
+ 
+ASIDE_DELIM
+ | [*]{4,}
+ ;
+"""
+ 
+Creates an arbitrary block-level container. This construct is useful for 
+creating side blocks and floating figures, when combined with the BlockID or 
+BlockClass elements.
+
+If a block-level element is to be inside an aside block, it must be indented 
+to at least the same level as the start ASIDE_DELIM, or more, in space 
+characters.
+
+For an """Aside""" to terminate gracefully, the number of asterisks in the 
+closing delimiter token must be the same as the starting token's. Moreover, 
+these asterisks need to start on the same column, and they need to be on a 
+blank line.
+
+
+ 
+"""
+BlockStop
+ | FULLSTOP NL
+ ;
+
+BlockID
+ | FULLSTOP SPACE ~(NL)+ NL
+ ;
+ 
+BlockClass
+ | FULLSTOP{2} SPACE ~(NL)+ NL
+ ;
+ 
+FULLSTOP
+ | "."
+ ;
+"""
+
+The """BlockStop""" element is simply a block-level element that terminates 
+the current ongoing block, such as a bullet list. Some use cases include 
+breaking a long bullet list into two smaller, distinct bullet lists without 
+using a paragraph.
+
+The latter two grammar constructs will give their ID or class value to the 
+next content-holding block element they encounter, such as paragraph or a 
+non-empty bullet list.
+
+As for the ID and class attributes, anything on the rest of the line will 
+count, though subject to the processing rules defined in the section
+**Character Transformation Pipeline Summary**. If their attribute values are 
+empty after processing, this element is a no-op.
+
+Identifiers described by BlockID elements must be unique. If a particular ID 
+has already been defined in the document, this element is a no-op.
+
+If there are consecutive BlockID elements, (That is, there are multiple 
+BlockID before a content-holding block element) Only the last one defined 
+is effective. All other ID names in the chain shall be garbaged, meaning 
+they become inaccessible for later uses in the document.
+
+For the BlockClass attribute, additional CSS (modifier) classes can be added 
+to the said block by adding lines that starts with a BlockClass attribute, 
+as shown in the following sample code:
+
+"""
+. Figure 1.
+.. Gallery
+.. Left
+****
+!<MyImage.jpg>
+!<MyImage2.jpg>
+
+This is a gallery's caption.
+****
+"""
+
+
+
+"""
+ATXHeader
+ | ATX ~(NL | ATX_END) ATX_END?
+ ;
+ 
+ATX_END
+ | [=]+ (?=(NL))
+ ;
+ 
+ATX
+ | [=]+
+ ;
+"""
+
+One-liner header. This particular header style parses the text in verbatim 
+without any paragraph-level processing. (No bold, italics, image etc.)
+
+
+
+"""
+BlockQuote
+ | GT_THAN Blocks
+ ;
+"""
+
+After a ">", parse block level element as always. A block can be contained 
+inside a block quote so long as it's indented to the column of the first 
+block element in the block, including other blockquote elements.
+
+ 
+
+"""
+CodeBlock
+ | CODE NL
+   [~(CODE NL)]+
+   CODE NL
+ ;
+"""
+
+Fenced code block. Uses the same CODE symbol as the inline code snippet. 
+Concept is the same as Github's fenced code block.
+
+A Code block is a block that contains uninterpreted text between two lines,
+both of which begin with at least typewriter's quotes (") on the same column 
+and terminates the line immediately. Both lines must have the same number 
+of symbols.
+
+Within the code block, all whitespace and line breaks are preserved. No
+Markup parsing, and no symbol substitution will occur inside. Every line of 
+text shall be trimmed at least X leading space characters, where X is 
+the number leading space characters before the starting code block.
+
+
+
+
+"""
+CommentBlock
+ | COMMENT_DELIM [.]+ COMMENT_DELIM
+ ;
+ 
+COMMENT_DELIM
+ | [/]{4,} NL
+ ;
+"""
+
+Keeps going until there's another line starting with an equal number of 
+slashes on the same column. All text enclosed within the comment block 
+shall not affect the output in any way, and will not appear in the syntax 
+tree.
+
+
+
+"""
+DividerLine
+ | DIV_LINE
+ ;
+ 
+DIV_LINE
+ | "-"{4, } (?=NL)
+ ;
+"""
+
+Starting a line with four or more consecutive hyphen-minus, followed by the 
+end of the line, is a Divider Line. (Thematic break)
+
+
+
+"""
+URLAnchor
+ | LINK_REF [~(NL | LINK_REF_END)]+ LINK_REF_END [~(NL)]+
+ ;
+ 
+LINK_REF
+ | ":{"
+ ;
+	
+LINK_REF_END
+ | "}:"
+	;
+"""
+
+A reference link anchor (URLAnchor) has two components: The ID stored inside 
+the braces, """:{ID}:""", and the URL on the rest of the line. Hyperlinks 
+may refer to this identifier for URL substitution instead of storing the 
+long URL as it is.
+
+The order they're defined relative to hyperlinks doesn't matter. If two 
+URLAnchor with the same identifiers are defined under the same block-level 
+container, the one defined latter is used instead of the former.
+
+The container block element they're defined in does matter, which is 
+described in detail in **URL Anchor Referencing Scope** section.
+
+This block-level element does not create a node in the abstract syntax tree. 
+Instead, they modify the container's URL symbol table.
+
+
+"""
+OrderedList
+ | (OL_ListItem)+
+ ;
+ 
+UnorderedList
+ | (UL_ListItem)+
+ ;
+ 
+OL_ListItem
+ | OL_ITEM Block Blocks
+ ;
+ 
+UL_ListItem
+ | UL_ITEM Block Blocks
+ ;
+ 
+OL_ITEM
+ | [#] "." SPACE
+ | [0-9]+ "." SPACE
+ ;
+ 
+UL_ITEM
+ | [-+*\\u2022\\u2043] SPACE
+ ;
+"""
+
+Like a blockquote and an aside block, A block can be contained inside a list 
+item so long as it's indented to the column of the first block element in the 
+block, including other lists.
+
+
+
+"""
+DefList
+ | (DefTermGroup DefDescGroup)+
+ ;
+ One or more group, where each group contains at least one term, 
+ followed by at least one description.
+ 
+DefTermGroup
+ | DefTerm+ 
+ ;
+ 
+DefTerm
+ | DT_MARKER Paragraph
+ ;
+ The Paragraph in the DefTerm node should contain the children of the 
+ Paragraph node, rather the Paragraph's subtree. 
+ 
+ Additionally, if a Paragraph is parsed as a Setext header under this 
+ context, that paragraph should be a DefTerm node, not a Header node.
+ 
+DefDescGroup
+ | DefDesc+ 
+ ;
+ 
+DefDesc
+ | DD_MARKER Blocks
+ ;
+ 
+DT_MARKER
+ | ";" SPACE
+ ;
+ 
+DD_MARKER
+ | ":" SPACE
+ ;
+"""
+
+A definition list continues so long as it keeps encountering definition terms 
+and definition descriptions (DD) blocks. Logical structures of the DD element 
+is determined by the same indentation rule used by bullet and ordered lists.
+
+
+
+
+"""
+Table:
+ | TableRowStart (TABLE_ROW_DELIM TableRow)+
+ ;
+ 
+TableRowStart
+ | (TableCell | TableHead)+ 
+ ;
+ 
+TableRow
+ | TableRowStart
+ | TABLE_ROW_DELIM
+ ;
+ 
+TableCell
+ | TABLE_CELL_DELIM TableCellContent
+ ;
+ 
+TableHead
+ | TABLE_HEAD_DELIM TableCellContent
+ ;
+ 
+TableCellContent
+ | (Blocks | SPACES? NL)
+ ;
+ If there's nothing immediately after the table cell marker except a blank
+ line remainder, it's an intentionally empty cell. Empty cells can be used
+	for cells to span multiple columns on the same row.
+ 
+-----------------------------
+ 
+TABLE_HEAD_DELIM
+ | "!!"
+ ;
+
+TABLE_CELL_DELIM
+ | "||"
+ ;
+ 
+TABLE_ROW_DELIM
+ | "|" [=]+ (?=NL)
+ ;
+"""
+
+
+
+Block Element Indentation Rules
+-------------------------------
+
+BakaBakaMark is an indentation sensitive lightweight markup language. 
+That is, the document's logical structure depends on white space and 
+indentation. 
+
+Rules listing:
+
+0. All white spaces are treated equally for the purpose of determining 
+   indentation and nesting. For further details, refer to the """SPACE""" 
+   token definition.
+
+1. Every line of text in a **Paragraph** must be indented to the same column 
+   as the first line of the paragraph, or deeper. All spaces after that column 
+   are collapsed into a single white space, with the sole exception of hard 
+   line-wrapped URLs, which can preserve literal white space.
+   
+2. The the first non-whitespace token on the same line determines the 
+   minimum indentation level for selected block elements. These elements 
+   are:
+   
+   - **TableHead**
+   - **TableCell**
+   - **Blockquote**
+   - **OL_ListItem**
+   - **UL_ListItem**
+   - **DefTerm**
+   - **DefDesc**
+   
+   All block elements are counted as a child of the forementioned elements 
+   so long as they meet the minimum indentation requirement. Sample code:
+   
+   """
+   + + Item 1.1
+     + Item 1.2
+     
+     Item 1, paragraph 1 after the first bullet list.
+     
+     + Item 1.1
+     - Item 1.2
+     
+     Item 1, paragraph 2 after the second bullet list.
+     
+   + Item 2, paragraph 1, because it's not indented enough to be counted 
+     as part of Item 1.
+   """
+   
+3. For **Aside** and **CodeBlock**, the minimum indentation level is 
+   determined by the opening delimiter token's column number instead.
+   
+   """
+    ****
+    Part of the aside block
+    
+    Part of the aside block
+    
+   Aside block terminated due to insufficient indentation.
+    ****
+    Another aside block.
+    ****
+   """
+   
+4. **CommentBlock**, **CodeBlock** are exempt from rule 1 and rule 2.
+
+
+
+Paragraph & Inline Grammar
+--------------------------
+
+"""
+Paragraph
+ | ParaStart ParaEnd
+ ;
+ 
+ParaStart
+ | (TextFrag)+ NL SPACE?
+ ;
+ 
+ParaEnd
+ | ParaEndNormal
+ | ParaEndSetextH1
+ | ParaEndSetextH2
+ ;
+ 
+ParaEndNormal
+ | NL
+ | ASIDE_DELIM
+ ; 
+ The paragraph end as """<p>""" or a paragraph.
+ 
+ParaEndSetextH1
+ | ATX_END
+ ;
+ The paragraph ends and gets promoted to a """<h1>""" element.
+ 
+ParaEndSetextH2
+ | DIV_LINE
+ ;
+ The paragraph ends and turns into to a """<h2>""" element.
+ 
+ 
+TextFrag
+ | TextFrag_Bold
+ | TextFrag_Subscript
+ | TextFrag_Superscript
+ | TextFrag_Italic
+ | TextFrag_Delete
+ | TextFrag_Underline
+ | TextFrag_Insert
+ | TextFrag_Code
+ | Link
+ | TextFrag_Verbatim
+ ;
+ 
+TextFrag_Bold
+ | BOLD TextFrag BOLD
+ ;
+ 
+TextFrag_Subscript
+ | SUB TextFrag SUB
+ ;
+ 
+TextFrag_Superscript
+ | SUP TextFrag SUP
+ ;
+ 
+TextFrag_Italic
+ | ITAL TextFrag ITAL
+ ;
+ 
+TextFrag_Underline
+ | UNDERLINE TextFrag UNDERLINE
+ ;
+ 
+TextFrag_Delete
+ | DEL_START TextFrag DEL_END
+ ;
+ 
+TextFrag_Insert
+ | INS_START TextFrag INS_END
+ ;
+ 
+TextFrag_Code
+ | CODE (TextFrag_Verbatim)+ CODE
+ ;
+ The length of the starting CODE symbol should match the ending symbol.
+ 
+TextFrag_Verbatim
+ | ((TEXT | SPACE)+ NL)+
+ ;
+ 
+TextFrag_Bracketed
+ | (BRACKET_L | LINK_INT | LINK_CONT)
+   (TextFrag | TextFrag_Bracketed)+
+   BRACKET_R
+ ;
+ 
+TextFrag_Bracketed_Verbatim
+ | (BRACKET_L | LINK_INT | LINK_CONT)
+   (TextFrag_Verbatim | TextFrag_Bracketed_Verbatim)+
+   BRACKET_R
+ ;
+ 
+=== Text-formatting tokens ===
+
+UNDERLINE
+ | "__"
+ ;
+ 
+SUB
+ | ",,"
+ ;
+
+SUP
+ | "^^"
+ ;
+ 
+BOLD
+ | "**"
+ ;
+ 
+ITAL
+ | "''"
+ ;
+ 
+CODE
+ | ["]{3,}
+ ;
+ 
+DEL
+ | "{--"
+ ;
+ 
+DEL_END
+ | "--}"
+ ;
+ 
+INS
+ | "{++"
+ ;
+ 
+INS_END
+ | "++}"
+ ;
+"""
+
+
+
+=== Hyperlinks ===
+
+"""
+Link
+ | (LinkExt | LinkInt | LinkWiki) (LinkContinue LinkDisplay)?
+ | LinkImage (LinkContinue AltText)?
+ | Barelink
+ ;
+ 
+AltText
+ | LINK_CONT
+   (TextFrag_Verbatim | TextFrag_Bracketed_Verbatim)+ 
+   BRACKET_R
+ ;
+ 
+LinkDisplay
+ | LINK_CONT
+   (TextFrag | TextFrag_Bracketed)+ 
+   BRACKET_R
+ ;
+The text fragment in this element cannot contain another LinkExt, LinkInt, 
+or LinkWiki element. This rule is necessary as nested hyperlinks are illegal 
+in the HTML syntax, and make little sense in the real world.
+ 
+LinkContinue
+ | SPACES? NL? SPACES?
+ ;
+ 
+LinkWiki
+ | LINK_WIKI TextFrag_Verbatim GT_THAN
+ ;
+ 
+LinkExt
+ | LINK_EXT TextFrag_Verbatim GT_THAN
+ ;
+ 
+LinkImage
+ | LINK_IMG TextFrag_Verbatim GT_THAN
+ ;
+ 
+LinkInt
+ | LINK_INT 
+   (TextFrag_Bracketed_Verbatim | TextFrag_Verbatim)+ 
+   BRACKET_R
+ ;
+"""
+
+
+
+==== Hyperlink Tokens ====
+
+"""
+LINK_CONT
+ | (?<=[>\\]]) "-"
+ ;
+ Match the hyphen, if it's preceded by the greater than sign ">" or the 
+ closing bracket "]". (Lookbehind needs to yield either of these characters, 
+ because the closing bracket is used to close an internal link """#[]""", 
+ while the greater than sign is used to close an image, external link, or 
+ wiki link. """!<> ?<> #<>"""
+ 
+ This is used to change the default display text of a hyperlink, or the 
+ alt text of an image link, when combined with the LinkContinue syntax.
+ 
+BRACKET_R
+ | "]"
+ ;
+ 
+LINK_INT
+ | "#["
+ ;
+
+LINK_WIKI
+ | "#<"
+ ;
+
+LINK_IMG
+ | "!<"
+ ;
+
+LINK_EXT
+ | "?<"
+ ;
+ 
+GT_THAN
+ | ">"
+ ;
+"""
+
+
+
+Miscellaneous Tokens
+--------------------
+
+"""
+SPACE
+ | [ \\u2000-\\u200d\\t\\u202f\\u205f​\\u3000\\u1680​]
+ | [\\u180e\\u00a0\\u00b7\\u237d\\u2420\\u2422\\u2423]
+ ;
+"""
+
+All space characters listed here are counted as **One** character or 
+column for the purpose of determining indentation, including the tab 
+character.
+ 
+"""
+SPACES
+ | SPACE+
+ ;
+ 
+NL
+ | \\r \\n?
+ | \\n
+ | \\u2028
+ | \\u2029
+ | \\u0085
+ | \\v
+ | \\f
+ | EOF
+ ;
+ 
+EOF
+ | Epsilon
+ ;
+End of input stream.
+ 
+ESCAPE
+ | (?<=[\\\\]) ~[NL SPACES] 
+ ;
+"""
+
+Any character that is not a white space or a newline after the backslash 
+will be treated as a TEXT token. The leading backslash character shall not 
+be rendered in the output under **ALL** contexts, including code blocks, URL, 
+and other verbatim text sections. (Use two backslashes if they're needed 
+in literal form.)
+
+
+
+"""
+TEXT
+ | ESCAPE
+ | ~[
+    NL
+    SPACE
+    BRACKET_R
+    BRACKET_L
+    UNDER
+    SUB
+    SUP
+    CODE
+    ITAL
+    BOLD
+    INS
+    INS_END
+    DEL
+    DEL_END
+    DIV_LINE
+    COMMENT_DELIM
+    ASIDE_DELIM
+    TABLE_HEAD
+    TABLE_CELL
+    TABLE_ROW_DELIM
+    ATX
+    ATX_END
+    OL_ITEM
+    UL_ITEM
+    DT_MARKER
+    DD_MARKER
+    LABEL_CLASS
+    LABEL_ID
+    LABEL_STOP
+    LINK_REF_END
+    LINK_REF
+    LINK_CONT
+    LINK_INT
+    LINK_WIKI
+    LINK_EXT
+    LINK_IMG
+    GT_THAN
+    BRACKET_L
+    BRACKET_R
+    ]+
+ ;
+"""
+
+The TEXT token is any consecutive characters that does not translate to any 
+other lexical tokens defined in the grammar. Any fragment punctuation symbols 
+that start, but fail to match one of the prescribed tokens also count as 
+a TEXT token.
+
+
+
+Semantic Rules Listing
+======================
+
+This section details all the semantic rules not covered by the grammar 
+definition.
+
+
+
+Control Characters
+------------------
+
+"""
+CTRL
+ | [\\u0000-\\u001f] //ASCII Control characters
+ | [\\u0080–\\u009f] //Extended ASCII control characters
+ | \u007f            //Backspace, or DELETE
+ | [\\u2028\\u2029]  //Unicode line and paragraph separators.
+ ;
+"""
+
+The text values parsed from the following grammar rules must have all 
+characters from the set """CTRL""" removed.
+
+- BlockClass
+- BlockID
+- AltText
+- URL (Applies to the URL parsed in ''LinkImage'', ''LinkWiki'', ''LinkExt'', 
+  ''LinkInt'', and the URL component of URLAnchor.)
+- URLAnchor (Both the ID and the URL components.)
+
+There are no exceptions to this rule.
+
+
+
+Leading & Trailing Space
+------------------------
+
+The same set of grammar rules described in the **Control Character** section 
+need to have leading and trailing white space removed from their text values, 
+defined by the """SPACE""" token. Additionally, The following grammar rules 
+are to remove all spaces from their values described by the same token:
+
+- BlockClass
+- BlockID
+
+If the text values from these grammar rules have become empty at this point, 
+the produced nodes need to be removed from the tree. The only exception is 
+the ''AltText'' production, which represents image alt text attribute. It's 
+permitted to remain empty if it's not contained in a link element; Otherwise, 
+it should be assigned a default placeholder text.
+
+So far, the text-value processing pipeline is this:
+
+1. Remove Control Characters
+2. Trim white space
+3. If BlockClass, BlockID, remove all spaces.
+4. If Text Value is empty at this point, remove this node. (Except AltText)
+
+
+
+Text Value Uniqueness
+---------------------
+
+Text value letters are **Case Sensitive** for the purpose of determining 
+whether two text values are identical. Moreover, the text values must have 
+control characters stripped and space processed according to **Leading & 
+Trailing Space** prior to determining uniqueness. The affected grammar rules 
+are:
+
+- URLAnchor (One unique ID per scope)
+- BlockID (One unique ID per **entire document**)
+
+
+URL Anchor Referencing Scope
+----------------------------
+
+A reference link defined by the """URLAnchor""" grammar has an effective 
+local scope. That is, a reference link defined in a block element is usable 
+by hyperlinks contained in that block element, but not hyperlinks in other 
+ones. The exception is if the reference is defined inside the container 
+shared by all the blocks, such as the root node. The following code snippet 
+demonstrates URL Anchor Referencing Scopes.
+
+"""
+- List item 1. Boo = "BooURL". ?<Boo>
+
+  :{Boo}: BooURL
+  
+- List item 2, Boo = "WhackURL". ?<Boo>
+
+  :{Boo}: WhackURL
+  
+> Blockquote. Boo = "AxeURL". The variable Boo isn't found in the 
+  blockquote's scope, so it attempts to search in the container's 
+  symbol table, which is the global scope. ?<Boo> 
+  
+Global paragraph. Boo = "AxeURL". ?<Boo>
+
+Global paragraph. http://www.google.com = "http://www.google.com". 
+Since there's identifier with that name in the document, the hyperlink 
+shall use the identifier itself as the URL. ?<http://www.google.com>
+
+:{Boo}: AxeURL
+"""
+
+In short, when a hyperlink attempts to substitute an identifier with a 
+URL, it looks inside its container's symbol table, followed by the 
+container's parent, all the way up to the root node. If no such 
+substitution can be made, it will use the identifier itself as the URL.
+
+The following block elements are eligible for holding an URLAnchor:
+
+- TableHead, TableCell ("""th""", """td""")
+- DefDesc ("""dd""")
+- AsideBlock ("""div""")
+- OL_ListItem, UL_ListItem ("""li""")
+- Blockquote ("""blockquote""") 
+- The root node (Default, which produces no code)
+
+
+
+Character Transformation Pipeline Summary
+-----------------------------------------
+
+1. If **AltText**, **URL**, **Reference Link ID**, **BlockID**, **BlockClass** 
+   contexts, remove all control characters defined by the """CTRL""" character 
+   class.
+   
+2. If **AltText**, **URL**, **Reference Link ID** contexts, remove leading and 
+   trailing space, where spaces are defined by the """SPACE""" character 
+   class.
+   
+3. If **BlockID**, **BlockClass** contexts, remove all spaces.
+
+4. For contexts defined in **#3**, discard nodes where the text value 
+   (identifier, classes) is empty. 
+   
+5. (For HTML targets only) Perform **HTML Character Transformation**
+
+
+
+
+
+
+HTML Character Transformation (For HTML Targets Only)
+-----------------------------------------------------
+
+The significant HTML character set """' " / > < ` &""" should be replaced 
+with their equivalent HTML entities in HTML attribute contexts, such as 
+hyperlink URL. This is the recommendation advised by the OWASP foundation, 
+taken from ?<OWASP>-[rule 2] of the web page.
+
+- "&" -> &amp;
+- "`" -> &#x60;
+- "<" -> &lt;
+- ">" -> &gt;
+- " -> &quot;
+- "'" -> &#x27;
+- "/" -> &#x2F;
+
+**Important:** If an element can produce HTML snippets containing attributes, 
+they must be enclosed in double quotes (") or single quotes ('). This rule 
+applies, but is not limited to: Hyperlink URL values, """BlockID""", 
+"""BlockClass""".
+
+Despite OWASP's ?<OWASP>-[Rule 1 Recommendation], HTML snippets produced in 
+HTML body context in BakaBakaMark only need to have """< > &""" escaped. 
+Further escaping is not necessary, though they should be considered equivalent 
+in terms of determining correctness.
+
+For the following HTML attributes, a String prefix without any control 
+characters or spaces should be applied to these values:
+
+- BlockID ("""CSS ID""")
+- BlockClass ("""CSS Class""")
+- LinkWiki ("""CSS Class""")
+
+This transformation should happen after processing control and space 
+characters, if they were needed.
+
+
+:{OWASP}: https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet
+
+
+
+Syntax Tree Modification
+------------------------
+
+This section summarizes the way the parse tree should be modified after 
+parsing the source text.
+
+1. Remove block-level and text-formatting elements that contain only spaces 
+   or control characters as text. This includes top-level block elements such 
+   as paragraphs, as well as text-formatting descendants like """Bold""" or 
+   """Italic""". However, this rule does not apply to hyperlinks in the case 
+   of display text containing only these characters. (Hyperlinks with empty 
+   display text value should use its URL as its display text)
+   
+   """
+   ** **
+   
+   ** __ __ **
+   
+   ** __ ** __
+   
+   Space{-- {++ __ **Ah hey** __ ++} --}Space
+   
+   """
+   
+   The first example paragraph, which consists of a bold formatting containing 
+   only white space, shall be removed from the syntax tree.
+   
+   The second example paragraph is also removed from the tree, because both 
+   the bold and the underlined section contain nothing but white space.
+   
+   The third example is not removed; Instead, it contains a bold section 
+   with some underscores, and ends with some more underscores.
+   
+   The last example shall be kept as it is, because the deepest level of 
+   formatting has some non-whitespace content inside.
+   
+#. Remove the trailing space in a TEXT node, if it is a direct descendant of 
+   a block-level container according to pre-order tree traversal.
+
+2. (At Syntax Analysis time) Hyperlinks & Images shall be treated literally 
+   if it contains the empty URL, or URL consisting of only spaces and control 
+   characters. The URL value should have leading and trailing spaces as well 
+   as all control characters stripped.
+   
+   Hyperlinks with display text consisting of only spaces and control 
+   characters, or text formatting containing such text, shall use the 
+   URL as the display text.
+   
+   """
+   ?<URL>-[__ ** ** __]
+
+   ->
+
+   <a href="URL">URL</a>
+   """
+
+3. Remove trailing **BlockID**, **BlockClass** nodes. 
+   Remove all **BlockStop** nodes.
+
+4. Remove the block node from the syntax tree if it has become empty, 
+   (containing no descendants) except for **TableHead**, **TableCell**, 
+   **DividerLine**.
+   
+5. Process Definition Lists according to rules defined in **Definition List 
+   Semantics**.
+
+6. Process Tables according to rules defined in **Table Semantics**.
+
+7. (Accessibility)
+
+   Images that are descendants of a Hyperlink element must have a non-empty 
+   alt text attribute value consisting of at least one visible character. 
+   This character may not be a space character defined by the """SPACE""" 
+   token, and may not be a control character defined by the """CTRL""" token.
+   
+   If such images have empty alt text values, they must be supplied a 
+   placeholder text value by the compiler.
+
+   """
+   ?<DeeDee>-[!<Haha>-[  ]]
+   """
+
+   In that particular example, the image has an empty alt text value since 
+   it consists of nothing but whitespace. The resulting HTML has used the 
+   image's source URL as the value of the alt text attribute.
+
+   """
+   <a href="DeeDee"><img src="Haha" alt="Haha"></a>
+   """
+
+
+
+Definition List Semantics
+-------------------------
+
+If a definition list (DL) begins with one or more DD elements, they should 
+be removed from the list.
+
+"""
+: Oops. This definition list starts with a DD element.
+; Term
+: Definition
+
+-->
+
+<dl>
+ <dt>Term</dt>
+ <dd>Definition<dd>
+</dl>
+"""
+
+Similarly, trailing DT elements should be removed as well.
+
+"""
+; Term
+: Definition
+; This DL ends with DT.
+
+-->
+
+<dl>
+ <dt>Term</dt>
+ <dd>Definition<dd>
+</dl>
+"""
+
+If a definition list has become empty because of this correction, it should 
+be removed as well, which means this definition list produces no HTML.
+
+
+
+
+
+Table Semantics
+---------------
+
+Rule 1: **The first row of the table mandates the table's maximum number of
+columns.** If a subsequent contains more columns than the first row, these 
+columns are discarded.
+  
+"""
+|| Col 1
+|| Col 2
+|=======
+|| Col 1
+|| Col 2
+|| Col 3
+|=======
+|| Col 1
+|| Col 2
+"""
+
+The output (HTML in this example) should discard the cell containing the 
+data "Col 3".
+
+"""
+<table>
+<tr>
+<td>Col 1</td>
+<td>Col 2</td>
+</tr>
+<tr>
+<td>Col 1</td>
+<td>Col 2</td> <!--Col 3 in this row is discarded.-->
+</tr>
+<tr>
+<td>Col 1</td>
+<td>Col 2</td>
+</tr>
+</table>
+"""
+
+  
+Rule 2: **Rows containing insufficient number of columns (At least one) shall 
+be padded using empty table cells.** Coming up next is a 2 by 2 table, where 
+the second row only has one column.
+
+"""
+|| R1 C1
+|| R1 C2
+|=======
+|| R2 C1
+"""
+
+In this example, the second row contains only 1 column, while the table 
+requires two columns on every row (Mandated by the first row, as **Rule 1**). 
+An additional cell shall be appended onto that row.
+
+"""
+<table>
+<tr>[...]</tr>
+<tr>
+<td>R2 C1</td>
+<td></td>
+</tr>
+"""
+
+This means that, if the cell @(2, 2)(Row, column) needs to contain the data 
+value instead of cell @(2, 1), one must explicitly assign cell (2, 1) an 
+empty cell.
+
+"""
+|| R1 C1
+|| R1 C2
+|=======
+|| 
+|| R2 C2 should contain the value, not R2 C1
+"""
+
+> Rule 2.1: **Rule 2 does not apply to rows that are intentionally left 
+  empty**, which are identified by two consecutive row delimiters. These 
+  table rows are to be discarded.
+  
+  """
+  || R1 C1
+  || R1 C2
+  |=======
+  |=======
+  || R2 C1
+  || R2 C2
+  """
+  
+  To create an empty row, one must explicitly insert at least one empty 
+  cell in that row, which will be populated with more empty cells to match 
+  the table's column count.
+  
+  """
+  || R1 C1
+  || R1 C2
+  |=======
+  || 
+  |=======
+  || R3 C1
+  || R3 C2
+  """
+
+
+Syntax Tree Summary
+-------------------
+
+Assuming """Block""" is the root node, with the Attribute SYM_TABLE """{ID : 
+URL}""" being empty. This summary diagram denotes the possible descendants of 
+each node in the tree.
+  
+- Aside
+
+  - Block+ (If """Block+""", this means the node can contain one or more
+    block elements.)
+
+- CodeBlock
+
+  - TEXT (Verbatim mode)
+
+- BlockQuote 
+
+  - Block+
+
+- BulletList
+
+  - BulletListItem+
+  
+    - Block+
+
+- NumberedList
+
+  - NumberedListItem+
+  
+    - Block+
+
+- DefList
+
+  - DefTerm+
+  
+    - TextFrag+
+  
+  - DefDesc+
+  
+    - Block+
+    
+  - DefTerm+ [...]
+  - DefDesc+ [...]
+
+- Table
+
+  - TableRow+
+  
+    - (TableHead or TableCell)+
+
+      - Block*
+
+- ATXHeader
+
+  - Attribute: HEADERLVL (Positive Integer)
+  - TEXT
+
+- BlockID and BlockClass
+
+  - Attribute: ID (String; stripped control and space characters. Must not be 
+    empty after processing)
+
+- URLAnchor
+
+  - Attribute: REF_ID (String; stripped control, leading, and trailing space 
+    characters; Must not be empty after processing)
+  - Attribute: URL (String; stripped control, leading, and trailing space 
+    characters; Must not be empty after processing)
+  - Modifies the """SYM_TABLE""" attribute of the containing block node; 
+    **Does not actually exist in the syntax tree.**
+
+- Paragraph or SetextH1 or SetextH2
+
+  - Attribute: """HEADERLVL""" (1 if SetextH1, 2 if SetextH2; No such 
+    attribute if not SetextH1 or SetextH2)
+  - TextFrag+
+  
+    - TextFrag_Insert
+    - TextFrag_Delete
+    - TextFrag_Bold
+    - TextFrag_Ital
+    - TextFrag_Underline
+    - TextFrag_Subscript
+    - TextFrag_Superscript
+    
+    These elements may contain further TextFrag elements.
+    
+    - TextFrag_Code
+    
+    A code snippet section can only contain TEXT elements.
+    
+    - Image
+    
+      - Attribute: """URL""" (String; Same treatment as the URL from 
+        **URLAnchor**)
+      - Attribute: """ALT""" (String; Same treatment as the URL from 
+        **URLAnchor**)
+      
+    - Link (WikiLink, ExternalLink, InternalLink):
+      
+      - Attribute: """URL""" (String; Same treatment as the URL from 
+        **URLAnchor**)
+      - TextFrag+
+      
+    - TEXT
+  
+- BlockStop (No output. Only serves to break lists apart silently)
+- CommentBlock (No output, disappears from the tree)
+- DividerLine

@@ -3,9 +3,7 @@ Temporary Notice
 
 BakaBakaMark is currently under refactoring for performance and usability. 
 Compatibility-breaking changes in its API and the language are to be expected. 
-The previous stable release can be found in the 1.x branch:
-
-<https://github.com/Preole/bbm/tree/1.x/lib/bbm.js>
+The previous stable release can be found inside the `old/` folder.
 
 
 

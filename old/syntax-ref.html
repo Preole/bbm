@@ -1,0 +1,2214 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>BakaBakaMark - syntax-ref</title>
+<style type="text/css">
+/*
+Extremely basic single HTML page CSS, green color scheme.
+*/
+
+body {
+padding: 1%;
+margin: 0;
+border: 0;
+color: #eee;
+background: #030;
+}
+
+.sys_invis {
+display: none;
+}
+
+a {
+color: #e0e000;
+}
+
+a:hover {
+cursor: pointer;
+color: #000fff;
+background: #ffffff;
+}
+
+code {
+background: #330;
+}
+
+pre {
+background: #111111;
+border: 1px dotted #eee;
+padding: 1em;
+white-space: pre-wrap;       /* css-3 */
+white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+white-space: -pre-wrap;      /* Opera 4-6 */
+white-space: -o-pre-wrap;    /* Opera 7 */
+word-wrap: break-word;       /* Internet Explorer 5.5+ */
+clear: both;
+overflow: auto;
+}
+
+td, th, tr, table {
+border: 1px solid #fff;
+}
+
+hr {
+border-top: 1px dashed #eee;
+border-bottom: 1px dashed #eee;
+height: 2px;
+}
+</style>
+</head>
+<body>
+<h1>
+BakaBakaMark Syntax Reference
+</h1>
+<p>
+This document contains BakaBakaMark's syntax reference in full. It's a 
+comprehensive guide to the language, providing a simple introduction as 
+well as an in-depth walk through.
+</p>
+<h1 id="bbm-toc">
+Table of Contents
+</h1>
+<ul>
+ <li>
+  <p>
+Prelude
+  </p>
+  <ul>
+   <li>
+    <p>
+<a href="#bbm-HTML-SpecificIssue">HTML-Specific Issue</a>
+    </p>
+   </li>
+   <li>
+    <p>
+<a href="#bbm-AWordonIndentation">A Word on Indentation</a>
+    </p>
+   </li>
+  </ul>
+ </li>
+ <li>
+  <p>
+Main Syntax
+  </p>
+  <ul>
+   <li>
+    <p>
+<a href="#bbm-BlockLevelElements">Block Level Elements</a>
+    </p>
+    <ul>
+     <li>
+      <p>
+<a href="#bbm-Paragraphs">Paragraphs</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-FencedCodeBlocks">Fenced Code Blocks</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-Blockquotes">Blockquotes</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-Headers">Headers</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-HorizontalLines">Horizontal Lines</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-Lists">Lists</a>
+      </p>
+      <ul>
+       <li>
+        <p>
+<a href="#bbm-BulletList">Bullet List</a>
+        </p>
+       </li>
+       <li>
+        <p>
+<a href="#bbm-OrderedList">Ordered List</a>
+        </p>
+       </li>
+       <li>
+        <p>
+<a href="#bbm-DefinitionList">Definition List</a>
+        </p>
+       </li>
+      </ul>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-Tables">Tables</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-CommentBlock">Comment Block</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-BlockStopper">Block Stopper</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-AsideBlocks">Aside Blocks</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-ReferenceLinkAnchors">Reference Link Anchors</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-ClassLabel">Class Label</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-IDLabel">ID Label</a>
+      </p>
+     </li>
+    </ul>
+   </li>
+   <li>
+    <p>
+<a href="#bbm-InlineLevelElements">Inline Level Elements</a>
+    </p>
+    <ul>
+     <li>
+      <p>
+<a href="#bbm-TextFormatting">Text Formatting</a>
+      </p>
+     </li>
+     <li>
+      <p>
+<a href="#bbm-Hyperlinks&amp;Images">Hyperlinks &amp; Images</a>
+      </p>
+      <ul>
+       <li>
+        <p>
+<a href="#bbm-Images">Images</a>
+        </p>
+       </li>
+       <li>
+        <p>
+<a href="#bbm-Hyperlinks">Hyperlinks</a>
+        </p>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li>
+    <p>
+Others
+    </p>
+    <ul>
+     <li>
+      <p>
+<a href="#bbm-BackslashEscape">Backslash Escape</a>
+      </p>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+<h2>
+Prelude
+</h2>
+<h3 id="bbm-HTML-SpecificIssue">
+HTML-Specific Issue
+</h3>
+<p>
+One should never worry about HTML entity escaping when generating a HTML 
+document. BakaBakaMark will automatically take care of the sanitization, 
+even if you try to mangle the document using &lt;div&gt;, &lt;script&gt;, &lt;img&gt;,
+&amp; &amp;copy;. This allows you to type any characters literally from the 
+keyboard.
+</p>
+<pre><code>&lt;p&gt;
+You should never worry about HTML entity escaping if you&amp;#x27;re generating a 
+HTML document. BakaBakaMark will automatically take care of the sanitization 
+for you, even if you try to mangle the document using &amp;lt;div&amp;gt;, 
+&amp;lt;script&amp;gt;, &amp;lt;img&amp;gt;, &amp;amp; &amp;amp;copy;.
+&lt;/p&gt;
+</code></pre>
+<h3 id="bbm-AWordonIndentation">
+A Word on Indentation
+</h3>
+<p>
+First, BakaBakaMark is primarily designed for writers who prefer to write 
+in monospaced fonts, rather than proportionally spaced fonts. This design 
+is to facilitate a document's logical structure, which is largely controlled 
+by indentation.
+</p>
+<p>
+Following that, indentation is syntactically significant in BakaBakaMark.
+</p>
+<p>
+Next, there is no <code>\t</code>, or horizontal tabs in BakaBakaMark. <strong>One tab 
+key-press equates to one space character</strong> for the purpose of determining 
+indentation level.
+</p>
+<p>
+Finally, If you prefer to use the tab key to produce indentation, configure 
+your text editor to insert X spaces instead of tab characters on tab key 
+press, where X is your preferred indentation unit.
+</p>
+<h2>
+Main Syntax
+</h2>
+<p>
+This section is a quick overview of everything you need to lookup about 
+BakaBakaMark. For each basic element in this language, I will provide a 
+short, but comprehensive demonstration for that element.
+</p>
+<h3 id="bbm-BlockLevelElements">
+Block Level Elements
+</h3>
+<p>
+Block level elements in BakaBakaMark, like block elements in HTML, are 
+elements that are displayed as 'blocks'. They're displayed as rectangular 
+boxes that are stretched as high and wide as they can be, within reason. 
+In general, they serve as containers for other elements in the document, 
+such as plain text.
+</p>
+<p>
+For a quick summary of commonly used elements, please consult the following 
+table.
+</p>
+<table>
+ <tr>
+  <th>
+   <p>
+Feature
+   </p>
+  </th>
+  <th>
+   <p>
+Sample Source Code
+   </p>
+  </th>
+  <th>
+   <p>
+HTML Render
+   </p>
+  </th>
+  <th>
+   <p>
+HTML Source
+   </p>
+  </th>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Paragraph
+   </p>
+  </th>
+  <td>
+<pre><code>This is a paragraph
+
+This is another paragraph. Paragraphs ends with a blank line in general.
+</code></pre>
+  </td>
+  <td>
+   <p>
+This is a paragraph
+   </p>
+   <p>
+This is another paragraph. Paragraphs ends with a blank line in general.
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;p&gt;
+This is a paragraph
+&lt;/p&gt;
+&lt;p&gt;
+This is another paragraph. Paragraphs ends with a blank line in general.
+&lt;/p&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Fenced Code Block
+   </p>
+  </th>
+  <td>
+<pre><code>"""
+This 
+
+  Is
+  
+Fenced code block.
+
+
+Spaces    and newlines are preserved.
+"""
+</code></pre>
+  </td>
+  <td>
+<pre><code>This 
+
+  Is
+
+Fenced code block.
+
+
+Spaces    and newlines are preserved.
+</code></pre>
+  </td>
+  <td>
+<pre><code>&lt;pre&gt;&lt;code&gt;This 
+
+  Is
+
+Fenced code block.
+
+
+Spaces    and newlines are preserved.
+&lt;/code&gt;&lt;/pre&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Blockquote
+   </p>
+  </th>
+  <td>
+<pre><code>&gt; Artillery adds dignity to what would otherwise be a vulgar brawl.
+
+  -- Frederick The Great
+</code></pre>
+  </td>
+  <td>
+   <blockquote>
+    <p>
+Artillery adds dignity to what would otherwise be a vulgar brawl.
+    </p>
+    <p>
+-- Frederick The Great
+    </p>
+   </blockquote>
+  </td>
+  <td>
+<pre><code>&lt;blockquote&gt;
+ &lt;p&gt;
+Artillery adds dignity to what would otherwise be a vulgar brawl.
+ &lt;/p&gt;
+ &lt;p&gt;
+-- Frederick The Great
+ &lt;/p&gt;
+&lt;/blockquote&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Header (One-Liner, or ATX-style)
+   </p>
+  </th>
+  <td>
+<pre><code>===== **Example One-Liner Header** =====
+</code></pre>
+  </td>
+  <td>
+   <h5>
+**Example One-Liner Header**
+   </h5>
+  </td>
+  <td>
+<pre><code>&lt;h5&gt;
+**Example One-Liner Header**
+&lt;/h5&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Header (Setext-Style)
+   </p>
+  </th>
+  <td>
+
+  </td>
+  <td>
+
+  </td>
+  <td>
+   <p>
+Please refer to the <a href="#bbm-Headers">Headers</a>'s SeText section for more 
+details.
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Horizontal Line
+   </p>
+  </th>
+  <td>
+<pre><code>----
+</code></pre>
+  </td>
+  <td>
+  <hr>
+
+  </td>
+  <td>
+<pre><code>&lt;hr&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Bullet List
+   </p>
+  </th>
+  <td>
+<pre><code>* A
++ B
+- C
+</code></pre>
+  </td>
+  <td>
+   <ul>
+    <li>
+     <p>
+A
+     </p>
+    </li>
+    <li>
+     <p>
+B
+     </p>
+    </li>
+    <li>
+     <p>
+C
+     </p>
+    </li>
+   </ul>
+  </td>
+  <td>
+<pre><code>&lt;ul&gt;
+ &lt;li&gt;
+  &lt;p&gt;
+A
+  &lt;/p&gt;
+ &lt;/li&gt;
+ &lt;li&gt;
+  &lt;p&gt;
+B
+  &lt;/p&gt;
+ &lt;/li&gt;
+ &lt;li&gt;
+  &lt;p&gt;
+C
+  &lt;/p&gt;
+ &lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Ordered List
+   </p>
+  </th>
+  <td>
+<pre><code>1. A
+2. B
+#. C
+3. D
+</code></pre>
+  </td>
+  <td>
+   <ol>
+    <li>
+     <p>
+A
+     </p>
+    </li>
+    <li>
+     <p>
+B
+     </p>
+    </li>
+    <li>
+     <p>
+C
+     </p>
+    </li>
+    <li>
+     <p>
+D
+     </p>
+    </li>
+   </ol>
+  </td>
+  <td>
+<pre><code>&lt;ol&gt;
+ &lt;li&gt;
+  &lt;p&gt;
+A
+  &lt;/p&gt;
+ &lt;/li&gt;
+ &lt;li&gt;
+  &lt;p&gt;
+B
+  &lt;/p&gt;
+ &lt;/li&gt;
+ &lt;li&gt;
+  &lt;p&gt;
+C
+  &lt;/p&gt;
+ &lt;/li&gt;
+ &lt;li&gt;
+  &lt;p&gt;
+D
+  &lt;/p&gt;
+ &lt;/li&gt;
+&lt;/ol&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Definition List
+   </p>
+  </th>
+  <td>
+<pre><code>; Term
+: Description
+</code></pre>
+  </td>
+  <td>
+   <dl>
+    <dt>
+Term
+    </dt>
+    <dd>
+     <p>
+Description
+     </p>
+    </dd>
+   </dl>
+  </td>
+  <td>
+<pre><code>&lt;dl&gt;
+ &lt;dt&gt;
+Term
+ &lt;/dt&gt;
+ &lt;dd&gt;
+  &lt;p&gt;
+Description
+  &lt;/p&gt;
+ &lt;/dd&gt;
+&lt;/dl&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Table
+   </p>
+  </th>
+  <td>
+<pre><code>!! Row 1 Col 1 Header Cell
+|| Row 1 Col 2
+|====
+!! Row 2 Col 1 Header Cell
+|| Row 2 Col 2
+</code></pre>
+  </td>
+  <td>
+   <table>
+    <tr>
+     <th>
+      <p>
+Row 1 Col 1 Header Cell
+      </p>
+     </th>
+     <td>
+      <p>
+Row 1 Col 2
+      </p>
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <p>
+Row 2 Col 1 Header Cell
+      </p>
+     </th>
+     <td>
+      <p>
+Row 2 Col 2
+      </p>
+     </td>
+    </tr>
+   </table>
+  </td>
+  <td>
+<pre><code>&lt;table&gt;
+ &lt;tr&gt;
+  &lt;th&gt;
+   &lt;p&gt;
+Row 1 Col 1 Header Cell
+   &lt;/p&gt;
+  &lt;/th&gt;
+  &lt;td&gt;
+   &lt;p&gt;
+Row 1 Col 2
+   &lt;/p&gt;
+  &lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+  &lt;th&gt;
+   &lt;p&gt;
+Row 2 Col 1 Header Cell
+   &lt;/p&gt;
+  &lt;/th&gt;
+  &lt;td&gt;
+   &lt;p&gt;
+Row 2 Col 2
+   &lt;/p&gt;
+  &lt;/td&gt;
+ &lt;/tr&gt;
+&lt;/table&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Aside block
+   </p>
+  </th>
+  <td>
+<pre><code>****
+Arbitrary block-level container.
+****
+</code></pre>
+  </td>
+  <td>
+   <div>
+    <p>
+Arbitrary block-level container.
+    </p>
+   </div>
+  </td>
+  <td>
+<pre><code>&lt;div&gt;
+ &lt;p&gt;
+Arbitrary block-level container.
+ &lt;/p&gt;
+&lt;/div&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+ID Label (For Cross-Referencing / Internal Links)
+   </p>
+  </th>
+  <td>
+<pre><code>. Label
+A paragraph to be assigned an ID.
+</code></pre>
+  </td>
+  <td>
+   <p>
+<em>This section is intentionally left blank.</em>
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;p id="bbm-Label"&gt;
+A paragraph to be assigned an ID.
+&lt;/p&gt;
+</code></pre>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Reference Link Anchor
+   </p>
+  </th>
+  <td>
+<pre><code>:{SomeID}: http://www.google.com/
+
+?&lt;SomeID&gt;-[I'm going to visit Google]
+</code></pre>
+  </td>
+  <td>
+   <p>
+<a href="http:&#x2F;&#x2F;www.google.com&#x2F;">I'm going to visit Google</a>
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;p&gt;
+&lt;a href="http:&amp;#x2F;&amp;#x2F;www.google.com&amp;#x2F;"&gt;I'm going to visit Google&lt;/a&gt;
+&lt;/p&gt;
+</code></pre>
+  </td>
+ </tr>
+</table>
+<h4 id="bbm-Paragraphs">
+Paragraphs
+</h4>
+<p>
+To generate a paragraph, type away. This is the basic building block of most 
+kinds of writing.
+</p>
+<p>
+To generate multiple paragraphs, put one or more blank lines in between by 
+pressing the <strong>Enter</strong> key twice.
+</p>
+<p>
+Paragraph text need to be lined up against the block's left margin, which 
+is determined by the indentation of first visible character that started 
+the paragraph block. Specifically:
+</p>
+<pre><code>  This is 
+  preferred. 
+  Everything is lining up 
+  against the left-margin.
+  
+  This is acceptable, if one wants to ensure spaces are visible within the
+   same paragraph, if manual line breaks are not to be interpreted as white
+   spaces. Some typesetting tools and markup languages, such as HTML, treat 
+   line breaks as white space for automatic word-wrapping by default.
+   
+  This treatment is okay for English and most languages from the
+   Latin and Cyrillic alphabet, but that line break conversion is going to 
+   cause problems in other alphabets.
+   
+  Some languages, such as Chinese, Japanese and Korean (CJK) don't have space
+   characters in their alphabet. If writers were to write in such a language,
+   and they want to manually line-wrap their text, they're going to see
+   unwanted space in their text because of the conversion from line break
+   to space.
+   
+  BakaBakaMark can be configured eliminate that conversion for writers who
+   prefer to manually line-wrap in such languages. If one enables that
+   configuration and one wishes to deliberately preserve the space in a 
+   visible manner, one can write in this style.
+   
+  Alternatively, one can put the space at the end of every line. This 
+  results in invisible syntax, which can be difficult to track down if 
+  line breaks are not interpreted as spaces.
+   
+  This is bad. Insufficient 
+ indentation level terminates the ongoing paragraph and 
+ starts a new one.
+</code></pre>
+<p>
+There is no forced line break syntax, invisible or otherwise. Consecutive 
+spaces and line breaks shall be collapsed into <strong>one</strong> space in an ordinary 
+paragraph.
+</p>
+<p>
+If line breaks are really necessary, one can use <strong>Fenced Code Block</strong> or 
+<strong>PreFormatted Paragraph</strong>. The former ignores all BakaBakaMark syntaxes, 
+while the latter works like an ordinary paragraph, except all white spaces 
+and new lines are preserved.
+</p>
+<h4 id="bbm-FencedCodeBlocks">
+Fenced Code Blocks
+</h4>
+<p>
+Three or more typewriter's double quotes <code>"</code> on a blank line starts a 
+fenced code block. No BakaBakaMark syntax will be parsed inside, and all 
+white space as well as invisible line breaks shall be preserved.
+</p>
+<p>
+To end a fenced code block, use the same number of double quotes on another 
+blank line, on the same column as the opening fence.
+</p>
+<pre><code>"""
+This
+  Is
+Fenced
+  Code Block
+"""
+</code></pre>
+<p>
+Any negatively indented text in the fenced code block shall be treated as 
+having no indentation.
+</p>
+<p>
+Forgetting to close a fenced code block will turn the rest of the document 
+into a code block.
+</p>
+<h4 id="bbm-Blockquotes">
+Blockquotes
+</h4>
+<p>
+Begin a line with a <code>&gt;</code>, or greater than sign, followed by the content just 
+like Usenet-style quoting. The blockquote element can contain any other 
+block-level element, including nested blockquotes.
+</p>
+<blockquote>
+ <p>
+Artillery adds dignity to what would otherwise be a vulgar brawl.
+ </p>
+ <p>
+-- Frederick The Great
+ </p>
+</blockquote>
+<pre><code>&gt; Artillery adds dignity to what would otherwise be a vulgar brawl.
+
+  -- Frederick The Great
+</code></pre>
+<p>
+Unlike Usenet-style quoting, only the starting line needs to be prefixed. 
+All other lines need to be left without a prefix.
+</p>
+<p>
+To indicate nesting, as well as blockquotes containing multiple blocks, 
+use space-based indentation and make sure the blocks are aligned on the 
+same column.
+</p>
+<blockquote>
+ <p>
+Joe wrote:
+ </p>
+ <blockquote>
+  <p>
+I will be coming to see you on Tuesday.
+Please invite your friends.
+We're going to have a lot of fun.
+  </p>
+ </blockquote>
+ <p>
+Who should I invite exactly?
+ </p>
+</blockquote>
+<pre><code>&gt; Joe wrote:
+
+  &gt; I will be coming to see you on Tuesday.
+    Please invite your friends.
+    We're going to have a lot of fun.
+
+  Who should I invite exactly?
+</code></pre>
+<h4 id="bbm-Headers">
+Headers
+</h4>
+<p>
+BakaBakaMark supports two kinds of headers: The "One-Liner" and the 
+multi-line SeTeXT style header.
+</p>
+<p>
+For the One-Liner, begin a line with one or more equal signs <code>=</code>, 
+followed by one space. This line of text shall be parsed in verbatim.
+If you're aesthetically inclined, you can end the one-liner with equal 
+signs as well. These equal signs shall not be rendered in the output.
+</p>
+<h5>
+**Example One-Liner Header**
+</h5>
+<pre><code>===== **Example One-Liner Header** =====
+</code></pre>
+<p>
+If there are equal signs in your title, you may use them so long as these 
+equal signs are not at the end of the line. If they happen to need to be at 
+the end of the line, you may append an invisible white space after it to 
+force it to render.
+</p>
+<pre><code>===== One-Liner = Quick and Easy ===== 
+</code></pre>
+<p>
+The less equal signs there are, the more important the header is.
+</p>
+<pre><code>= &lt;h1&gt;
+== &lt;h2&gt;
+=== &lt;h3&gt;
+==== &lt;h4&gt;
+===== &lt;h5&gt;
+Six or more "=" -&gt; &lt;h6&gt;
+</code></pre>
+<p>
+The "SeTeXT" style header is done by underlining a paragraph with at least 
+one equal sign <code>=</code>, or four or more hyphen-minus <code>-</code>. The equal 
+sign shall yield the most important header &lt;h1&gt;, while the hyphens shall 
+yield &lt;h2&gt;.
+</p>
+<pre><code>This is a Setext Header. Good for 
+Long Document Titles and document 
+source aesthetics.
+===========
+
+This is a Setext Header
+---------------
+</code></pre>
+<h4 id="bbm-HorizontalLines">
+Horizontal Lines
+</h4>
+<p>
+To produce a horizontal line or a thematic break, start a line with four 
+or more hyphen-minus and end the line immediately after.
+</p>
+<hr>
+<p>
+In HTML, this shall render as &lt;hr&gt;.
+</p>
+<pre><code>---------------
+</code></pre>
+<h4 id="bbm-Lists">
+Lists
+</h4>
+<p>
+There are three different types of list structures available in BakaBakaMark: 
+Bullet Lists, Ordered Lists, and Definition Lists.
+</p>
+<h5 id="bbm-BulletList">
+Bullet List
+</h5>
+<p>
+Bullet lists are easy; Start a line with any of the characters {<code>* + -
+</code>} or a Unicode bullet symbol, followed by one white space. This creates a 
+bullet, and consecutive bullets shall be merged together into a bullet list.
+</p>
+<ul>
+ <li>
+  <p>
+Item 1
+  </p>
+ </li>
+ <li>
+  <p>
+Item 2
+  </p>
+ </li>
+ <li>
+  <p>
+Item 3
+  </p>
+ </li>
+</ul>
+<pre><code>* Item 1
++ Item 2
+- Item 3
+</code></pre>
+<p>
+Bullet lists can be nested in the same way as blockquotes. Use indentation 
+to determine the logical structure.
+</p>
+<ul>
+ <li>
+  <p>
+Item 1
+  </p>
+  <p>
+Item 1 continued.
+  </p>
+  <ul>
+   <li>
+    <p>
+Item 1 Bullet 1
+    </p>
+   </li>
+   <li>
+    <p>
+Item 1 Bullet 2
+    </p>
+    <blockquote>
+     <p>
+A blockquote.
+     </p>
+    </blockquote>
+<pre><code>A code block
+  Positive indentation.
+</code></pre>
+   </li>
+   <li>
+    <p>
+Item 1 Bullet 3.
+    </p>
+   </li>
+  </ul>
+  <p>
+Item 1 epilogue.
+  </p>
+ </li>
+ <li>
+  <p>
+Item 2
+  </p>
+ </li>
+ <li>
+  <p>
+Item 3
+  </p>
+ </li>
+</ul>
+<pre><code>* Item 1
+
+  Item 1 continued.
+  
+  * Item 1 Bullet 1
+  * Item 1 Bullet 2
+  
+    &gt; A blockquote.
+    
+    """
+    A code block
+      Positive indentation.
+    """
+    
+  * Item 1 Bullet 3.
+  
+  Item 1 epilogue.
+  
+* Item 2
+* Item 3
+</code></pre>
+<p>
+Empty bullet list items are removed from the syntax tree. If such removal 
+operations empties the bullet list, the list is removed as well.
+</p>
+<h5 id="bbm-OrderedList">
+Ordered List
+</h5>
+<p>
+Ordered List follow the same rule as bullet list, except you start a line 
+with an Arabic number, a single period <code>.</code>, and a space.
+</p>
+<p>
+Alternatively, you may also use a number sign <code>#</code> in place of Arabic 
+numbers. You may even mix them within the same numbered list.
+</p>
+<ol>
+ <li>
+  <p>
+One
+  </p>
+ </li>
+ <li>
+  <p>
+Two
+  </p>
+ </li>
+ <li>
+  <p>
+Three
+  </p>
+ </li>
+ <li>
+  <p>
+Four
+  </p>
+ </li>
+</ol>
+<pre><code>1. One
+2. Two
+#. Three
+4. Four
+</code></pre>
+<p>
+If you need to create two separate lists without rendering explicit content 
+between the list, use a single period on a blank line.
+</p>
+<ol>
+ <li>
+  <p>
+Item 1
+  </p>
+ </li>
+ <li>
+  <p>
+Item 2
+  </p>
+ </li>
+ <li>
+  <p>
+Item 3
+  </p>
+ </li>
+</ol>
+<ol>
+ <li>
+  <p>
+Not 4
+  </p>
+ </li>
+ <li>
+  <p>
+Not 5
+  </p>
+ </li>
+ <li>
+  <p>
+Not 6
+  </p>
+ </li>
+</ol>
+<pre><code>1. Item 1
+2. Item 2
+3. Item 3
+.
+1. Not 4
+2. Not 5
+3. Not 6
+</code></pre>
+<h5 id="bbm-DefinitionList">
+Definition List
+</h5>
+<p>
+A definition list is one or more pairs of terms and their descriptions.
+</p>
+<p>
+To specify a term, start a line with a semi-colon <code>;</code> and a space, 
+followed by the term to be defined. This term block may not contain a block 
+element such as a blockquote. (Though it can contain images, links and other 
+formatting.)
+</p>
+<p>
+To specify a description, use the same syntax as a term, except use a colon 
+<code>:</code> instead. The description block may contain other block elements.
+</p>
+<p>
+Consecutive descriptions and terms will be collapsed into a single 
+description group or term, respectively.
+</p>
+<dl>
+ <dt>
+Term 1
+ </dt>
+ <dt>
+Term 2
+ </dt>
+ <dt>
+Term 3
+ </dt>
+ <dd>
+  <p>
+Description 1
+  </p>
+  <p>
+Another paragraph in description 1.
+  </p>
+ </dd>
+ <dd>
+  <p>
+Description 2
+  </p>
+ </dd>
+ <dd>
+  <p>
+Description 3
+  </p>
+ </dd>
+</dl>
+<pre><code>; Term 1
+; Term 2
+; Term 3
+: Description 1
+
+  Another paragraph in description 1.
+  
+: Description 2
+: Description 3
+</code></pre>
+<dl>
+ <dt>
+<strong>Term A</strong>
+ </dt>
+ <dd>
+  <p>
+Description for <em>Term A</em>
+  </p>
+ </dd>
+ <dt>
+Term B
+ </dt>
+ <dd>
+  <p>
+Description for Term B
+  </p>
+ </dd>
+ <dt>
+<u>Term C</u>
+ </dt>
+ <dd>
+  <p>
+Description for <u>Term C</u>
+  </p>
+ </dd>
+</dl>
+<pre><code>; **Term A**
+: Description for ''Term A''
+; Term B
+: Description for Term B
+; __Term C__
+: Description for __Term C__
+</code></pre>
+<p>
+Empty terms and descriptions are removed from the definition list. Terms 
+at the end of the list, and descriptions at the beginning of the list shall 
+be removed. If a definition list becomes empty as a result, it shall be 
+removed as well.
+</p>
+<pre><code>: This is not allowed.
+; This list shall be removed.
+</code></pre>
+<h4 id="bbm-Tables">
+Tables
+</h4>
+<p>
+BakaBakaMark provides simple table support with two kinds of cells; A header 
+cell and an ordinary data cell. They may be nested, and they may contain 
+other block elements similar to the rules used by blockquotes and other 
+block level elements.
+</p>
+<p>
+A table cell begins with two pipe symbols <code>||</code>, while a header cell uses 
+exclaimation mark instead. <code>!!</code>. Consecutive table cells or header cells 
+are merged into a table row, while a row separator consisting of a pipe and 
+at least one equal signs <code>|===</code> denotes a new row start.
+</p>
+<table>
+ <tr>
+  <th>
+   <p>
+Row 1 Column 1
+   </p>
+  </th>
+  <th>
+   <p>
+Row 1 Column 2
+   </p>
+   <blockquote>
+    <p>
+This cell has a blockquote.
+    </p>
+   </blockquote>
+  </th>
+ </tr>
+ <tr>
+  <td>
+   <p>
+Row 2 Column 1
+   </p>
+  </td>
+  <td>
+   <p>
+Row 2 Column 2
+   </p>
+  </td>
+ </tr>
+</table>
+<pre><code>!! Row 1 Column 1
+!! Row 1 Column 2
+
+   &gt; This cell has a blockquote.
+|====
+|| Row 2 Column 1
+|| Row 2 Column 2
+</code></pre>
+<p>
+If you're aesthetically inclined, you may wrap a pair of row separators 
+around the table. This does not affect the output in any way.
+</p>
+<pre><code>|====
+!! Row 1 Column 1
+!! Row 1 Column 2
+|====
+|| Row 2 Column 1
+|| Row 2 Column 2
+|====
+</code></pre>
+<p>
+Here's a short list of table semantics:
+</p>
+<ul>
+ <li>
+  <p>
+The table's first row determines the number of columns the table shall 
+have on each row.
+  </p>
+ </li>
+ <li>
+  <p>
+Rows with too many columns (cells) shall be trimmed.
+  </p>
+ </li>
+ <li>
+  <p>
+Empty rows are dropped.
+  </p>
+ </li>
+ <li>
+  <p>
+Rows with at least one cell declared shall be padded with empty cells, 
+up to the table's declared column count.
+  </p>
+ </li>
+ <li>
+  <p>
+Empty table cells are allowed, where as other empty block elements are not.
+  </p>
+ </li>
+</ul>
+<p>
+Cell content alignment and merged table cells are unlikely to be 
+implemented, if ever.
+</p>
+<hr>
+<h4 id="bbm-CommentBlock">
+Comment Block
+</h4>
+<p>
+Comment blocks are text that gets excluded from the output. They are to 
+remain invisible except for the author or the editor, who need to leave 
+some notes inside the document without having them rendered at all.
+</p>
+<p>
+Begin the block by fencing the area off with at least four forward slashes. 
+<code>////</code> End the block in the same way as the beginning fence, with the 
+slashes starting on the same column. If this block is to come after a 
+paragraph, there needs to be a blank line in between them.
+</p>
+<pre><code>Some paragraph...
+
+////
+This shall not be rendered in the output.
+////
+</code></pre>
+<h4 id="bbm-BlockStopper">
+Block Stopper
+</h4>
+<p>
+This element is useful for stopping an ongoing block element, such as 
+splitting a long numbered list into two different lists without producing 
+any output.
+</p>
+<p>
+Start a line with <code>.</code> and end the line immediately.
+</p>
+<pre><code>.
+</code></pre>
+<h4 id="bbm-AsideBlocks">
+Aside Blocks
+</h4>
+<p>
+This element is a block wrapper that can contain other block elements. 
+It has no semantic meaning, and no presentational effect.
+</p>
+<p>
+Begin a line with four or more asterisks, then fill in the block elements 
+starting on the next line. End the Aside Block with the same number of 
+asterisks on a blank line on the same column as the starting asterisks.
+</p>
+<pre><code>****
+This is an Aside
+****
+
+--&gt;
+
+&lt;div&gt;
+&lt;p&gt;this is an Aside&lt;/p&gt;
+&lt;/div&gt;
+</code></pre>
+<p>
+This element is meant to be combined with the Label ID and Label Class 
+elements, which creates CSS handles for a group of elements that can be used 
+to enhance presentation.
+</p>
+<h4 id="bbm-ReferenceLinkAnchors">
+Reference Link Anchors
+</h4>
+<p>
+Reference Link Anchors are primarily used to isolate long-winding ugly URL 
+from the main text sections using hyperlinks. Instead of specifying the URL, 
+one may specify an identifier of a reference link anchor, which will 
+substitute the identifier with the URL the anchor is holding.
+</p>
+<p>
+Start a line with a colon and an opening brace, <code>:{</code>, followed by the 
+identifier, then close the ID with a closing brace and another colon. <code>}:</code>
+The rest of the line is the URL, word for word.
+</p>
+<p>
+This paragraph contains <a href="http:&#x2F;&#x2F;www.google.ca&#x2F;">A hyperlink to Google</a>.
+</p>
+<pre><code>This paragraph contains ?&lt;google&gt;-[A hyperlink to Google].
+
+:{google}: http://www.google.ca/
+</code></pre>
+<p>
+The order of the Reference Link Anchor declaration doesn't matter. If 
+anchors with identical IDs are declared, the most recently defined anchor 
+shall be used.
+</p>
+<p>
+Additionally, Reference Link Anchors have resolution scopes. An anchor 
+declared inside a more deeply nested block element shall be used before 
+an anchor with the same name in a less nested block elements.
+</p>
+<p>
+<a href="http:&#x2F;&#x2F;fr.wikipedia.org&#x2F;">I'm going to the Wikipedia's French section.</a>
+</p>
+<blockquote>
+ <p>
+<a href="http:&#x2F;&#x2F;en.wikipedia.org&#x2F;">I'm going to Wikipedia's English section, not the 
+French section.</a>
+ </p>
+</blockquote>
+<pre><code>?&lt;Wikipedia&gt;-[I'm going to the Wikipedia's French section.]
+
+:{Wikipedia}: http://fr.wikipedia.org/
+
+&gt; :{Wikipedia}: http://en.wikipedia.org/
+
+  ?&lt;Wikipedia&gt;-[I'm going to Wikipedia's English section, not the 
+  French section.]
+</code></pre>
+<h4 id="bbm-ClassLabel">
+Class Label
+</h4>
+<p>
+This construct gives the next block-level element a type label. In HTML, 
+this allows the element to be selected and modified by CSS for special 
+visual effects, such as image blocks with text-wrapping.
+</p>
+<p>
+Begin a line with two periods and a white space, followed by the name 
+of the class on the rest of the line. White space characters are dropped 
+in the final output of the class name. To declare multiple classes for a 
+block element, use more class label elements.
+</p>
+<pre><code>.. left
+.. red
+****
+!&lt;Image&gt;-[Alt Text]
+
+Some caption text for a left-floating image with text wrapping and 
+caption.
+****
+</code></pre>
+<p>
+Result sample code, which can be utilized by the CSS backend.
+</p>
+<pre><code>&lt;div class="bbm-left bbm-red"&gt;
+ &lt;p&gt;
+ &lt;img src="Image" alt="Alt Text"&gt;
+ &lt;/p&gt;
+ &lt;p&gt;
+ Some caption text for a left-floating image with text wrapping and 
+caption.
+ &lt;/p&gt;
+&lt;/div&gt;
+</code></pre>
+<h4 id="bbm-IDLabel">
+ID Label
+</h4>
+<p>
+Same effect as the Class Label, except that each unique ID can only appear 
+once in the entire document, and each block element can only be assigned one 
+ID. It's primarily used as an anchor for internal links, which allows 
+intra-document navigation.
+</p>
+<p>
+Begin an ID label like a Class Label, except there's only one period. The 
+rest is the same as a Class Label. Here's a live example of an ID label in 
+action, along with the Internal Link element.
+</p>
+<p>
+<a href="#bbm-toc">Go to the table of content, which is at the top of the page</a>
+</p>
+<pre><code>. toc
+
+Table of Content
+================
+
+[...]
+
+#[toc]-[Table of Content]
+</code></pre>
+<p>
+Subsequent declaration of the same ID has no effect. If there are multiple 
+ID Labels for the same block element, the last declared ID shall be used. 
+All previously declared ID are wasted and can no longer be used in later 
+parts of the document.
+</p>
+<pre><code>. toc
+. toc2 
+
+Table of Content
+================
+
+"toc" has no effect and cannot be re-used. Only "toc2" is used on the 
+Setext header.
+</code></pre>
+<hr>
+<h3 id="bbm-InlineLevelElements">
+Inline Level Elements
+</h3>
+<p>
+Inline elements are syntactical constructs that occur within lines of text. 
+Their primary purpose here is to display hyperlinks, show images, and add 
+visual effects and semantics to a block of uneventful text.
+</p>
+<h4 id="bbm-TextFormatting">
+Text Formatting
+</h4>
+<p>
+The following table details the text formatting elements available in 
+BakaBakaMark.
+</p>
+<table>
+ <tr>
+  <th>
+   <p>
+Effect Desired
+   </p>
+  </th>
+  <th>
+   <p>
+Sample Source Code
+   </p>
+  </th>
+  <th>
+   <p>
+Render
+   </p>
+  </th>
+  <th>
+   <p>
+HTML
+   </p>
+  </th>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Italic (Emphasis)
+   </p>
+  </th>
+  <td>
+   <p>
+<code>''Two typewriter's single quotes.''</code>
+   </p>
+  </td>
+  <td>
+   <p>
+<em>Two typewriter's single quotes.</em>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;em&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Bold (Strong Emphasis)
+   </p>
+  </th>
+  <td>
+   <p>
+<code>**Two asterisks.**</code>
+   </p>
+  </td>
+  <td>
+   <p>
+<strong>Two asterisks.</strong>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;strong&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Bold &amp; Italic
+   </p>
+  </th>
+  <td>
+   <p>
+<code>''**Use both Bold &amp; Italic**''</code>
+   </p>
+  </td>
+  <td>
+   <p>
+<em><strong>Use both Bold &amp; Italic</strong></em>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;em&gt;&lt;strong&gt;&lt;/strong&gt;&lt;/em&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Strike-through
+   </p>
+  </th>
+  <td>
+   <p>
+<code>{--Strike-through--}</code>
+   </p>
+  </td>
+  <td>
+   <p>
+<del>Strike-through</del>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;del&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Text Insertion (Semantic)
+   </p>
+  </th>
+  <td>
+   <p>
+<code>{++Update September 25^^th^^: [...]++}</code>
+   </p>
+  </td>
+  <td>
+   <p>
+<ins>Update September 25<sup>th</sup>: [...]</ins>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;ins&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Superscript
+   </p>
+  </th>
+  <td>
+   <p>
+<code>September 20^^th^^</code>
+   </p>
+  </td>
+  <td>
+   <p>
+September 20<sup>th</sup>.
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;sup&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Subscript
+   </p>
+  </th>
+  <td>
+   <p>
+<code>O,,2,,</code>
+   </p>
+  </td>
+  <td>
+   <p>
+O<sub>2</sub>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;sub&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Underline
+   </p>
+  </th>
+  <td>
+   <p>
+<code>The book __Frank &amp; Beans__ [...]</code>
+   </p>
+  </td>
+  <td>
+   <p>
+The book <u>Frank &amp; Beans</u> [...]
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;u&gt;</code>
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Code Snippet (Literal Text)
+   </p>
+  </th>
+  <td>
+   <p>
+<code>"""void **ptr;"""</code>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>void **ptr;</code>
+   </p>
+  </td>
+  <td>
+   <p>
+<code>&lt;code&gt;</code>
+   </p>
+  </td>
+ </tr>
+</table>
+<p>
+There are a few simple rules to remember, which applies to images and 
+hyperlinks as well.
+</p>
+<ul>
+ <li>
+  <p>
+Proper Tag Nesting
+  </p>
+  <p>
+Make sure the opening and closing formatting tags are properly nested. 
+That is, it's wrong to have two different text formatting tags cross into 
+each others' boundaries.
+  </p>
+<pre><code>**This section is bold, ''**but this section is not Italic, because 
+the bold section closed off the start of the Italic section.''
+</code></pre>
+  <p>
+<strong>This section is bold, ''</strong>but this section is not Italic, because 
+the bold section closed off the start of the Italic section.''
+  </p>
+  <p>
+BakaBakaMark will resolve the conflict using left-association; That is, 
+the first declared formatting will be applied first, while the rest of 
+improperly nested elements shall be rendered literally.
+  </p>
+ </li>
+ <li>
+  <p>
+Close Off Tags.
+  </p>
+  <p>
+Remember to close the formatting tags. Failing to close the tag causes 
+the tag itself to remain in the paragraph literally, though it will have 
+no adverse effect to the rest of the paragraph.
+  </p>
+  <p>
+**Oops. Forgot to close the bold text. <em>Fortunately, Italics still work.</em>
+  </p>
+  <p>
+The only exception is the <strong>Code Snippet</strong> <code>"""</code> which will render 
+the rest of the paragraph literally, even if they are properly nested.
+  </p>
+  <p>
+"""Oops. Forgot to close the code snippet. This means ''even properly 
+formatted Italics will cease to work.''
+  </p>
+ </li>
+ <li>
+  <p>
+Text formatting can cross lines, but not paragraphs.
+  </p>
+  <p>
+**This is not bold.
+  </p>
+  <p>
+This is not bold**
+  </p>
+ </li>
+ <li>
+  <p>
+Matching Quote Counts for Code Snippets
+  </p>
+  <p>
+Code Snippets can only be closed using the same number of double quote 
+characters. (At least three) This enables <code>nested code snippets without 
+relying on """"\"""", or backslash escapes</code>, which makes the source 
+code really ugly.
+  </p>
+ </li>
+</ul>
+<h4 id="bbm-Hyperlinks&amp;Images">
+Hyperlinks &amp; Images Quick Summary
+</h4>
+<table>
+ <tr>
+  <th>
+   <p>
+Link Type
+   </p>
+  </th>
+  <th>
+   <p>
+Sample Source Code
+   </p>
+  </th>
+  <th>
+   <p>
+HTML Render
+   </p>
+  </th>
+  <th>
+   <p>
+HTML Source
+   </p>
+  </th>
+  <th>
+   <p>
+Notes
+   </p>
+  </th>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Hyperlinked Image (No Alt Text)
+   </p>
+  </th>
+  <td>
+<pre><code>?&lt;about:blank&gt;-[!&lt;noImg.jpg&gt;]
+</code></pre>
+  </td>
+  <td>
+   <p>
+<a href="about:blank"><img src="noImg.jpg" alt="noImg.jpg"></a>
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;a href="about:blank"&gt;&lt;img src="noImg.jpg" alt="Figure"&gt;&lt;/a&gt;
+</code></pre>
+  </td>
+  <td>
+   <p>
+A placeholder alt text shall be generated for such images. (So that 
+links containing non-existing images are still accessible.)
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+External Link (No Custom Display Text)
+   </p>
+  </th>
+  <td>
+<pre><code>?&lt;about:blank&gt;
+</code></pre>
+  </td>
+  <td>
+   <p>
+<a href="about:blank">about:blank</a>
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;a href="about:blank"&gt;about:blank&lt;/a&gt;
+</code></pre>
+  </td>
+  <td>
+   <p>
+The display text shall be set to the destination URL by default.
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+External Link
+   </p>
+  </th>
+  <td>
+<pre><code>?&lt;about:blank&gt;-[**Bold** Custom display text.]
+</code></pre>
+  </td>
+  <td>
+   <p>
+<a href="about:blank"><strong>Bold</strong> Custom display text.</a>
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;a href="about:blank"&gt;&lt;strong&gt;Bold&lt;/strong&gt; Custom display text.&lt;/a&gt;
+</code></pre>
+  </td>
+  <td>
+   <p>
+Standard web link syntax. Permits absolute URL as well as relative URL. 
+Does not perform any guessing on the URL's protocol, if the protocol 
+declaration (such as <code>http://</code>)is omitted in the URL string.
+   </p>
+   <p>
+Preserves all white space characters.
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Image
+   </p>
+  </th>
+  <td>
+<pre><code>!&lt;Image.jpg&gt;-[Specify Alt Text Here]
+</code></pre>
+  </td>
+  <td>
+   <p>
+<img src="Image.jpg" alt="Specify Alt Text Here">
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;img src="Image.jpg" alt="Specify Alt Text Here"&gt;
+</code></pre>
+  </td>
+  <td>
+   <p>
+Significant white space are preserved, but <strong>all</strong> control characters, 
+including line breaks, are stripped within the alt text attribute.
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Internal Link (Within the document)
+   </p>
+  </th>
+  <td>
+<pre><code>#[toc]-[Go to Table of Content]
+</code></pre>
+  </td>
+  <td>
+   <p>
+<a href="#bbm-toc">Go to Table of Content</a>
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;a href="#bbm-toc"&gt;Go to Table of Content&lt;/a&gt;
+</code></pre>
+  </td>
+  <td>
+   <p>
+This link syntax is primarily used to navigate within the same document, 
+with anchor points defined by the <strong>ID Label</strong> Element.
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <th>
+   <p>
+Wiki Link
+   </p>
+  </th>
+  <td>
+<pre><code>#&lt;about:blank&gt;-[Custom Display Text]
+</code></pre>
+  </td>
+  <td>
+   <p>
+<a href="about:blank" class="w-bbm">Custom Display Text</a>
+   </p>
+  </td>
+  <td>
+<pre><code>&lt;a href="about:blank" class="bbm-wiki"&gt;Custom Display Text&lt;/a&gt;
+</code></pre>
+  </td>
+  <td>
+   <p>
+By default, has the same effect as an external link. This link can be 
+targetted by CSS/Javascript selectors, which allows platform-specific 
+behaviors unique to a particular website, such as a short-hand wiki 
+link that points to a page within the same site.
+   </p>
+  </td>
+ </tr>
+</table>
+<h4 id="bbm-Images">
+Images
+</h4>
+<p>
+To create an image, start with an exclaimation mark, followed by a <code>&lt;</code> 
+or opening angle bracket. Place the URL inside the angle brackets, and end 
+the URL with a closing angle bracket <code>&gt;</code>. You may span the URL across 
+multiple lines, so long as there's no blank lines in between them.
+</p>
+<pre><code>!&lt;http://www.somesite.com/
+some/path/to/image-file.jpg&gt;
+</code></pre>
+<p>
+Line break characters, trailing and leading space are automatically stripped 
+from the output. Significant white space are preserved.
+</p>
+<p>
+If you want to specify an alt text, use a pair of square bracket, with the 
+opening square bracket preceded by a hyphen. Put the alt text inside the 
+square brackets.
+</p>
+<p>
+You may use square brackets in the alt text so long as opening and closing 
+square brackets are balanced. (This rule also applies to display texts in 
+<strong>Hyperlinks</strong> and the URL for <strong>Internal Link</strong>.)
+</p>
+<pre><code>!&lt;http://www.somesite.com/some/path/to/image-file.jpg&gt;-[Alt Text [...] Rest 
+omitted.]
+</code></pre>
+<p>
+You may start the square brackets on a different line if you want a cleaner 
+looking source document, as long as the hyphen is right before the opening 
+square bracket, and there's no visible character between the hyperlink and 
+the closing angle bracket.
+</p>
+<pre><code>!&lt;http://[... Some very long URL]&gt;
+-[This alt text is on a new line.]
+</code></pre>
+<h4 id="bbm-Hyperlinks">
+Hyperlinks
+</h4>
+<p>
+Hyperlinks are created in largely the same manner as images with a few 
+variations.
+</p>
+<p>
+<code>?&lt;&gt;</code> denotes standard <strong>External Links</strong> pointing to other URLs. The 
+question mark denotes a mysterious location in the Internet.
+</p>
+<p>
+<a href="http:&#x2F;&#x2F;www.google.com">http://www.google.com</a>
+</p>
+<pre><code>&lt;p&gt;
+&lt;a href="http:&amp;#x2F;&amp;#x2F;www.google.com"&gt;http:&amp;#x2F;&amp;#x2F;www.google.com&lt;/a&gt;
+&lt;/p&gt;
+</code></pre>
+<p>
+<code>#&lt;&gt;</code> denotes <strong>Extensible External Links</strong>, which may have special 
+effects depending on the hosting backend. By default, they have the same 
+behavior as an external link.
+</p>
+<p>
+<code>#[]</code> denotes <strong>Internal Link</strong>, which jumps to a different location 
+within the same document. This is most useful for large document that 
+spans multiple pages.
+</p>
+<p>
+By default, the link's display text is the URL of the hyperlinks. They can 
+be changed in the same way as image alt text: Add a hyphen-minus before 
+the pair of square brackets around the display text.
+</p>
+<p>
+<a href="http:&#x2F;&#x2F;www.google.com">This hyperlink plus <u>[...]</u> omitted content 
+points to <del>Yahoo</del> <ins>Google.com</ins></a>
+</p>
+<p>
+<a href="#bbm-toc">This Internal Link goes to the Table of Content.</a>
+</p>
+<pre><code>?&lt;http://www.google.com&gt;-[This hyperlink plus __[...]__ omitted content 
+points to {--Yahoo--} {++Google.com++}]
+
+#[toc]-[This Internal Link goes to the Table of Content.]
+</code></pre>
+<p>
+Unlike the Image Alt Text, inline formatting are permitted inside the 
+square brackets, so long as it's not a hyperlink element. (Hyperlinks 
+will be treated literally if they're encountered.)
+</p>
+<p>
+<a href="http:&#x2F;&#x2F;www.google.com">No <u>nested</u> ?&lt;http://www.google.com&gt; allowed.</a>
+</p>
+<p>
+To create clickable hyperlinked image<strong>(s)</strong>, put the images inside the 
+square brackets of the hyperlink.
+</p>
+<pre><code>?&lt;URL&gt;
+-[
+!&lt;Image1&gt;
+!&lt;Image2&gt;
+!&lt;Image3&gt;
+]
+</code></pre>
+<p>
+In both images and hyperlinks, empty URL values are not permitted. Link 
+elements with such URL values shall be rendered literally.
+</p>
+<h3>
+Others
+</h3>
+<p>
+Anything else not covered by the main syntax.
+</p>
+<h4 id="bbm-BackslashEscape">
+Backslash Escape
+</h4>
+<p>
+If you need a syntactically significant character to be presented literally, 
+add a backslash <code>\</code> before that character.
+</p>
+<p>
+**This sentence is not bold.**
+</p>
+<p>
+The backslash character will always be dropped from the output, so if you 
+need to type a backslash character itself, use two backslashes: <code>\\</code>.
+</p>
+<p>
+This syntax works for any and all context, including verbatim text sections 
+such as Code Blocks and URL. If these sections of text contain backslash 
+characters, they'll need to be escaped by doubling the backslashes. The 
+source code:
+</p>
+<pre><code>[^\\s|\\s$]
+</code></pre>
+<p>
+And the rendered output:
+</p>
+<pre><code>[^\s|\s$]
+</code></pre>
+</body>
+</html>

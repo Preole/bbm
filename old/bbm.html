@@ -1,0 +1,661 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>BakaBakaMark V1.0</title>
+<style type="text/css">
+
+body {
+padding: 0;
+margin: 0;
+border: 0; /* This removes the border around the viewport in old versions of IE */
+color: #eee;
+background: #030;
+}
+
+.sys_invis {
+display: none;
+}
+
+a {
+color: #e0e000;
+}
+
+a.sys_button {
+display: inline-block;
+padding: 1em;
+text-decoration: none;
+}
+
+a.sys_button:not(:last-child) {
+border-right: 1px solid #eee;
+}
+
+a.sys_button:last-child {
+border: none;
+}
+
+a.sys_button:hover, a:hover {
+cursor: pointer;
+color: #000fff;
+background: #ffffff;
+}
+
+.sys_block_ctrl {
+padding: 1%;
+border-bottom: 1px solid #333;
+}
+
+#outer_wrapper {
+clear: left;
+float: left;
+width: 100%;
+overflow: hidden;
+background: #033;
+border-top: 1px solid #fff;
+border-bottom: 1px solid #fff;
+}
+
+#col_wrapper {
+float: left;
+width: 100%;
+position: relative;
+right: 34%;
+background: #030;
+border-right: 1px solid #fff;
+}
+
+#col_left {
+float: left;
+width: 65%;
+left: 35%;
+position: relative;
+overflow: hidden;
+}
+
+#col_right {
+float: left;
+width: 32%;
+left: 36%;
+position: relative;
+overflow: hidden;
+}
+
+code {
+background: #330;
+}
+
+pre {
+background: #111111;
+border: 1px dotted #eee;
+padding: 1em;
+white-space: pre-wrap;       /* css-3 */
+white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+white-space: -pre-wrap;      /* Opera 4-6 */
+white-space: -o-pre-wrap;    /* Opera 7 */
+word-wrap: break-word;       /* Internet Explorer 5.5+ */
+clear: both;
+overflow: auto;
+}
+
+td, th, tr {
+border: 1px solid #fff;
+}
+
+hr {
+border-top: 1px dashed #eee;
+border-bottom: 1px dashed #eee;
+height: 4px;
+}
+
+textarea {
+height: 30em;
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+box-sizing: border-box;
+width: 100%;
+max-width: 100%;
+margin-bottom: 1%;
+background: #030;
+color: #eee;
+}
+
+</style>
+</head>
+<body>
+<div id="outer_wrapper">
+ <div id="col_wrapper">
+  <div id="col_left">
+   <div class="sys_block_ctrl">
+    <textarea id="srcInput" cols="50" rows="50">Enter BakaBakaMarkup here...</textarea>
+   </div>
+   
+   <div class="sys_block_ctrl">
+    <a tabIndex="0" class="sys_button" id="compile">Compile BakaBakaMark</a>
+    <a tabIndex="0" class="sys_button" id="showHTMLSrc">HTML Source Code</a>
+    <a tabIndex="0" class="sys_button" id="showHTMLRen">Rendered HTML</a>
+   </div>
+   
+   <div id="displayArea" class="sys_block_ctrl">
+    <div>Placeholder. Press one of the show buttons to display the compiler's output in different phases.</div>
+   </div>
+  </div>
+  <div id="col_right">
+<h1>
+Inline Elements
+</h1>
+<h2>
+Hyperlinks
+</h2>
+<p>
+Table of link types:
+</p>
+<table>
+ <tr>
+  <th>
+   <p>
+Symbol
+   </p>
+  </th>
+  <th>
+   <p>
+Link Type
+   </p>
+  </th>
+ </tr>
+ <tr>
+  <td>
+   <p>
+<code>?&lt; ... &gt;</code>
+   </p>
+  </td>
+  <td>
+   <p>
+External Link
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+<code>!&lt; ... &gt;</code>
+   </p>
+  </td>
+  <td>
+   <p>
+Image
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+<code>#&lt; ... &gt;</code>
+   </p>
+  </td>
+  <td>
+   <p>
+Backend-Specific Link. (External Link by Default)
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+<code>#[ ... ]</code>
+   </p>
+  </td>
+  <td>
+   <p>
+Internal Link
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+<code>-[ ... ]</code>
+   </p>
+  </td>
+  <td>
+   <p>
+Optional custom display text for links, alt text for images.
+   </p>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <p>
+<code>:{ ... }:URL</code>
+   </p>
+  </td>
+  <td>
+   <p>
+Reference-style link -&gt; URL
+   </p>
+  </td>
+ </tr>
+</table>
+<pre><code>?&lt;ExternalURL&gt;-[Display Text]
+
+#&lt;PlatformSpecificURL&gt;-[Display Text]
+
+!&lt;ImageURL&gt;-[Alt Text]
+
+#[LinkID]-[Display Text]
+</code></pre>
+<h2>
+Reference-Style Links
+</h2>
+<pre><code>One of the four link types, then define 
+the identifier and URL pairing elsewhere. 
+(It is considered a block-level element)
+
+!&lt;RefID&gt;-[Reference-Style Image]
+
+:{RefID}: image.jpg
+</code></pre>
+<h2>
+Text-formatting
+</h2>
+<pre><code>**Bold** 
+
+''Italic'' 
+
+^^Superscript^^ 
+
+,,Subscript,, 
+
+__Underline__
+
+{++Insertion++} 
+
+{--Deletion--} 
+
+"""Verbatim Text/Code Snippet"""
+</code></pre>
+<h1>
+Block Elements
+</h1>
+<h2>
+Paragraphs
+</h2>
+<pre><code>    Type away. If you line-wrap manually, 
+    make sure every line starts on the 
+    same column, lined up against the 
+    left-margin.
+
+    Use blank lines (Two enter keys) to 
+    separate paragraphs.
+
+    Insufficient indentation
+will prematurely terminate the paragraph.
+
+Tabstops are considered as one space for 
+the purpose of determining indentation. 
+Spaces are highly recommended.
+</code></pre>
+<h2>
+Blockquotes
+</h2>
+<pre><code>&gt; Greater than sign, then insert the block 
+  element of choice.
+
+  """
+  Use indentation to denote that the block 
+  element is nested inside the blockquote.
+  """
+
+  &gt; Use multiple """&gt;""" to nest blockquotes.
+</code></pre>
+<h2>
+Setext Header
+</h2>
+<pre><code>Most important header is underlined 
+with a row of equal signs. Do not 
+include trailing spaces after these 
+signs. They may span multiple lines.
+===================================
+
+A row of hyphen minus denotes the 
+second most-important header. **May 
+contain inline elements such as 
+phrase emphasis.**
+-----------------------------------
+</code></pre>
+<h2>
+One-liner Header
+</h2>
+<pre><code>= Most important
+== 2nd most important
+=== 3rd most important
+[...]
+======= Six or more "=" are equally important
+
+=== Optionally close with equal signs ====
+=== Inline elements are **ineffective**. ===
+</code></pre>
+<h2>
+Fenced Code (Verbatim) Block
+</h2>
+<pre><code>"""
+Begin a line with at least three or 
+more double quotes, then press return.
+
+All text will be interpreted literally.
+**No text formatting**. All spaces and 
+line breaks are preserved.
+
+Place an equal number of double quotes 
+on the same column as the starting fence, 
+then end the line immediately to end 
+the code block.
+"""
+</code></pre>
+<h2>
+Bullet Lists
+</h2>
+<pre><code>- Bullet 1
+* Bullet 2
+
+  - 2.1
+  - 2.2
+
+    Another paragraph in 2.2
+
+  - 2.3
+
++ Bullet 3
+</code></pre>
+<h2>
+Numbered Lists
+</h2>
+<pre><code>1. One
+2. Two
+#. Three
+4. Four
+</code></pre>
+<h2>
+Definition List
+</h2>
+<pre><code>; Term
+: Description
+
+  Another paragraph in description
+
+  ; Nested Term
+  : Nested Description
+
+; Term 2
+: Description 2
+</code></pre>
+<h2>
+Tables
+</h2>
+<pre><code>!! Header Cell Row 1 Col 1
+!! Header Cell Row 1 Col 2
+|====
+|| Normal Cell Row 2 Col 1
+|| Normal Cell Row 2 Col 2
+</code></pre>
+<h2>
+Horizontal Rule
+</h2>
+<p>
+A row of 4+ hyphens with no text in 
+the previous line.
+</p>
+<pre><code>----------------
+</code></pre>
+<h2>
+Aside Block
+</h2>
+<pre><code>****
+This is an aside, or an arbitrary 
+block. Use a pair of lines of four 
+or more asterisks to fence off the 
+block area, or prematurely end it 
+with insufficient indentation.
+
+Mostly used to add hooks for CSS 
+selectors, so that the CSS template 
+can style the block.
+****
+</code></pre>
+<h2>
+Custom ID &amp; Classes
+</h2>
+<pre><code>. My Identifier
+.. My Class
+
+The next content-holding block 
+element will be given the CSS 
+ID and Class defined in these 
+lines, such as this paragraph.
+</code></pre>
+<h2>
+Comment Block
+</h2>
+<pre><code>////
+This part of the document shall 
+not be rendered.
+////
+</code></pre>
+<h1>
+Backslash Escape
+</h1>
+<pre><code>\*\*Treats the next visible 
+character as literal text.\*\*
+
+The leading backslash always 
+disappear, even in code blocks, 
+URLs and other verbatim text 
+context.
+
+Double the number of backslashes 
+\\ to print literal backslashes.
+</code></pre>
+  </div>
+ </div>
+</div>
+
+<!--BakaBakaMark Compiler-->
+<script type="text/javascript" src="bbm.js"></script>
+
+<!--Driver program-->
+<script type="text/javascript">
+"use strict";
+var evtLib = (function()
+{
+ var evTypeMap = "##EV-TYPE-MAP##";
+ var EV_ = //Lists of special events used in the app.
+ {
+  //Standard events
+  CLICK : "click",
+  KEYDOWN : "keydown",
+
+  //Custom events
+  VCLICK : "vclick", //Consolidates mouse click, tap, or enter key press.
+  ENTER : "enter" //Press Enter Key on keydown.
+ };
+
+ var do_addCustomEvt =
+ {
+  vclick : function(ele, evtName, handler)
+  {
+   do_addEvt(ele, EV_.KEYDOWN, c_enter(ele, handler));
+   do_addEvt(ele, EV_.CLICK, handler);
+  },
+  enter : function(ele, evtName, handler)
+  {
+   do_addEvt(ele, EV_.KEYDOWN, c_enter(ele, handler));
+  }
+ };
+
+ //Call handler only if enter key was detected.
+ function c_enter(ele, handler)
+ {
+  return function(event)
+  {
+   var evt = event || window.event, keycode = evt.keyCode || evt.which;
+   if (keycode == 13)
+   {
+    handler.call(handler, evt);
+   }
+  }
+ }
+
+ function do_addEvt(ele, evtName, handler)
+ {
+  if (ele.addEventListener) {ele.addEventListener(evtName, handler, false);}
+  else if (ele.attachEvent) {ele.attachEvent("on" + evtName, handler);}
+  else {delete ele["on" + evtName]; ele["on" + evtName] = handler;}
+
+  if (!ele[evTypeMap]) {ele[evTypeMap] = {};}
+  if (!ele[evTypeMap][evtName]) {ele[evTypeMap][evtName] = [];}
+
+  if (ele[evTypeMap][evtName].length < 1 ||
+   ele.addEventListener || ele.attachEvent)
+  {
+   ele[evTypeMap][evtName].push(handler);
+  }
+  else {ele[evTypeMap][evtName] = handler;}
+ }
+
+ function addEvt(ele, evtName, handler)
+ {
+  if (!ele) {return;}
+  var evtList = evtName.split(" ");
+  for (var i = 0, ii = evtList.length; i < ii; i += 1)
+  {
+   var evt = evtList[i],
+    evtFunc = do_addCustomEvt[evt];
+
+   if (evtFunc) {evtFunc(ele, evtName, handler);}
+   else {do_addEvt(ele, evtName, handler);}
+  }
+ }
+
+ function do_rmEvt(ele, evtName, handler)
+ {
+  if (ele.removeEventListener)
+  {
+   ele.removeEventListener(evtName, handler, false);
+  }
+  else if (ele.detachEvent) {ele.detachEvent('on' + evtName, handler);}
+  else {delete ele["on" + evtName];}
+ }
+
+ function rmEvt(ele, evtName, all)
+ {
+  if (!ele) {return;}
+  if (all && ele[evTypeMap])
+  {
+   for (var each in ele[evTypeMap])
+   {
+    while (ele[evTypeMap][each].length >= 1)
+    {
+     var handler = ele[evTypeMap][each].pop();
+     do_rmEvt(ele, each, handler);
+    }
+   }
+   delete ele[evTypeMap];
+  }
+  else if (ele[evTypeMap] && ele[evTypeMap][evtName])
+  {
+   while (ele[evTypeMap][evtName].length >= 1)
+   {
+    var handler = ele[evTypeMap][evtName].pop();
+    do_rmEvt(ele, evtName, handler);
+   }
+  }
+ }
+
+ function rmEvtAll(elem)
+ {
+  rmEvt(elem, "", true);
+  for (var i = 0, ii = elem.childNodes.length; i < ii; i += 1)
+  {
+   rmEvtAll(elem.childNodes[i]);
+  }
+ }
+
+ return {
+  add : addEvt,
+  rm : rmEvt,
+  rmAll : rmEvtAll,
+  customEvt : EV_
+ };
+}());
+
+</script>
+
+<script type="text/javascript">
+function rmAll(node, rmSelf)
+{
+ while (node.firstChild)
+ {
+  node.removeChild(node.firstChild);
+ }
+ if (rmSelf && node.parentNode)
+ {
+  var parent = node.parentNode;
+  parent.removeChild(node);
+ }
+}
+
+var BBMTestBench = (function()
+{
+ "use strict";
+ var srcInputNode = document.getElementById("srcInput"),
+  viewArea = document.getElementById("displayArea"),
+ 
+  compileBtn = document.getElementById("compile"),
+  showHTMLSrcBtn = document.getElementById("showHTMLSrc"),
+  showHTMLRenBtn = document.getElementById("showHTMLRen"),
+ 
+  htmlOutput = document.createElement("textArea"),
+  htmlRender = document.createElement("div");
+ 
+ //Singleton object for event handling.
+ function handler_compile()
+ {
+  return function()
+  {
+   rmAll(htmlRender, true);
+   rmAll(viewArea);
+   
+   var htmlCode = BBM.compile(srcInputNode.value);
+   htmlOutput.value = htmlCode;
+   htmlRender.innerHTML = htmlCode;
+   viewArea.appendChild(htmlRender);
+   
+  };
+ }
+ function handler_showHTMLSrc()
+ {
+  return function()
+  {
+   rmAll(viewArea);
+   viewArea.appendChild(htmlOutput);
+  };
+ }
+ function handler_showHTMLRendered()
+ {
+  return function()
+  {
+   rmAll(viewArea);
+   viewArea.appendChild(htmlRender);
+  };
+ }
+ 
+ evtLib.add(compileBtn, "vclick", handler_compile());
+ evtLib.add(showHTMLSrcBtn, "vclick", handler_showHTMLSrc());
+ evtLib.add(showHTMLRenBtn, "vclick", handler_showHTMLRendered());
+ 
+ return {};
+}());
+</script>
+
+</body>
+</html>
