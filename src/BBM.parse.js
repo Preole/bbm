@@ -274,7 +274,7 @@ function parsePara(lexer, lexTok, forceType)
  var endTok = lexer.peek() || EOF;
  var node = BBM(AST.P);
  
- lexer.mark = endTok === EOF ? endPos : lexer.next(-2).nextUntil(isNL).pos;
+ lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
  lexer.pos = startPos;
  
  parseInline(lexer, node);
