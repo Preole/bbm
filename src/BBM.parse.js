@@ -267,7 +267,8 @@ function parseRef(lexer)
 
 function parsePara(lexer, lexTok, forceType)
 {
- var minCol = lexer.minCol = lexTok.col || 0;
+ lexer.minCol = lexTok.col || 0;
+ 
  var startPos = lexer.pos;
  var endPos = lexer.nextUntil(isParaEnd, lexer).pos;
  var endTok = lexer.peek() || EOF;

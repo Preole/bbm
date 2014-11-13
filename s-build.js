@@ -13,7 +13,7 @@ var webpackOpt =
 var webpackOptMin =
 {
   entry : "./src/main.js"
-, plugins : [new webpack.optimize.UglifyJsPlugin({minimize: true})]
+, plugins : [new webpack.optimize.UglifyJsPlugin({mangle: true, minimize: true})]
 , output :
   {
     filename : "./dist/BBM.min.js"

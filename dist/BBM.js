@@ -217,11 +217,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	{
 	 var tok = lexer.peekUntil(notWSNL) || EOF;
 	 var node = null;
-	 var func = LEX_LIST[tok.type]
-	 ? parseListPre
-	 : LEX_BLOCK[tok.type]
-	 ? LEX_BLOCK[tok.type]
-	 : null;
+	 var func = LEX_LIST[tok.type] ? parseListPre : LEX_BLOCK[tok.type];
 
 	 lexer.lvl += 1;
 	 if (func && lexer.lvl <= lexer.maxDepth)
@@ -300,18 +296,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function parseATX(lexer, lexTok)
 	{
-	 var startPos = lexer.next().pos;
+	 var startPos = lexer.next().peekT(LEX.WS) ? lexer.next().pos : lexer.pos;
 	 var endPos = lexer.nextUntil(isATXEnd).pos;
-	 var endTok = lexer.peek() || EOF;
 	 var node = BBM(AST.HEADER);
 	 
 	 node.level = lexTok.lexeme.length;
 	 
-	 lexer.mark = endPos;
+	 lexer.mark = lexer.peekT(LEX.WS, -1) ? endPos - 1 : endPos;
 	 lexer.pos = startPos;
 	 parseInline(lexer, node);
 	 lexer.mark = -1;
-	 lexer.pos = (endPos <= startPos || isATXEnd(endTok)) ? endPos + 1 : endPos;
+	 lexer.pos = endPos + 1;
 	 
 	 return node;
 	}
@@ -338,14 +333,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function parsePara(lexer, lexTok, forceType)
 	{
-	 var minCol = lexer.minCol = lexTok.col || 0;
+	 lexer.minCol = lexTok.col || 0;
+	 
 	 var startPos = lexer.pos;
 	 var endPos = lexer.nextUntil(isParaEnd, lexer).pos;
 	 var endTok = lexer.peek() || EOF;
 	 var node = BBM(AST.P);
 	 
-	 lexer.minCol = minCol;
-	 lexer.mark = lexer.next(-2).nextUntil(isNL).pos;
+	 lexer.mark = endTok === EOF ? endPos : lexer.next(-2).nextUntil(isNL).pos;
 	 lexer.pos = startPos;
 	 
 	 parseInline(lexer, node);
@@ -359,10 +354,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  node.level = endTok.type === LEX.HR ? 2 : 1;
 	 }
 	 
-	 lexer.minCol = 0;
 	 lexer.mark = -1;
 	 lexer.pos = (endPos <= startPos || isSetext(endTok)) ? endPos + 1 : endPos;
-	 
 	 return node;
 	}
 
@@ -535,7 +528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	BBM.fn.prune = function ()
 	{
-	 return this.pruneList().pruneBlank().pruneURL().pruneID();
+	 return this.pruneList().pruneBlank().pruneURL().pruneID().pruneText();
 	};
 
 
@@ -548,6 +541,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	"use strict";
 
 	var __ = module.exports = {};
+	var arrayFN = Array.prototype;
+	var objFN = Object.prototype;
+
+	__.toString = function (obj)
+	{
+	 return objFN.toString.call(obj);
+	};
+
+	__.isArray = Array.isArray || function (obj)
+	{
+	 return __.toString(obj) === "[object Array]";
+	};
+
+	__.isString = function (obj)
+	{
+	 return typeof obj === "string";
+	};
+
+	__.isNumber = function (obj)
+	{
+	 return typeof obj === "number";
+	};
+
+	__.isFunction = function (obj)
+	{
+	 return typeof obj === "function";
+	};
+
+	__.isObject = function (obj)
+	{
+	 return __.isFunction(obj) || (typeof obj === "object" && obj !== null);
+	};
+
+	__.isBlankString = function (str)
+	{
+	 return /^\s*$/.test(str);
+	};
+
+	__.flatten = function (arr, shallow)
+	{
+	 arr = arrayFN.concat.apply([], arr);
+	 while (!shallow && arr.some(__.isArray))
+	 {
+	  arr = arrayFN.concat.apply([], arr);
+	 }
+	 return arr;
+	};
 
 	__.map = function (array, callback, extras)
 	{
@@ -556,77 +596,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 });
 	};
 
-	__.toString = function (obj)
-	{
-	 return Object.prototype.toString.call(obj);
-	};
-
-	__.toArray = function (obj, sPos, ePos)
-	{
-	 return Array.prototype.slice.call(obj, sPos, ePos);
-	};
-
-	__.flatten = function (arr, shallow)
-	{
-	 var res = __.isArray(arr) ? arr : __.toArray(arr);
-	 while (res.some(__.isArray))
-	 {
-	  res = Array.prototype.concat.apply([], res);
-	  if (shallow)
-	  {
-	   break;
-	  }
-	 }
-	 return res;
-	};
-
-	__.isArray = function (obj)
-	{
-	 return Array.isArray
-	 ? Array.isArray(obj)
-	 : __.toString(obj) === "[object Array]";
-	};
-
-	__.isObject = function (obj)
-	{
-	 return __.isFunction(obj) || (typeof obj === "object" && obj !== null);
-	};
-
-	__.isString = function (obj)
-	{
-	 return typeof obj === "string" || __.toString(obj) === "[object String]";
-	};
-
-	__.isNumber = function (obj)
-	{
-	 return typeof obj === "number" || __.toString(obj) === "[object Number]";
-	};
-
-	__.isFunction = function (obj)
-	{
-	 return typeof obj === "function" || __.toString(obj) === "[object Function]";
-	};
-
-	__.isBlankString = function (str)
-	{
-	 return /^\s*$/.test(str);
-	};
-
 	__.repeatString = function (str, times)
 	{
-	 var many = Math.abs(parseInt(times, 10)) || 0;
 	 var res = "";
-	 while (many > 0)
+	 while (times > 0)
 	 {
-	  if (many % 2 === 1)
-	  {
-	   res += str;
-	  }
-	  if (many > 1)
-	  {
-	   str += str;
-	  }
-	  many = Math.floor(many / 2);
+	  res += (times % 2 === 1) ? str : "";
+	  str += times > 1 ? str : "";
+	  times = Math.floor(times / 2);
 	 }
 	 return res;
 	};
@@ -673,7 +650,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	__.has = function (obj, key)
 	{
-	 return Object.prototype.hasOwnProperty.call(obj, key);
+	 return objFN.hasOwnProperty.call(obj, key);
 	};
 
 	__.get = function (obj, key)
@@ -685,7 +662,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	{
 	 var toObj = __.isObject(others) ? others : {};
 
-	 Array.prototype.forEach.call(arguments, function (fromObj){
+	 arrayFN.forEach.call(arguments, function (fromObj){
 	  if (fromObj === toObj || !__.isObject(fromObj)) {return;}
 	  for (var key in fromObj)
 	  {
@@ -735,6 +712,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Private Lexical Analysis Work
 	// -----------------------------
 
+
+
+	var RULES = (function (){
+
 	var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
 	var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
 	var EOL = "(?=" + NL + "|$)";
@@ -742,8 +723,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	{
 	 return {name : name, pattern : pattern};
 	};
-
-	var RULES = (function (){
 	return [
 	  Rule("ESCAPE"   , "\\\\[\\S]")
 	, Rule("TH"       , "!!" + WS)
@@ -841,7 +820,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  : prev.col + prev.lexeme.length;
 	 });
 	 
-	 
 	 return toks;
 	};
 
@@ -870,7 +848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	fn.peek = function (offset)
 	{
-	 return this._tokens[this.pos + (parseInt(offset, 10) || 0)];
+	 return this._tokens[this.pos + (offset || 0)];
 	};
 
 	fn.peekT = function (type, offset)
@@ -885,7 +863,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	fn.isLineStart = function (offset)
 	{
-	 var off = parseInt(offset, 10) || 0;
+	 var off = offset || 0;
 	 var prev1 = this.peek(off - 1);
 	 var prev2 = this.peek(off - 2);
 	  
@@ -896,7 +874,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	fn.isLineEnd = function (offset)
 	{
-	 var off = parseInt(offset, 10) || 0;
+	 var off = offset || 0;
 	 var now = this.peek(off);
 	 var next = this.peek(off + 1);
 	  
@@ -922,7 +900,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	fn.next = function (offset)
 	{
-	 this.pos = Math.max(0, this.pos + (parseInt(offset, 10) || 1));
+	 this.pos += offset || 1;
 	 return this;
 	};
 
@@ -948,7 +926,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	fn.textUntil = function (callback, extras, minCol)
 	{
 	 var self = this;
-	 var col = Number(minCol) || Number(self.minCol) || 0;
+	 var col = minCol || self.minCol || 0;
 	 var text = "";
 	 
 	 this.nextUntil(function (tok){
@@ -1281,10 +1259,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 
-	/*
-	Manipulation
-	------------
-	*/
+	// Manipulation
+	// ------------
 
 	/**
 	 * Removes the node's last child.
@@ -1321,7 +1297,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	fn.append = function (content)
 	{
-	 var eles = procArgs(content, this), kids = this.children();
+	 var eles = procArgs(content, this);
+	 var kids = this.children();
 	 if (BBM.isNode(eles))
 	 {
 	  kids.push(eles);
@@ -1343,7 +1320,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	fn.prepend = function (content)
 	{
-	 var eles = procArgs(content, this), kids = this.children();
+	 var eles = procArgs(content, this);
+	 var kids = this.children();
 	 if (BBM.isNode(eles))
 	 {
 	  kids.unshift(eles);
@@ -1510,10 +1488,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 
-	/*
-	Attributes, Properties, and Class Extension
-	-------------------------------------------
-	*/
+
+	// Attributes, Properties, and Class Extension
+	// -------------------------------------------
 
 	/**
 	 * Retrieves or sets the text value of this node. If the text value retrieved
@@ -1586,11 +1563,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	fn.removeAttr = function (key)
 	{
-	 if (arguments.length === 1)
+	 if (arguments.length >= 1)
 	 {
 	  delete this._attr[key];
 	 }
-	 if (arguments.length === 0)
+	 else
 	 {
 	  this._attr = {};
 	 }
@@ -1615,20 +1592,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 this._type = String(newType).toLocaleUpperCase();
 	 return this;
 	};
-
-
-	/**
-	 * Merge the contents of an object onto the BBM prototype to add BBM methods.
-	 *
-	 * @method extend
-	 * @param {Object} extendObj The object to merge into the prototype.
-	 * @return {BBM} The calling instance.
-	 */
-	fn.extend = function (extendObj)
-	{
-	 return __.extend(this, extendObj);
-	};
-
 
 	/**
 	 * Converts the current node into JSON-compatible format for use with 
@@ -1661,7 +1624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var __ = __webpack_require__(3);
 	var AST = BBM.ENUM;
 	var DUMMY = BBM("_DUMMY");
-	var IDCLASS = {_ID : true, _CLASS : true};
+	var IDCLASS = {_ID : 1, _CLASS : 1};
 	var SWITCH =
 	{
 	  _DT : pruneDL
@@ -1788,7 +1751,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var BBM = module.exports = __webpack_require__(5);
 	var __ = __webpack_require__(3);
 	var AST = BBM.ENUM;
-	var DUMMY = BBM("_DUMMY");
 	var LINKS =
 	{
 	  LINK_EXT : 1
@@ -1829,7 +1791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function pruneTR(node)
 	{
-	 var maxCol = Math.min((node.first() || DUMMY).size(), 64);
+	 var maxCol = node.first() ? node.first().size() : 0;
 	 node.children().forEach(function (rNode){
 	  if (rNode.size() > 0)
 	  {
@@ -1864,8 +1826,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 var type = node.type();
 	 if (node.children().every(isBlank))
 	 {
-	  node.empty().append(LINKS[type] ? node.attr("href") : null);
-	  return;
+	  return node.empty().append(LINKS[type] ? node.attr("href") : null);
 	 }
 	 
 	 
@@ -1921,7 +1882,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var BBM = module.exports = __webpack_require__(5);
 	var __ = __webpack_require__(3);
 	var AST = BBM.ENUM;
-	var LINKS = [AST.LINK_EXT, AST.LINK_INT, AST.LINK_WIKI];
+	var LINKS = {LINK_EXT : 1, LINK_INT : 1, LINK_WIKI : 1};
 
 	function pruneURL(node, symTable)
 	{
@@ -1931,7 +1892,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 {
 	  attr.src = __.get(symTable, attr.src) || attr.src;
 	 }
-	 else if (LINKS.indexOf(nType) > -1)
+	 else if (__.has(LINKS, nType))
 	 {
 	  attr.href = __.get(symTable, attr.href) || attr.href;
 	 }
@@ -2120,12 +2081,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 return INLINES[node.type()] ? "" : "\n";
 	}
 
-	function printHeader(node, opts)
-	{
-	 var lvl = Math.abs(parseInt(node.level, 10) || 1);
-	 return "h" + Math.min(lvl + opts.headerOffset, 6);
-	}
-
 	function printAttr(node, opts)
 	{
 	 var res = "";
@@ -2136,10 +2091,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 {
 	  if (__.has(attr, key) && !__.isBlankString(key))
 	  {
-	   res += __.escapeATTR(key).substring(0, opts.maxAttrChars)
+	   res += __.escapeATTR(key).substr(0, opts.maxAttrChars)
 	   + "=\""
 	   + ((nType === AST.LINK_INT && key === "href") ? "#" : "")
-	   + __.escapeATTR(attr[key]).substring(0, opts.maxAttrChars)
+	   + __.escapeATTR(attr[key]).substr(0, opts.maxAttrChars)
 	   + "\" ";
 	  }
 	 }
@@ -2148,21 +2103,22 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function printTagName(node, opts)
 	{
-	 var tagName = node.type() === AST.HEADER
-	 ? printHeader(node, opts)
-	 : MAP_HTML[node.type()];
-
-	 return __.escapeATTR(tagName || "");
+	 var name = MAP_HTML[node.type()] || "";
+	 if (name && node.level > 0)
+	 {
+	  name += Math.min(Math.floor(node.level) + opts.headerOffset, 6);
+	 }
+	 return name;
 	}
 
 	function printTagOpen(node, opts)
 	{
-	 var tagName = printTagName(node, opts);
-	 if (tagName)
+	 var name = printTagName(node, opts);
+	 if (name)
 	 {
 	  return printIndent(node, opts)
 	  + "<"
-	  + tagName
+	  + name
 	  + printAttr(node, opts)
 	  + printXHTML(node, opts)
 	  + ">"
@@ -2173,13 +2129,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function printTagClose(node, opts)
 	{
-	 var tagName = printTagName(node, opts);
-	 if (tagName && hasEndTag(node, opts))
+	 var name = printTagName(node, opts);
+	 if (name && hasEndTag(node, opts))
 	 {
 	  return printBlockEnd(node, opts)
 	  + printIndent(node, opts)
 	  + "</" 
-	  + tagName
+	  + name
 	  + ">" 
 	  + (node.isLastChild() ? "" : printBlockEnd(node, opts));
 	 }
@@ -2223,13 +2179,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	//TODO; Document this method.
 	BBM.fn.toHTML = function (options)
 	{
-	 var opts = __.isObject(options) ? options : {};
-	 opts.depth = (parseInt(opts.depth, 10) || 0) + (printTagName(this) ? -1 : -2);
+	 var opts = __.extend({}, options);
+	 opts.depth = printTagName(this) ? -1 : -2;
 	 opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
 	 opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
-	 opts.XHTML = !!opts.XHTML;
-	 opts.comment = !!opts.comment;
-	 opts.rmNL = !!opts.rmNL;
 	 return printHTML(this, opts);
 	};
 
