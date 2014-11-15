@@ -6,7 +6,6 @@
 ======
 
 ////
-The last ATX line (Six equal signs) has its line ended immediately. 
-Therefore, these equal signs are treated as part of a Setext header. 
-The other five lines have a trailing space.
+Last line is a Setext H1, while other lines have ended with a space and is 
+considered an empty ATX Header. No output should be produced.
 ////

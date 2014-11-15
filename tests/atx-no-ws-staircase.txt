@@ -6,7 +6,6 @@
 ======
 
 ////
-No trailing space after each ATX_END. The odd-numbered ATX_END tokens are 
-treated as TEXT tokens. Since each paragraph ended with an ATX_END, there 
-are three H1 header nodes.
+No trailing space after each Setext Line. Setext Lines by themselves should 
+not produce any output.
 ////

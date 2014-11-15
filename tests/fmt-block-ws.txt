@@ -1,6 +1,6 @@
- > ^^__ ** ** ** ** __^^
+> ^^__ ** ** ** ** __^^
 
 
 ////
-Should produce no code.
+Should produce an empty blockquote.
 ////

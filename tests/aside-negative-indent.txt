@@ -1,7 +1,7 @@
  ****
 Aside blocks with negatively indented content will be terminated, 
 without needing a delimiter. In this case, the first aside block 
-should be empty (And generates no """<div>""" tags)
+should be empty (And generates no ```<div>``` tags)
  ****
  If an aside block is indented, so should all the block elements 
  that wants to be inside the aside block.
