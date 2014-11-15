@@ -7,6 +7,32 @@ The previous stable release can be found inside the `old/` folder.
 
 
 
+Changes: Typing Simplification (November 14th, 2014)
+----------------------------------------------------
+
+### Code Blocks & Inline Code Characters ###
+
+The backtick (grave accent) character "\`" shall replace the ASCII 
+double-quote in the syntax for Inline Code and Code Block. 
+
+
+
+### Inline Code Relaxation ###
+
+In addition to the Inline Code Character Change, The Inline Code syntax 
+now starts with one or more backtick characters, down from three or more. 
+Specifically:
+
+```
+`Code` ``Code `Nested Code` Code``
+```
+
+
+
+
+
+
+
 Updated Confirmed Changes (October 10th, 2014)
 ----------------------------------------------
 
@@ -23,7 +49,7 @@ just two consecutive dashes: `-- Deleted Text --`.
 ### Pre-formatted Text Output (October 24th, 2014) ###
 
 Pre-formatted Text Output no longer generates a `<code>` wrapper inside 
-the `<pre>` tag, for simplicity reason.
+the `<pre>` tag.
 
 
 
@@ -78,10 +104,13 @@ implements `String.prototype.trim()`, Higher-order array iteration methods
 
 
 
-### Javascript Engine Requirement (Build) ###
+### Javascript Development Environment ###
 
-- Node.js
-- <del>Browserify</del> <ins>Update October 24th, 2014: Reconsidering;</ins>
+- Node.js with npm (Optional)
+- Webpack (Building)
+- diff (Testing)
+- jshint (Linting; Optional)
+- TODO (API Documentation Tool)
 
 
 
@@ -129,7 +158,7 @@ They will not count as valid delimiting token otherwise. Specifically:
 
 - Square bracket balancing has been removed. If internal link URL or link 
   display text contains a closing square bracket, that bracket must be 
-  escaped with preceding backslash.
+  escaped with a backslash.
   
 - <del>Internal, external, and wiki link display text (Link continuation) no 
   longer interprets inline formatting constructs. Namely, formatting elements 

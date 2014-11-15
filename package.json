@@ -1,9 +1,9 @@
 {
-  "name": "bbm"
+  "name": "BBM"
 , "author": "Preole Soandso"
 , "version": "2.0.0"
 , "description": "BareBonesMarkup: Experimental Lightweight Markup Language"
-, "main": "./dist/bbm.min.js"
+, "main": "./dist/BBM.min.js"
 , "repository":
   {
     "type": "git"

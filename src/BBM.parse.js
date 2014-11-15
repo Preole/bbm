@@ -220,7 +220,7 @@ function parseDiv(lexer, lexTok)
 function parsePre(lexer, lexTok)
 {
  var text = __.rmNLTail(
-  lexer.nextPast(isNL).textPast(Lexer.fn.isDelim, lexTok, lexTok.col)
+  lexer.nextPast(isNL).textPast(lexer.isDelim, lexTok, lexTok.col)
  );
  
  if (lexTok.type === LEX.PRE)
