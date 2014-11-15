@@ -1,4 +1,4 @@
-"""
+```
 These newlines should be preserved.
 
 
@@ -7,4 +7,4 @@ These newlines should be preserved.
      
      
      
-"""
+```

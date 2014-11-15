@@ -1,5 +1,5 @@
-"""
-"""Derp!"""
-"""
+```
+```Derp!```
+```
 
 Code block terminated.

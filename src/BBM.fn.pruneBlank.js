@@ -29,6 +29,10 @@ var ALONE =
 , COMMENT : 1
 };
 
+function isPre(node)
+{
+ return node.type() === AST.PRE || node.type() === AST.COMMENT;
+}
 
 function isBlank(node)
 {
@@ -77,7 +81,7 @@ function pruneDL(node)
 function pruneBlank(node)
 {
  var type = node.type();
- if (node.children().every(isBlank))
+ if (!isPre(node) && node.children().every(isBlank))
  {
   return node.empty().append(LINKS[type] ? node.attr("href") : null);
  }

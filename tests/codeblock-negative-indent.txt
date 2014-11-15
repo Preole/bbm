@@ -1,4 +1,4 @@
-- """
+- ```
 A
  B
   C
@@ -6,7 +6,7 @@ A
     E
      F
       G
-  """
+  ```
 
 ////
 Each line within the code block needs to be trimmed X leading white space, 
