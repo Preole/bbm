@@ -69,11 +69,6 @@ __.repeatString = function (str, times)
  return res;
 };
 
-__.rmWS = function (str)
-{
- return str.replace(/ \t\u00a0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000/g, "");
-};
-
 __.rmNL = function (str)
 {
  return str.replace(/[\v\f\r\n\u0085\u2028\u2029]+/g, "");

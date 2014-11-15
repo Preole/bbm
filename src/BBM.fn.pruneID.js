@@ -6,7 +6,7 @@ var __ = require("./__.js");
 
 function pruneID(node, idList)
 {
- var id = __.rmWS(__.rmCTRL(node.attr("id") || ""));
+ var id = __.rmCTRL(node.attr("id") || "");
  if (id && !__.has(idList, id))
  {
   node.attr("id", (idList[id] = id));
