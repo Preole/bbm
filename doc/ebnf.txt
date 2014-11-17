@@ -1,10 +1,10 @@
-BakaBakaMark EBNF Grammar Version 2.0.0 (DRAFT)
-===============================================
+BakaBakaMark EBNF Grammar Version 2.0.0
+=======================================
 
 Start Symbols
 -------------
 
-"""
+```
 BakaBakaMark
  | Blocks EOF
  ;
@@ -35,7 +35,7 @@ Block
    | Paragraph
    )
  ;
-"""
+```
 
 
 
@@ -44,16 +44,16 @@ Block-level Grammar
 
 === Div Block ===
 
-"""
+```
 Div
  | SPACE{N} DIV_DELIM Blocks SPACE{N} DIV_DELIM
  ;
-"""
+```
 
 Arbitrary block-level container to be transformed with the BlockID or 
 BlockClass elements.
 
-For a """Div""" to terminate gracefully, the number of asterisks in the 
+For a ```Div``` to terminate gracefully, the number of asterisks in the 
 closing delimiter token must be the same as the starting token's. Moreover, 
 these asterisks must start on the same column on a blank line.
 
@@ -64,7 +64,7 @@ inside the Div block.
 
 === Block Directives ===
 
-"""
+```
 BlockID
  | FULLSTOP SPACE ~(NL)+ NL
  ;
@@ -72,9 +72,9 @@ BlockID
 BlockClass
  | FULLSTOP{2} SPACE ~(NL)+ NL
  ;
-"""
+```
 
-The """BlockID""" and """BlockClass""" parses the rest of the content on 
+The ```BlockID``` and ```BlockClass``` parses the rest of the content on 
 its line as a CSS class or ID, **One value per line**. These values will be 
 applied to the next content-holding sibling block element in the tree in 
 the following ways:
@@ -100,7 +100,7 @@ leading or trailing white space to be considered effective.
 In case of BlockID, the ID value must not have been defined earlier in the 
 document.
 
-"""
+```
 . Fig1
 .. Gallery
 .. Left
@@ -111,11 +111,11 @@ document.
 
 This is a gallery's caption.
 ****
-"""
+```
 
 This ends up as the following HTML:
 
-"""
+```
 <div id="Fig1" class="Gallery Left">
  <p>
 <img src="MyImage.jpg">
@@ -125,13 +125,13 @@ This ends up as the following HTML:
 This is a gallery's caption.
  </p>
 </div>
-"""
+```
 
 
 
 === ATX Header ===
 
-"""
+```
 ATXHeader
  | ATX ATXContent ATX_END
  ;
@@ -139,22 +139,22 @@ ATXHeader
 ATXContent
  | ~(ATX_END)
  ;
-"""
+```
 
 One-liner header. Inline formatting constructs are effective like a regular 
 paragraph, but the text cannot contain any line break characters or end with 
-an """ATX_END""" token. See also: **Inline-Level Grammar**.
+an ```ATX_END``` token. See also: **Inline-Level Grammar**.
 
 
 
 
 === BlockQuote ===
 
-"""
+```
 BlockQuote
  | GT_THAN Blocks
  ;
-"""
+```
 
 For nesting blocks inside a block quote, See **Block Element Indentation 
 Rules**.
@@ -166,22 +166,22 @@ Rules**.
 
 === Code Block ===
 
-"""
+```
 CodeBlock
  | CODE_FENCE
    [~(CODE_FENCE)]+
    (?<=NL | NL SPACES) CODE_FENCE
  ;
-"""
+```
 
 All white space and line breaks are preserved. No grammar rule interpretation 
-will occur inside the block, except for the closing """CODE_FENCE""" token. 
+will occur inside the block, except for the closing `CODE_FENCE` token. 
 
-Only a matching """CODE_FENCE""" token will be able to close a code block. 
+Only a matching `CODE_FENCE` token will be able to close a code block. 
 Failure to close the block results interpreting the rest of the document 
 as a CodeBlock. A matching CODE_FENCE token is one that...
 
-1. Has the same number of double quotes (") as the fence.
+1. Has the same number of backticks `\`` as the fence.
 2. Starts on the same column as the starting fence.
 3. The only token on its line.
 
@@ -193,13 +193,13 @@ preceding the line.
 
 === Comment Block ===
 
-"""
+```
 CommentBlock
  | COMMENT_DELIM 
    [~(COMMENT_DELIM)]+
    (?<=NL | NL SPACES) COMMENT_DELIM
  ;
-"""
+```
 
 Same as CodeBlock, except it will not be rendered in the output by default.
 
@@ -207,11 +207,11 @@ Same as CodeBlock, except it will not be rendered in the output by default.
 
 === Horizontal Rule ===
 
-"""
+```
 HorizontalRule
  | HR
  ;
-"""
+```
 
 Starting a line with four or more consecutive hyphen-minus, followed by the 
 end of the line, is a horizontal rule.
@@ -220,16 +220,16 @@ end of the line, is a horizontal rule.
 
 === URL Anchor ===
 
-"""
+```
 URLAnchor
  | LINK_REF [~(NL | LINK_REF_END)]+ LINK_REF_END [~(NL)]+ NL
  ;
-"""
+```
 
 A reference link anchor (URLAnchor) has non-empty two components after their 
 leading and trailing white space characters trimmed.
 
-1. The ID stored inside the braces, """:{ID}:""", 
+1. The ID stored inside the braces, `:{ID}:`, 
 2. The URL on the rest of the line.
 
 If both values are not empty after trimming, this node shall create a ID:URL
@@ -243,7 +243,7 @@ This node has no visible rendering.
 
 === Flat Lists ===
 
-"""
+```
 OrderedList
  | (OL_ListItem)+
  ;
@@ -259,7 +259,7 @@ OL_ListItem
 UL_ListItem
  | UL_ITEM Block Blocks
  ;
-"""
+```
 
 See also **Block Element Indentation Rules** for nested lists, block quotes,
 and tables.
@@ -268,7 +268,7 @@ and tables.
 
 === Definition Lists ===
 
-"""
+```
 DefList
  | (DefTermGroup DefDescGroup)+
  ;
@@ -288,7 +288,7 @@ DefDescGroup
 DefDesc
  | DD_MARKER Blocks
  ;
-"""
+```
 
 The Paragraph in the DefTerm node should contain the children of the 
 Paragraph node, not the paragraph node itself.
@@ -305,7 +305,7 @@ are to be removed from the syntax tree.
 
 === Table ===
 
-"""
+```
 Table
  | TableRowStart (TABLE_ROW_DELIM TableRow)+
  ;
@@ -330,17 +330,17 @@ TableHead
 TableCellContent
  | (Blocks | SPACES? NL)
  ;
-"""
+```
 
 TABLE_ROW_DELIM tokens that is not immediately followed or preceded by either 
 a TableCell or a TableHead element has no effect. Specifically, it should 
 produce no output.
 
-"""
+```
 |======
 |======
 |======
-"""
+```
 
 A table starts as soon as there's either a TableHead or TableCell element, 
 which starts the table's first row, and its size determines the number of 
@@ -351,7 +351,7 @@ column count differ from the first row's, shall have extra columns discarded,
 and empty columns padded with empty cells. Table rows that have no cell are 
 removed from the syntax tree.
 
-"""
+```
 |=====
 || Sharapova
 || Tiger Woods
@@ -367,7 +367,7 @@ removed from the syntax tree.
 || Empty Cell
 || Will not be displayed 
 |=====
-"""
+```
 
 
 
@@ -375,7 +375,7 @@ removed from the syntax tree.
 
 === Paragraph ===
 
-"""
+```
 Paragraph
  | ParaContent ParaEnd
  ;
@@ -392,18 +392,18 @@ ParaEndNormal
  | NL
  | DIV_DELIM
  ; 
- The paragraph end as """<p>""" or a paragraph.
+ The paragraph end as `<p>` or a paragraph.
  
 ParaEndSetextH1
  | ATX_END
  ;
- The paragraph ends and is promoted to a """<h1>""" element.
+ The paragraph ends and is promoted to a `<h1>` element.
  
 ParaEndSetextH2
  | HR
  ;
- The paragraph ends and is promoted to a """<h2>""" element.
-"""
+ The paragraph ends and is promoted to a `<h2>` element.
+```
 
 A paragraph begins with a visible character, and continues as long as 
 it doesn't encounter one of the four following conditions:
@@ -429,7 +429,7 @@ That is, the document's logical structure depends on white space and
 indentation. The Rules:
 
 0. All white spaces are treated equally for the purpose of determining 
-   indentation and nesting. For further details, refer to the """SPACE""" 
+   indentation and nesting. For further details, refer to the `SPACE` 
    token definition.
 
 1. Every line of text in a **Paragraph** must be indented to the same column 
@@ -450,7 +450,7 @@ indentation. The Rules:
    All block elements are counted as a child of the forementioned elements 
    so long as they meet the minimum indentation requirement. Sample code:
    
-   """
+   ```
    + + Item 1.1
      + Item 1.2
      
@@ -463,12 +463,12 @@ indentation. The Rules:
      
    + Item 2, paragraph 1, because it's not indented enough to be counted 
      as part of Item 1.
-   """
+   ```
    
 3. For **Div** and **CodeBlock**, the minimum indentation level is 
    determined by the opening delimiter token's column number instead.
    
-   """
+   ```
     ****
     Part of the aside block
     
@@ -478,7 +478,7 @@ indentation. The Rules:
     ****
     Another aside block.
     ****
-   """
+   ```
    
 4. **CommentBlock**, **CodeBlock** are exempt from rule 1 and rule 2.
 
@@ -495,7 +495,7 @@ grammar is effective for the lexical tokens extracted from the rule
 **ParaContent** and *ATXContent** in the section **Block-Level Grammar**.
 
 
-"""
+```
 Paragraph
  | TextFrag+
 
@@ -556,17 +556,17 @@ TextFrag_Code
  characters. Moreover, in TextFragLink context, this operator has a higher 
  precedence than the closing square bracket. That is:
  
- """
- #<Wiki Link>-["""?<URL>-[Sample Code]"""]
- """
+ ```
+ #<Wiki Link>-[`?<URL>-[Sample Code]`]
+ ```
  
- """
+ ```
  <a href="Wiki Link">
   <code>
    ?&lt;URL&gt;-[Sample Code]
   </code>
  </a>
- """
+ ```
 
 
 
@@ -655,14 +655,14 @@ LinkInt
 URLAngle
  | ~(GT_THAN)+
  ;
- This is the """src""" attribute for LinkImage, or """href""" attribute 
+ This is the `src` attribute for LinkImage, or `href` attribute 
  for LinkInt, LinkWiki
  
 URLSquare
  | ~(BRACKET_R)+
  ;
- This is the """href""" attribute for LinkInt.
-"""
+ This is the `href` attribute for LinkInt.
+```
 
 
 
@@ -671,7 +671,7 @@ Lexical Token Listing
 
 === Block Tokens ===
 
-"""
+```
 DIV_DELIM
  | [*]{4,} (?=NL)
  ;
@@ -697,7 +697,7 @@ GT_THAN
 
 
 CODE_FENCE
- | CODE (?=NL)
+ | [`]{3,} (?=NL)
  ;
 
 COMMENT_DELIM
@@ -748,13 +748,13 @@ TABLE_CELL_DELIM
 TABLE_ROW_DELIM
  | "|" [=]+ (?=NL)
  ;
-"""
+```
 
 
 
 === Inline Formatting Tokens ===
 
-"""
+```
 UNDERLINE
  | "__"
  ;
@@ -776,19 +776,19 @@ ITAL
  ;
  
 CODE
- | ["]{3,}
+ | [`]+
  ;
  
 DEL
  | "--"
  ;
-"""
+```
 
 
 
 === Inline Hyperlink Tokens ===
 
-"""
+```
 LINK_CONT
  | "-["
  ;
@@ -818,12 +818,12 @@ GT_THAN
  | ">"
  ;
  Closes LinkExt, LinkWiki, LinkImage.
-"""
+```
 
 
 === Controls ===
 
-"""
+```
 SPACE
  | WS
  ;
@@ -856,5 +856,5 @@ ESCAPE
  ;
 Turns non-whitespace character immediately after the single backslash 
 into the default TEXT token, discarding the preceding backslash.
-"""
+```
 
