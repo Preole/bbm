@@ -60,7 +60,7 @@ function hasEndTag(node)
 
 function printXHTML(node, opts)
 {
- return (opts.XHTML && !hasEndTag(node)) ? " /" : ""; 
+ return (opts.xhtml && !hasEndTag(node)) ? " /" : ""; 
 }
 
 function printIndent(node, opts)
@@ -184,7 +184,7 @@ function printHTML(node, opts)
  *     output. E.g: For a headerOffset of 1, `<h1>` will become `<h2>`, and 
  *     `<h2>` will become `<h3>`, and so on, up to a maximum of `<h6>`.
  *
- *   - **[XHTML=false]** *Boolean* If true, output XHTML-compliant HTML.
+ *   - **[xhtml=false]** *Boolean* If true, output XHTML-compliant HTML.
  *
  *   - **[comments=false]** *Boolean* If true, output HTML comments.
  * 
