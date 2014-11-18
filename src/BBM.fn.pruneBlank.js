@@ -98,30 +98,6 @@ function pruneBlank(node)
  node.filterChild(isKept);
 }
 
-
-/**
- * Removes blank subtrees and nodes from the current node. A subtree is 
- * considered empty if it's not the following element, and it contains no 
- * visible text content: (That is, only blank strings such as " ")
- *
- * - TD
- * - TH
- * - PRE
- * - LI
- * - BLOCKQUOTE
- * - DD
- * - DT
- * - HR
- * - DIV
- * - LINK_* (Hyperlink and image nodes)
- * - COMMENT 
- *
- * In short, nested inline formatting containing nothing but blank strings 
- * shall be removed from the tree, such as `** -- __ __ -- **`.
- *
- * @method pruneBlank
- * @return {BBM} The current node with empty subtrees pruned.
- */
 BBM.fn.pruneBlank = function ()
 {
  return this.eachPost(pruneBlank);

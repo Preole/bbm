@@ -1,6 +1,6 @@
 "use strict";
 
-var BBM = require("./dist/BBM.min.js");
+var BBM = require("./index.js");
 var fs = require("fs");
 var glob = require("glob");
 var diff = require("diff");
@@ -10,6 +10,9 @@ var srcList = glob.sync("./tests/*.txt").sort();
 var destList = glob.sync("./tests/*.html").sort();
 var errCount = 0;
 var log = console.log;
+
+
+log("Diffing HTML Outputs\n\n");
 
 srcList.forEach(function (srcFile, index){
  var testCase = BBM.parse(fs.readFileSync(srcFile, fsOptR)).toHTML().trim();
@@ -47,3 +50,6 @@ if (errCount > 0)
  log("Exiting build process due to warnings.");
  process.exit(0);
 }
+
+log("All test cases good to go.");
+

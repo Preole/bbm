@@ -1,5 +1,0 @@
-  !<Multi
-line>-
-[URL 
-Alt 
-Text]

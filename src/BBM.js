@@ -2,22 +2,6 @@
 "use strict";
 
 var __ = require("./__.js");
-
-
-/**
- * BareBonesMarkup node object. Each instance of this class represents a 
- * node within the abstract syntax tree. The `new` operator is not required. 
- * Instance properties prefixed with an underscore are meant for private use.
- *
- * @constructor
- * @type BBM
- * @param {String} type The node's type name. @see BBM.ENUM
- * @property {String} _type The node's type name.
- * @property {Object} _attr Attribute key-value (String-String) pairs.
- * @property {BBM[]} _nodes An array of child nodes.
- * @property {BBM} _parent The node's parent node.
- * @return {BBM} The newly created node with a specific type. 
- */
 var BBM = module.exports = function (type)
 {
  var obj = Object.create(BBM.prototype);
@@ -29,15 +13,6 @@ var BBM = module.exports = function (type)
 };
 
 
-/**
- * Enumeration of officially recognized node types. Names preceding with an 
- * underscore are private and for internal use only.
- * 
- * @memberOf BBM {Object} ENUM
- * @enum {String}
- * @readonly
- * @static 
- */
 var ENUM = BBM.ENUM = (function (){
 
 var obj = {};
@@ -94,16 +69,6 @@ return obj;
 }());
 
 
-
-
-/**
- * Queries the target object if it is an instance of BBM.
- * 
- * @method isNode
- * @static
- * @param {anything} The object to check against.
- * @return {Boolean} True if instance of BBM; False otherwise.
- */
 BBM.isNode = function (target)
 {
  return BBM.prototype.isPrototypeOf(target);
@@ -175,18 +140,6 @@ function eachPost(start, curr, callback, params)
 // Low Level Manipulation & Basic Accessors
 // ----------------------------------------
 
-/**
- * Low Level method for manipulating the node's children.
- * 
- * @method splice
- * @param {Number} from The index to begin manipulation. (Zero or more)
- * @param {Number} count The Number of children to remove. (Zero or more)
- * @param {(BBM[]|BBM|String)} [elems] The new child nodes to insert. 
-   Child nodes inserted in this manner will be detached from their belonging 
-   parent nodes.
-
- * @return {BBM} The modified node instance.
- */
 fn.splice = function (from, count, elems)
 {
  var eles = procArgs(elems, this);
@@ -202,92 +155,37 @@ fn.splice = function (from, count, elems)
  return this;
 };
 
-
-
-/**
- * Retrieves the node's parent node.
- * 
- * @method parent
- * @return {(BBM|undefined)} The parent node, or undefined if there's none.
- */
 fn.parent = function ()
 {
  return this._parent;
 };
 
 
-
-/**
- * Retrieves the node's children list.
- * 
- * @method children
- * @param {Boolean} [shallow] If true, retrieves a shallow copy instead.
- * @return {BBM[]} The pointer to the children Array, or a copy of the 
-   Array if the shallow parameter is truthy.
- */
 fn.children = function (shallow)
 {
  return shallow ? this._nodes.slice() : this._nodes;
 };
 
-
-
-/**
- * Retrieves the size of the node's children list.
- * 
- * @method size
- * @return {Number} The Number of children this node contains.
- */
 fn.size = function ()
 {
  return this.children().length;
 };
 
-
-/**
- * Retrieves the node's first child node.
- * 
- * @method first
- * @return {(BBM|undefined)} The first child, or undefined if there's none.
- */
 fn.first = function ()
 {
  return this.children()[0];
 };
 
-
-/**
- * Retrieves the node's last child node.
- * 
- * @method last
- * @return {(BBM|undefined)} The last child, or undefined if there's none.
- */
 fn.last = function ()
 {
  return this.children()[this.children().length - 1];
 };
 
-
-/**
- * Queries whether the node is the first sibling within its parent.
- * 
- * @method isFirstChild
- * @return {Boolean} True if the node has a parent, and it's the first sibling 
-   within its subtree; False otherwise.
- */
 fn.isFirstChild = function ()
 {
  return this.parent() && this.parent().first() === this;
 };
 
-
-/**
- * Queries whether the node is the last sibling within its parent.
- * 
- * @method isLastChild
- * @return {Boolean} True if the node has a parent, and it's the last sibling 
-   within its subtree; False otherwise.
- */
 fn.isLastChild = function ()
 {
  return this.parent() && this.parent().last() === this;
@@ -298,12 +196,6 @@ fn.isLastChild = function ()
 // Manipulation
 // ------------
 
-/**
- * Removes the node's last child.
- * 
- * @method pop
- * @return {(BBM|undefined)} The node's last child, or undefined if there's none.
- */
 fn.pop = function ()
 {
  return nullParent(this.children().pop());
@@ -322,15 +214,6 @@ fn.shift = function ()
 };
 
 
-/**
- * Adds one or more nodes to the end of this node's children list.
- * 
- * @method append
- * @param {(String|BBM[]|BBM)} [content] An Array of BBM nodes, a single 
-   BBM node, or a non-empty String to append to the current node. If no 
-   valid content is supplied, this operation does nothing.
- * @return {BBM} The modified BBM instance.
- */
 fn.append = function (content)
 {
  var eles = procArgs(content, this);
@@ -347,13 +230,6 @@ fn.append = function (content)
 };
 
 
-/**
- * Adds one or more nodes to the beginning of this node's children list.
- * 
- * @method prepend
- * @param {(String|BBM[]|BBM)} [content] @see BBM.append
- * @return {BBM} The modified BBM instance.
- */
 fn.prepend = function (content)
 {
  var eles = procArgs(content, this);
@@ -370,14 +246,6 @@ fn.prepend = function (content)
 };
 
 
-/**
- * Replaces the current node with some other content in its belonging subtree. 
- * If the current node has no parent, this operation does nothing.
- * 
- * @method replaceWith
- * @param {(String|BBM[]|BBM)} [content] @see BBM.append
- * @return {BBM} The current node detached from its belonging subtree.
- */
 fn.replaceWith = function (content)
 {
  var pos = this.parent() ? this.parent().children().indexOf(this) : -1;
@@ -388,16 +256,6 @@ fn.replaceWith = function (content)
  return this;
 };
 
-
-/**
- * The inverse operation of BBM.replaceWith; The current node will take 
- * the place of the target node, if the target is a BBM instance and it 
- * has a parent node. Otherwise, this operation does nothing.
- *
- * @method replace
- * @param {BBM} [target] The target node to replace with the current node.
- * @return {BBM} The current node attached to the target's subtree.
- */
 fn.replace = function (target)
 {
  if (BBM.isNode(target))
@@ -471,31 +329,13 @@ fn.rebuildChild = function (callback)
 // Subtree Iteration
 // -----------------
 
-/**
- * Iterates the node's subtree using depth-first, pre-order traversal, 
- * executing the callback once per node.
- *
- * @method eachPre
- * @param {function} callback Called on each child node being visited.
- * @param {anything} [params] Extra parameter to be supplied to the callback.
- * @return {BBM} The current node that started the traversal.
- */
+
 fn.eachPre = function (callback, params)
 {
  return eachPre(this, this, callback, params);
 };
 
 
-/**
- * As BBM.eachPre, but returns an Array of nodes that the returns a truthy 
- * value within the callback function.
- *
- * @method find
- * @param {function} callback Called on each child node being visited.
- * @param {anything} [params] Extra parameter to be supplied to the callback.
- * @return {BBM} The current node that started the traversal.
- * @see BBM.eachPre 
- */
 fn.find = function (callback, params)
 {
  var res = [];
@@ -509,15 +349,6 @@ fn.find = function (callback, params)
 };
 
 
-/**
- * Iterates the node's subtree using depth-first, post-order traversal, 
- * executing the callback once per node.
- *
- * @method eachPost
- * @param {function} callback Called on each child node being visited.
- * @param {anything} [params] Extra parameter to be supplied to the callback.
- * @return {BBM} The current node that started the traversal.
- */
 fn.eachPost = function (callback, params)
 {
  return eachPost(this, this, callback, params);
@@ -528,17 +359,6 @@ fn.eachPost = function (callback, params)
 // Attributes, Properties, and Class Extension
 // -------------------------------------------
 
-/**
- * Retrieves or sets the text value of this node. If the text value retrieved
- * is not the empty String `""`, this node is considered a text node.
- *
- * This method adds an extra property `_value` to the current BBM instance.
- * 
- * @method text
- * @param {(String|Number)} [val] The text value to set the node's value to.
- * @return {(this|String)} The current node if no parameter is supplied; 
-   Returns the node's text value otherwise.
- */
 fn.text = function (val)
 {
  if (arguments.length === 0)
@@ -553,20 +373,6 @@ fn.text = function (val)
 };
 
 
-/**
- * Retrieves or sets the attributes of this node.
- * @name BBM
- * @method attr
- * @param {(String|Object)} [key] An object to merge its properties into
-   the node's attributes, or a String denoting the attribute key to set.
- * @param {(String|Number)} [val] The attribute value for the corresponding 
-   key. Omitted if the key parameter is an object.
- * @return {(Object|String|BBM)} 
-   - If no parameter is supplied, returns the node's attribute object.
-   - If only the key is supplied and it's not an object, returns the 
-     corresponding attribute value.
-   - Returns the current node otherwise.
- */
 fn.attr = function (key, val)
 {
  if (__.isObject(key))
@@ -589,14 +395,6 @@ fn.attr = function (key, val)
 };
 
 
-/**
- * Removes attributes from the node.
- * 
- * @method removeAttr
- * @param {(String|Number)} [key] The attribute key to remove. If omitted,
-   removes all attribute key value pairs instead.
- * @return {BBM} The modified BBM instance with attributes removed.
- */
 fn.removeAttr = function (key)
 {
  if (arguments.length >= 1)
@@ -629,14 +427,7 @@ fn.type = function (newType)
  return this;
 };
 
-/**
- * Converts the current node into JSON-compatible format for use with 
- * `JSON.stringify()`. Do not use this method to obtain a JSON string of the 
- * subtree; Use `JSON.stringify(node, null, " ")` instead.
- *
- * @method toJSON
- * @return {Object} A clone of the current node without the BBM prototype.
- */
+
 fn.toJSON = function ()
 {
  var obj = __.extend({}, this);

@@ -17,12 +17,6 @@ function pruneID(node, idList)
  }
 }
 
-/**
- * Eliminate duplicate CSS identifiers
- *
- * @method pruneID
- * @return {BBM} The current node with no duplicate IDs in its subtree.
- */
 BBM.fn.pruneID = function ()
 {
  return this.eachPre(pruneID, {});

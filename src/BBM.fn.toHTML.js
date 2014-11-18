@@ -171,25 +171,6 @@ function printHTML(node, opts)
  return str;
 }
 
-
-/**
- * @method BBM.fn.toHTML
- * @param {Object} options Configuration object for code generation. The
- * following options are available:
- * 
- *   - **[maxAttrChars=2048]** *Number* The maximum number of characters 
- *     allowed in attribute values and keys.
- *
- *   - **[headerOffset=0]** *Number* Increments header tags' level in the 
- *     output. E.g: For a headerOffset of 1, `<h1>` will become `<h2>`, and 
- *     `<h2>` will become `<h3>`, and so on, up to a maximum of `<h6>`.
- *
- *   - **[xhtml=false]** *Boolean* If true, output XHTML-compliant HTML.
- *
- *   - **[comments=false]** *Boolean* If true, output HTML comments.
- * 
- * @return {String} The HTML Output of this Subtree.
- */
 BBM.fn.toHTML = function (options)
 {
  var opts = __.extend({}, options);

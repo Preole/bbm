@@ -105,14 +105,6 @@ function pruneList(node)
  }
 }
 
-/**
- * Fleshes out intermediate node type into officially recognized types, 
- * such as collapsing bullet list blocks into a formal bullet list.
- *
- * @method pruneList
- * @return {BBM} The current node, with subtrees containing nodes with 
-   leading underscore type name pruned.
- */
 BBM.fn.pruneList = function ()
 {
  return this.eachPost(pruneList);

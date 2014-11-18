@@ -384,30 +384,6 @@ function parseCode(lexer, lexTok)
 
 
 
-/**
- * Parses a piece of text into its abstract syntax tree representation for
- * further processing and manipulation.
- * 
- * @method parse
- * @static
- * @param {String} bbmStr The text to be parsed, written in BareBonesMarkup.
- * @param {Number} [maxDepth=8] The maximum allowed nesting level. Text 
-   blocks exceeding this nesting limit shall be interpreted as paragraphs 
-   instead of a block capable of nesting, such as blockquotes and nested 
-   bullet lists.
- * @return {BBM} The abstract syntax tree obtained from the parsing run.
-   The tree nodes, in addition to their the base instance properties, shall 
-   have the following properties for specific types of nodes:
- 
-   - **HEADER**: (Number) level; The heading level of the node. "1" 
-     denotes the most important heading, while "2" and higher are increasingly 
-     less important heading, similar to HTML's `<h1>` ... `<h6>` tags.
-     
-   - **ROOT**: (Object) symTable; A key-value pair mapping between 
-     identifiers and URL values used for URL substitution within LINK_INT, 
-     LINK_EXT, LINK_WIKI and LINK_IMG elements. These key value pairs are 
-     guaranteed to be non-blank (Contains at least one visible character)
- */
 BBM.parse = function (bbmStr, maxDepth)
 {
  var lexer = Lexer.isLexer(bbmStr) ? bbmStr : Lexer(bbmStr);
@@ -423,16 +399,6 @@ BBM.parse = function (bbmStr, maxDepth)
  return lexer.root.prune();
 };
 
-/**
- * Parses a piece of text into its abstract syntax tree representation, 
- * replacing the current node's children list with the parsed syntax tree.
- * 
- * @method parse
- * @param {String} bbmStr The text to be parsed, written in BareBonesMarkup.
- * @param {Number} [maxDepth=8] The maximum allowed nesting level.
- * @return {BBM} The current node with its subtree content replaced.
- * @see BBM.parse
- */
 BBM.fn.parse = function (bbmStr, maxDepth)
 {
  return this.empty().append(BBM.parse(bbmStr, maxDepth).children());

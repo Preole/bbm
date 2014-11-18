@@ -1,80 +1,55 @@
 
 "use strict";
 
-/**
- * BareBonesMarkup Lexer class. Used to separate BBM string into lexical 
- * tokens.
- *
- * @class BBM.Lexer
- * @static
- * @param {String} bbmStr The BareBonesMarkup string to analyze into tokens.
- * @property {Array.LexToken} _tokens The array of analyzed lexical tokens.
- * @property {Number} minCol The minimum required column count in certain
-   parsing contexts, such as bullet lists.
- * @property {Number} pos The index of the token currently being pointed to.
- * @property {Number} mark The index to stop the iteration methods from 
-   going past. The affected methods are:
-   
-   - peekUntil(callback, extras)
-   - nextUntil(callback, extras)
-   - nextPast(callback, extras)
-   - textUntil(callback, extras, minCol)
-   - textPast(callback, extras, minCol)
-   
- * @return {Lexer} The newly created Lexer object.
- */
 var Lexer = module.exports = (function (){
-
-// Private Lexical Analysis Work
-// -----------------------------
-
-
 
 var RULES = (function (){
 
-var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
-var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
-var EOL = "(?=" + NL + "|$)";
-var Rule = function (name, pattern)
-{
- return {name : name, pattern : pattern};
-};
-return [
-  Rule("ESCAPE"   , "\\\\[\\S]")
-, Rule("TH"       , "!!" + WS)
-, Rule("TD"       , "\\|\\|" + WS)
-, Rule("TRSEP"    , "\\|[=]+" + EOL)
-, Rule("ATX_END"  , "=+" + EOL)
-, Rule("ATX"      , "=+")
-, Rule("HR"       , "-{4,}" + EOL)
-, Rule("COMMENT"  , "/{4,}" + EOL)
-, Rule("CLASS"    , "\\.\\." + WS)
-, Rule("ID"       , "\\." + WS)
-, Rule("GT"       , ">")
-, Rule("REF"      , ":{")
-, Rule("REF_END"  , "}:")
-, Rule("DD"       , ":" + WS)
-, Rule("DT"       , ";" + WS)
-, Rule("DIV"      , "\\*{4,}" + EOL)
-, Rule("OL"       , "[0-9#]+\\." + WS)
-, Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS)
-, Rule("PRE"      , "`{3,}" + EOL)
-, Rule("CODE"     , "`+")
-, Rule("DEL"      , "--")
-, Rule("BOLD"     , "\\*{2}")
-, Rule("SUP"      , "\\^{2}")
-, Rule("SUB"      , ",,")
-, Rule("UNDER"    , "__")
-, Rule("EM"       , "''")
-, Rule("LINK_EXT" , "\\?<")
-, Rule("LINK_IMG" , "!<")
-, Rule("LINK_WIKI", "#<")
-, Rule("LINK_INT" , "#\\[")
-, Rule("LINK_CONT", "-\\[")
-, Rule("BRACKET_R", "\\]")
-, Rule("NL"       , NL)
-, Rule("WS"       , WS + "+")
-];
+ var WS = "[ \\t\\u00a0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]";
+ var NL = "[\\v\\f\\n\u0085\u2028\u2029]|\\r\\n?";
+ var EOL = "(?=" + NL + "|$)";
+ var Rule = function (name, pattern)
+ {
+  return {name : name, pattern : pattern};
+ };
+
+ return [
+   Rule("ESCAPE"   , "\\\\[\\S]")
+ , Rule("TH"       , "!!" + WS)
+ , Rule("TD"       , "\\|\\|" + WS)
+ , Rule("TRSEP"    , "\\|[=]+" + EOL)
+ , Rule("ATX_END"  , "=+" + EOL)
+ , Rule("ATX"      , "=+")
+ , Rule("HR"       , "-{4,}" + EOL)
+ , Rule("COMMENT"  , "/{4,}" + EOL)
+ , Rule("CLASS"    , "\\.\\." + WS)
+ , Rule("ID"       , "\\." + WS)
+ , Rule("GT"       , ">")
+ , Rule("REF"      , ":{")
+ , Rule("REF_END"  , "}:")
+ , Rule("DD"       , ":" + WS)
+ , Rule("DT"       , ";" + WS)
+ , Rule("DIV"      , "\\*{4,}" + EOL)
+ , Rule("OL"       , "[0-9#]+\\." + WS)
+ , Rule("UL"       , "[\\-\\+\\*\\u2022\\u2043]" + WS)
+ , Rule("PRE"      , "`{3,}" + EOL)
+ , Rule("CODE"     , "`+")
+ , Rule("DEL"      , "--")
+ , Rule("BOLD"     , "\\*{2}")
+ , Rule("SUP"      , "\\^{2}")
+ , Rule("SUB"      , ",,")
+ , Rule("UNDER"    , "__")
+ , Rule("EM"       , "''")
+ , Rule("LINK_EXT" , "\\?<")
+ , Rule("LINK_IMG" , "!<")
+ , Rule("LINK_WIKI", "#<")
+ , Rule("LINK_INT" , "#\\[")
+ , Rule("LINK_CONT", "-\\[")
+ , Rule("BRACKET_R", "\\]")
+ , Rule("NL"       , NL)
+ , Rule("WS"       , WS + "+")
+ ];
+
 }());
 
 var REGEX = (function (){

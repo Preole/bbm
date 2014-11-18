@@ -3,7 +3,7 @@
 var webpack = require("webpack");
 var webpackOpt =
 {
-  entry : "./src/main.js"
+  entry : "./index.js"
 , output :
   {
     filename : "./dist/BBM.js"
@@ -12,7 +12,7 @@ var webpackOpt =
 };
 var webpackOptMin =
 {
-  entry : "./src/main.js"
+  entry : "./index.js"
 , plugins : [new webpack.optimize.UglifyJsPlugin({mangle: true, minimize: true})]
 , output :
   {

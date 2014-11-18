@@ -20,14 +20,6 @@ function pruneURL(node, symTable)
  }
 }
 
-/**
- * Performs URL substitution within the subtree, changing ID-URL pairs in 
- * the symbol table to corresponding identifiers inside hyperlink and image
- * elements.
- *
- * @method pruneURL
- * @return {BBM} The current node after URL substitution.
- */
 BBM.fn.pruneURL = function ()
 {
  return __.isObject(this.symTable)

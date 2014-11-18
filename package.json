@@ -3,7 +3,6 @@
 , "author": "Preole Soandso"
 , "version": "2.0.0"
 , "description": "BareBonesMarkup: Experimental Lightweight Markup Language"
-, "main": "./dist/BBM.min.js"
 , "repository":
   {
     "type": "git"
@@ -23,8 +22,8 @@
   {
     "diff": "^1.0.8"
   , "glob": "^4.0.6"
-  , "markdox": "^0.1.7"
   , "webpack": "^1.4.9"
+  , "jshint": "^2.5.10"
   }
 , "engines":
   {
@@ -36,6 +35,7 @@
   , "hint" : "node s-lint.js"
   , "build" : "node s-lint.js && node s-build.js"
   , "test" : "node s-lint.js && node s-build.js && node s-test.js"
-  , "prepublish" : "npm s-release.js"
+  , "clean" : ""
+  , "prepublish" : "npm run test && npm publish ."
   }
 }

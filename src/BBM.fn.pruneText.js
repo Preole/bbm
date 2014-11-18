@@ -30,14 +30,6 @@ function pruneText(node)
  }
 }
 
-
-/**
- * Collapses consecutive text nodes into a single text node in the subtree.
- *
- * @method pruneText
- * @return {BBM} The current node with consecutive text nodes in its subtree 
- * combined.
- */
 BBM.fn.pruneText = function ()
 {
  return this.eachPre(pruneText);
