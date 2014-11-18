@@ -1,0 +1,41 @@
+API Documentation Generation
+============================
+
+1. Rent a website to host the documentation; Let HTML-generating 
+   documentation tools do the grunt work. The options are:
+   
+   - jsdoc
+   - docco
+   - yuidoc
+   
+2. Use a Javadoc -> Markdown converter, and host the API reference file 
+   on github.
+   
+   - markdox
+   - jsdox
+
+3. Use an existing Javadoc parser, then write the code generator myself 
+   using *dox*.
+
+4. Write everything myself including the parser. Such a parser will be able 
+   to document languages listed in Javadoc Supported Programming Languages 
+   as well.
+
+5. None; Just hand-write the API.
+
+
+
+Javadoc Supported Programming Languages
+---------------------------------------
+
+- C
+- C++
+- C#
+- Objective-C
+- Ruby
+- Java
+- Scala
+- Javascript
+- PHP
+- Dart
+
