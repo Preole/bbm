@@ -1,7 +1,7 @@
-BakaBakaMark Syntax Reference
-=============================
+BareBonesMarkup Syntax Reference
+================================
 
-This document contains BakaBakaMark's syntax reference in full. It's a comprehensive guide to the language, providing a simple introduction as well as an in-depth walk through.
+This document contains BareBonesMarkup's syntax reference in full. It's a comprehensive guide to the language, providing a simple introduction as well as an in-depth walk through.
 
 
 
@@ -20,7 +20,7 @@ Table of Contents
   * #[Block Level Elements]
   
     * #[Paragraphs]
-    * #[Fenced Code Blocks]
+    * #[Preformatted Blocks]
     * #[Blockquotes]
     * #[Headers]
     * #[Horizontal Lines]
@@ -33,7 +33,7 @@ Table of Contents
     * #[Tables]
     * #[Comment Block]
     * #[Block Stopper]
-    * #[Aside Blocks]
+    * #[Div Blocks]
     * #[Reference Link Anchors]
     * #[Class Label]
     * #[ID Label]
@@ -58,7 +58,7 @@ Prelude
 . HTML-Specific Issue
 === HTML-Specific Issue ===
 
-One should never worry about HTML entity escaping when generating a HTML document. BakaBakaMark will automatically take care of the sanitization.
+One should never worry about HTML entity escaping when generating a HTML document. BareBonesMarkup will automatically take care of the sanitization.
 
 ```
 &lt;script src="&quot;&amp;&quot;"&gt;
@@ -70,23 +70,23 @@ alert("xss");
 . A Word on Indentation
 === A Word on Indentation ===
 
-1. Indentation is syntactically significant in BakaBakaMark, which is used to control document structures.
-2. There is no `\\t`, or horizontal tabs in BakaBakaMark. **One tab key-press equates to one space character** for the purpose of determining indentation level.
+1. Indentation is syntactically significant in BareBonesMarkup, which is used to control document structures.
+2. There is no `\\t`, or horizontal tabs in BareBonesMarkup. **One tab key-press equates to one space character** for the purpose of determining indentation level.
 3. If you prefer to use the tab key to produce indentation, configure your text editor to insert X spaces instead of tab characters on tab key press, where X is your preferred indentation unit.
-4. There is no forced line break syntax, invisible or otherwise. Use #[Fenced Code Block] if line breaks and white spaces need to be preserved.
+4. There is no forced line break syntax, invisible or otherwise. Use #[Preformatted Blocks] if line breaks and white spaces need to be preserved.
 
 
 Main Syntax
 -----------
 
-This section is a quick overview of everything you need to lookup about BakaBakaMark. For each basic element in this language, I will provide a short, but comprehensive demonstration for that element.
+This section is a quick overview of everything you need to lookup about BareBonesMarkup. For each basic element in this language, I will provide a short, but comprehensive demonstration for that element.
 
 
 
 . Block Level Elements
 === Block Level Elements ===
 
-Block level elements in BakaBakaMark, like block elements in HTML, are elements that are displayed as 'blocks'. They're displayed as rectangular boxes that are stretched as high and wide as they can be, within reason. In general, they serve as containers for other elements in the document, such as plain text.
+Block level elements in BareBonesMarkup, like block elements in HTML, are elements that are displayed as 'blocks'. They're displayed as rectangular boxes that are stretched as high and wide as they can be, within reason. In general, they serve as containers for other elements in the document, such as plain text.
 
 |====
 !! Feature
@@ -112,14 +112,14 @@ Block level elements in BakaBakaMark, like block elements in HTML, are elements 
    </p>
    ```
 |====
-!! Fenced Code Block
+!! Preformatted Block
 || ```
    \```
    This 
    
      Is
      
-   Fenced code block.
+   Preformatted Block.
    
    
    Spaces    and newlines are preserved.
@@ -130,21 +130,22 @@ Block level elements in BakaBakaMark, like block elements in HTML, are elements 
 
      Is
 
-   Fenced code block.
+   Preformatted Block.
 
 
    Spaces    and newlines are preserved.
    ```
 || ```
-   <pre><code>This 
+   <pre>
+   This 
 
      Is
 
-   Fenced code block.
+   Preformatted Block.
 
 
    Spaces    and newlines are preserved.
-   </code></pre>
+   </pre>
    ```
 |====
 !! Blockquote
@@ -319,7 +320,7 @@ Block level elements in BakaBakaMark, like block elements in HTML, are elements 
    </table>
    ```
 |====
-!! Aside block
+!! Div block
 || ```
    ****
    Arbitrary block-level container.
@@ -368,13 +369,9 @@ Block level elements in BakaBakaMark, like block elements in HTML, are elements 
 . Paragraphs
 ==== Paragraphs ====
  
-To generate a paragraph, type away. This is the basic building block of most 
-kinds of writing. To generate multiple paragraphs, put one or more blank 
-lines in between by pressing the **Enter** key at least twice.
+To generate a paragraph, type away. This is the basic building block of most kinds of writing. To generate multiple paragraphs, put one or more blank lines in between by pressing the **Enter** key at least twice.
 
-Paragraph text need to be lined up against the block's left margin, which 
-is determined by the indentation of first visible character that started 
-the paragraph block. Specifically:
+Paragraph text need to be lined up against the block's left margin, which is determined by the indentation of first visible character that started the paragraph block. Specifically:
 
 ```
   Preferably, Everything is lining up
@@ -391,25 +388,25 @@ breaks an ongoing paragraph into two.
 ```
 
 
-. Fenced Code Blocks
-==== Fenced Code Blocks ====
+. Preformatted Blocks
+==== Preformatted Blocks ====
 
-Three or more backticks (Grave accent) `\`` on a blank line starts a fenced code block. No BakaBakaMark syntax will be parsed inside, and all white space as well as invisible line breaks shall be preserved.
+Three or more backticks (Grave accent) `\`` on a blank line starts a preformatted block. No BareBonesMarkup syntax will be parsed inside, and all white space as well as invisible line breaks shall be preserved.
 
-To end a fenced code block, use the same number of backticks on another blank line, on the same column as the opening fence.
+To end a preformatted block, use the same number of backticks on another blank line, on the same column as the opening fence.
 
 ```
 \```
 This
   Is
-Fenced
-  Code Block
+Preformatted
+  Block
 \```
 ```
 
-Any negatively indented text in the fenced code block shall be treated as having no indentation.
+Any negatively indented text in the preformatted block shall be treated as having no indentation.
 
-Forgetting to close a fenced code block will turn the rest of the document into a code block.
+Forgetting to close a preformatted block will turn the rest of the document into a preformatted block.
 
 
 
@@ -453,7 +450,7 @@ Unlike Usenet-style quoting, only the starting line needs to be prefixed. All ot
 . Headers
 ==== Headers ====
 
-BakaBakaMark supports two kinds of headers: The "One-Liner" and the multi-line SeTeXT style header. 
+BareBonesMarkup supports two kinds of headers: The "One-Liner" and the multi-line SeTeXT style header. 
 
 For the One-Liner, begin a line with one or more equal signs `=`, followed by one space. If you're aesthetically inclined, you can end the one-liner with equal signs as well. These equal signs shall not be rendered in the output.
 
@@ -514,7 +511,7 @@ In HTML, this shall render as <hr>.
 . Lists
 ==== Lists ====
 
-There are three different types of list structures available in BakaBakaMark: Bullet Lists, Ordered Lists, and Definition Lists. 
+There are three different types of list structures available in BareBonesMarkup: Bullet Lists, Ordered Lists, and Definition Lists. 
 
 
 
@@ -546,7 +543,7 @@ Bullet lists can be nested in the same way as blockquotes. Use indentation to de
     > A blockquote.
     
     ```
-    A code block
+    A Preformatted Block
       Positive indentation.
     ```
     
@@ -570,7 +567,7 @@ Bullet lists can be nested in the same way as blockquotes. Use indentation to de
     > A blockquote.
     
     ```
-    A code block
+    A Preformatted Block
       Positive indentation.
     ```
     
@@ -603,8 +600,7 @@ Ordered List follow the same rule as bullet list, except you start a line with a
 
 
 
-Use a block comment to break a consecutive list into two, which will not 
-be rendered unless it's inside a code block.
+Use a block comment to break a consecutive list into two, which will not be rendered unless it's inside a Preformatted Block.
 
 1. Item 1
 2. Item 2
@@ -690,7 +686,7 @@ Terms at the end of the list, and descriptions at the beginning of the list shal
 . Tables
 ==== Tables ====
 
-BakaBakaMark provides simple table support with two kinds of cells; A header cell and an ordinary data cell. They may be nested, and they may contain other block elements similar to the rules used by blockquotes and other block level elements.
+BareBonesMarkup provides simple table support with two kinds of cells; A header cell and an ordinary data cell. They may be nested, and they may contain other block elements similar to the rules used by blockquotes and other block level elements.
 
 A table cell begins with two pipe symbols `||`, while a header cell uses exclaimation mark instead. `!!`. Consecutive table cells or header cells are merged into a table row, while a row separator consisting of a pipe and at least one equal signs `|===` denotes a new row start.
 
@@ -729,12 +725,10 @@ around the table. This does not affect the output in any way.
 
 Here's a short list of table semantics:
 
-- The table's first row determines the number of columns the table shall 
-  have on each row.
+- The table's first row determines the number of columns the table shall have on each row.
 - Rows with too many columns (cells) shall be trimmed. 
 - Empty rows are dropped.
-- Rows with at least one cell declared shall be padded with empty cells, 
-  up to the table's declared column count.
+- Rows with at least one cell declared shall be padded with empty cells, up to the table's declared column count.
 
 
 
@@ -756,22 +750,22 @@ This shall not be rendered in the output.
 
 
 
-. Aside Blocks
-==== Aside Blocks ====
+. Div Blocks
+==== Div Blocks ====
 
 This element is a generic block wrapper that can contain other block elements, used to apply presentational styles and provide link anchors in conjunction with #[ID Label] and #[ID Class].
 
-Begin a line with four or more asterisks, then fill in the block elements starting on the next line. End the Aside Block with the same number of asterisks on a blank line on the same column as the starting asterisks.
+Begin a line with four or more asterisks, then fill in the block elements starting on the next line. End the Div Block with the same number of asterisks on a blank line on the same column as the starting asterisks.
 
 ```
 ****
-This is an Aside
+This is an Div
 ****
 
 -->
 
 <div>
-<p>this is an Aside</p>
+<p>this is an Div</p>
 </div>
 ```
 
@@ -868,7 +862,7 @@ Inline elements are syntactical constructs that occur within lines of text. Thei
 . Text Formatting
 ==== Text Formatting ====
 
-The following table details the text formatting elements available in BakaBakaMark.
+The following table details the text formatting elements available in BareBonesMarkup.
 
 |====
 !! Effect Desired
@@ -922,11 +916,7 @@ hyperlinks as well.
 
 ; Proper Tag Nesting
 
-: Make sure the opening and closing formatting tags are properly nested. 
-  That is, it's wrong to have two different text formatting tags cross into 
-  each others' boundaries.
-  
-  ```
+: ```
   **Bold ''**Not Italic''
   ```
   
@@ -935,8 +925,7 @@ hyperlinks as well.
   
 ; Close Off Tags.
 
-: Remember to close the formatting tags. Failing to close the tag will apply 
-  the formatting effect to the rest of the paragraph.
+: Remember to close the formatting tags.
   
   ```
   **This is bold. ''This will be bold and italic.''
@@ -955,8 +944,7 @@ hyperlinks as well.
   
 ; Code Snippets
 
-: Code Snippets can only be closed using the same number of backticks 
-  characters.
+: Close Code Snippets using the same number of backticks characters.
   
   ```
   `Code `` Still Code` No longer code.
@@ -1056,10 +1044,7 @@ If you need to use closing square brackets in the alt text, escape it with a bac
 omitted.]
 ```
 
-You may start the square brackets on a different line if you want a cleaner 
-looking source document, as long as the hyphen is right before the opening 
-square bracket, and there's no visible character between the hyperlink and 
-the closing angle bracket.
+You may start the square brackets on a different line if you want a cleaner looking source document, as long as the hyphen is right before the opening square bracket, and there's no visible character between the hyperlink and the closing angle bracket.
 
 ```
 !<http://[... Some very long URL]>
@@ -1125,15 +1110,9 @@ Anything else not covered by the main syntax.
 . Backslash Escape
 ==== Backslash Escape ====
 
-To render a visible character literally without intrepretation, prepend a 
-backslash `\\` before the character. (Exception: Spaces and line breaks)
+To render a visible character literally without intrepretation, prepend a backslash `\\` before the character. (Exception: Spaces and line breaks) \*\*This sentence is not bold.\*\*
 
-\*\*This sentence is not bold.\*\*
-
-The backslash character will always be dropped from the output, so if you 
-need to type a backslash character itself, use two backslashes: `\\\\`. 
-Let's suppose we want to represent the popular regular expression for leading 
-and trailing spaces. Here's the input:
+The backslash character will always be dropped from the output, so if you need to type a backslash character itself, use two backslashes: `\\\\`. Let's suppose we want to represent the popular regular expression for leading and trailing spaces. Here's the input:
 
 ```
 [^\\\\s|\\\\s$]

@@ -1,11 +1,11 @@
-BakaBakaMark EBNF Grammar Version 2.0.0
-=======================================
+BareBonesMarkup EBNF Grammar Version 2.0.0
+==========================================
 
 Start Symbols
 -------------
 
 ```
-BakaBakaMark
+BareBonesMarkup
  | Blocks EOF
  ;
 
@@ -21,7 +21,7 @@ Block
  | SPACES?
    (
    | Div
-   | CodeBlock 
+   | PreBlock 
    | BlockQuote
    | List 
    | DefList
@@ -50,15 +50,11 @@ Div
  ;
 ```
 
-Arbitrary block-level container to be transformed with the BlockID or 
-BlockClass elements.
+Arbitrary block-level container to be transformed with the BlockID or BlockClass elements.
 
-For a ```Div``` to terminate gracefully, the number of asterisks in the 
-closing delimiter token must be the same as the starting token's. Moreover, 
-these asterisks must start on the same column on a blank line.
+For a ```Div``` to terminate gracefully, the number of asterisks in the closing delimiter token must be the same as the starting token's. Moreover, these asterisks must start on the same column on a blank line.
 
-See also: **Block Element Indentation Rules** for nesting other block elements 
-inside the Div block.
+See also: **Block Element Indentation Rules** for nesting other block elements inside the Div block.
 
 
 
@@ -74,31 +70,23 @@ BlockClass
  ;
 ```
 
-The ```BlockID``` and ```BlockClass``` parses the rest of the content on 
-its line as a CSS class or ID, **One value per line**. These values will be 
-applied to the next content-holding sibling block element in the tree in 
-the following ways:
+The ```BlockID``` and ```BlockClass``` parses the rest of the content on its line as a CSS class or ID. These values will be applied to the next content-holding sibling block element in the tree in the following ways:
 
 ; BlockID
 : Replace the next node's "id" attribute.
 
 ; BlockClass
-: If the next node has a "class" attribute, the next node's class attribute 
-  value becomes the following text with leading and trailing white spaces 
-  and line breaks stripped.
+: If the next node has a "class" attribute, the next node's class attribute value becomes the following text with leading and trailing white spaces and line breaks stripped.
   
   1. This node's class attribute value, and
   2. One ASCII space character " ". (U+0020), and
   3. The next node's class attribute value.
   
-  Otherwise, the next node's attribute value becomes this node's class 
-  attribute value.
+  Otherwise, the next node's attribute value becomes this node's class attribute value.
 
-The CSS class or ID values must have at least one character after stripping 
-leading or trailing white space to be considered effective.
+The CSS class or ID values must have at least one character after stripping leading or trailing white space to be considered effective.
 
-In case of BlockID, the ID value must not have been defined earlier in the 
-document.
+In case of BlockID, the ID value must not have been defined earlier in the document.
 
 ```
 . Fig1
@@ -141,9 +129,7 @@ ATXContent
  ;
 ```
 
-One-liner header. Inline formatting constructs are effective like a regular 
-paragraph, but the text cannot contain any line break characters or end with 
-an ```ATX_END``` token. See also: **Inline-Level Grammar**.
+One-liner header. Inline formatting constructs are effective like a regular paragraph, but the text cannot contain any line break characters or end with an `ATX_END` token. See also: **Inline-Level Grammar**.
 
 
 
@@ -156,38 +142,32 @@ BlockQuote
  ;
 ```
 
-For nesting blocks inside a block quote, See **Block Element Indentation 
-Rules**.
+For nesting blocks inside a block quote, See **Block Element Indentation Rules**.
 
 
 
 
 
 
-=== Code Block ===
+=== PreBlock ===
 
 ```
-CodeBlock
- | CODE_FENCE
-   [~(CODE_FENCE)]+
-   (?<=NL | NL SPACES) CODE_FENCE
+PreBlock
+ | PRE
+   [~(PRE)]+
+   (?<=NL | NL SPACES) PRE
  ;
 ```
 
-All white space and line breaks are preserved. No grammar rule interpretation 
-will occur inside the block, except for the closing `CODE_FENCE` token. 
+All white space and line breaks are preserved. No grammar rule interpretation will occur inside the block.
 
-Only a matching `CODE_FENCE` token will be able to close a code block. 
-Failure to close the block results interpreting the rest of the document 
-as a CodeBlock. A matching CODE_FENCE token is one that...
+Only a matching `PRE` token will be able to close a PreBlock. Failure to close the block results interpreting the rest of the document as a PreBlock. A matching PRE token is one that...
 
 1. Has the same number of backticks `\`` as the fence.
 2. Starts on the same column as the starting fence.
-3. The only token on its line.
+3. Is the only token on its line.
 
-In case of an indented CodeBlock, all lines shall be trimmed N leading white 
-space characters defined by **WS**, where N is the number of space characters 
-preceding the line.
+In case of an indented PreBlock, all lines shall be trimmed N leading white space characters defined by **WS**, where N is the number of space characters preceding the line.
 
 
 
@@ -195,13 +175,13 @@ preceding the line.
 
 ```
 CommentBlock
- | COMMENT_DELIM 
-   [~(COMMENT_DELIM)]+
-   (?<=NL | NL SPACES) COMMENT_DELIM
+ | COMMENT 
+   [~(COMMENT)]+
+   (?<=NL | NL SPACES) COMMENT
  ;
 ```
 
-Same as CodeBlock, except it will not be rendered in the output by default.
+Same as PreBlock, except it will not be rendered in the output by default.
 
 
 
@@ -226,17 +206,14 @@ URLAnchor
  ;
 ```
 
-A reference link anchor (URLAnchor) has non-empty two components after their 
-leading and trailing white space characters trimmed.
+A reference link anchor (URLAnchor) has non-empty two components after their leading and trailing white space characters trimmed.
 
 1. The ID stored inside the braces, `:{ID}:`, 
 2. The URL on the rest of the line.
 
-If both values are not empty after trimming, this node shall create a ID:URL
-mapping in the global URL symbol table. Subsequent ID:URL mapping with 
-duplicate ID shall override the previously defined URL value.
+If both values are not empty after trimming, this node shall create a ID:URL mapping in the global URL symbol table. Subsequent ID:URL mapping with duplicate ID shall override the previously defined URL value.
 
-This node has no visible rendering.
+This node has no visible rendering, and does not occupy a spot in the abstract syntax tree.
 
 
 
@@ -261,8 +238,7 @@ UL_ListItem
  ;
 ```
 
-See also **Block Element Indentation Rules** for nested lists, block quotes,
-and tables.
+See also **Block Element Indentation Rules** for nested lists, block quotes, and tables.
 
 
 
@@ -290,15 +266,11 @@ DefDesc
  ;
 ```
 
-The Paragraph in the DefTerm node should contain the children of the 
-Paragraph node, not the paragraph node itself.
+The Paragraph in the DefTerm node should contain the children of the Paragraph node, not the paragraph node itself.
 
-A definition list continues so long as it keeps encountering definition terms 
-and definition descriptions (DD) blocks. Logical structures of the DefDesc 
-element is determined by **Block Element Indentation Rules**.
+A definition list continues so long as it keeps encountering definition terms and definition descriptions (DD) blocks. Logical structures of the DefDesc element is determined by **Block Element Indentation Rules**.
 
-DD nodes at the beginning of the list, and DT nodes at the end of the list 
-are to be removed from the syntax tree.
+DD nodes at the beginning of the list, and DT nodes at the end of the list are to be removed from the syntax tree.
 
 
 
@@ -332,9 +304,7 @@ TableCellContent
  ;
 ```
 
-TABLE_ROW_DELIM tokens that is not immediately followed or preceded by either 
-a TableCell or a TableHead element has no effect. Specifically, it should 
-produce no output.
+TABLE_ROW_DELIM tokens that is not immediately followed or preceded by either a TableCell or a TableHead element has no effect. Specifically, it should produce no output.
 
 ```
 |======
@@ -342,14 +312,9 @@ produce no output.
 |======
 ```
 
-A table starts as soon as there's either a TableHead or TableCell element, 
-which starts the table's first row, and its size determines the number of 
-columns each row in the table must contain.
+A table starts as soon as there's either a TableHead or TableCell element, which starts the table's first row, and its size determines the number of columns each row in the table must contain.
 
-Subsequent rows in the table, if they contain at least one cell, and their 
-column count differ from the first row's, shall have extra columns discarded, 
-and empty columns padded with empty cells. Table rows that have no cell are 
-removed from the syntax tree.
+Subsequent rows in the table, if they contain at least one cell, and their column count differ from the first row's, shall have extra columns discarded, and empty columns padded with empty cells. Table rows that have no cell are removed from the syntax tree.
 
 ```
 |=====
@@ -405,17 +370,14 @@ ParaEndSetextH2
  The paragraph ends and is promoted to a `<h2>` element.
 ```
 
-A paragraph begins with a visible character, and continues as long as 
-it doesn't encounter one of the four following conditions:
+A paragraph begins with a visible character, and continues as long as it doesn't encounter one of the four following conditions:
 
-- If the paragraph starts on column X > 0, and a non-white space character 
-  appears in column N < X.
+- If the paragraph starts on column X > 0, and a non-white space character appears in column N < X.
 - A blank line.
 - A line started by a Setext delimiter (HorizontalRule or ATX_END)
 - A line started by a Div delimiter (DIV_DELIM)
 
-After determining the boundary of the paragraph, its contents (ParaContent) 
-are subject to the rules described in the section **Inline-Level Grammar**.
+After determining the boundary of the paragraph, its contents (ParaContent) are subject to the rules described in the section **Inline-Level Grammar**.
 
 
 
@@ -424,20 +386,13 @@ are subject to the rules described in the section **Inline-Level Grammar**.
 Block Element Indentation Rules
 -------------------------------
 
-BakaBakaMark is an indentation sensitive lightweight markup language. 
-That is, the document's logical structure depends on white space and 
-indentation. The Rules:
+BareBonesMarkup is an indentation sensitive lightweight markup language. That is, the document's logical structure depends on white space and indentation. The Rules:
 
-0. All white spaces are treated equally for the purpose of determining 
-   indentation and nesting. For further details, refer to the `SPACE` 
-   token definition.
+0. All white spaces are treated equally for the purpose of determining indentation and nesting. For further details, refer to the `SPACE` token definition.
 
-1. Every line of text in a **Paragraph** must be indented to the same column 
-   that started the first line of the paragraph, or deeper. Each line after 
-   the first shall be stripped of leading white spaces.
+1. Every line of text in a **Paragraph** must be indented to the same column that started the first line of the paragraph, or deeper. Each line after the first shall be stripped of leading white spaces.
    
-2. The first non-space token on the same line determines the minimum 
-   indentation level for selected block elements. These elements are:
+2. The first non-space token on the same line determines the minimum indentation level for selected block elements. These elements are:
    
    - **TableHead**
    - **TableCell**
@@ -447,8 +402,7 @@ indentation. The Rules:
    - **DefTerm**
    - **DefDesc**
    
-   All block elements are counted as a child of the forementioned elements 
-   so long as they meet the minimum indentation requirement. Sample code:
+   All block elements are counted as a child of the forementioned elements so long as they meet the minimum indentation requirement. Sample code:
    
    ```
    + + Item 1.1
@@ -461,26 +415,24 @@ indentation. The Rules:
      
      Item 1, paragraph 2 after the second bullet list.
      
-   + Item 2, paragraph 1, because it's not indented enough to be counted 
-     as part of Item 1.
+   + Item 2, paragraph 1, because it's not indented enough to be counted as part of Item 1.
    ```
    
-3. For **Div** and **CodeBlock**, the minimum indentation level is 
-   determined by the opening delimiter token's column number instead.
+3. For **Div** and **PreBlock**, the minimum indentation level is determined by the opening delimiter token's column number instead.
    
    ```
     ****
-    Part of the aside block
+    Part of the Div block
     
-    Part of the aside block
+    Part of the Div block
     
    Div block terminated due to insufficient indentation.
     ****
-    Another aside block.
+    Another Div block.
     ****
    ```
    
-4. **CommentBlock**, **CodeBlock** are exempt from rule 1 and rule 2.
+4. **CommentBlock**, **PreBlock** are exempt from rule 1 and rule 2.
 
 
 
@@ -489,10 +441,7 @@ indentation. The Rules:
 Inline-Level Grammar
 --------------------
 
-The context involved at this level is strictly inline; Block-level grammar 
-rules, such as indentation, nesting, and bullet lists do not apply. This 
-grammar is effective for the lexical tokens extracted from the rule 
-**ParaContent** and *ATXContent** in the section **Block-Level Grammar**.
+The context involved at this level is strictly inline; Block-level grammar rules, such as indentation, nesting, and bullet lists do not apply. This grammar is effective for the lexical tokens extracted from the rule **ParaContent** and *ATXContent** in the section **Block-Level Grammar**.
 
 
 ```
@@ -517,7 +466,7 @@ TextFrag
     DEL
     UNDERLINE
     CODE
-    CODE_FENCE
+    PRE
     LINK_INT
     LINK_WIKI
     LINK_EXT
@@ -550,7 +499,7 @@ TextFrag_Delete
  ;
 
 TextFrag_Code
- | (CODE | CODE_FENCE) ~(CODE | CODE_FENCE)+ (CODE | CODE_FENCE)
+ | (CODE | PRE) ~(CODE | PRE)+ (CODE | PRE)
  ;
  The starting and ending CODE need to match in the number of double quote 
  characters. Moreover, in TextFragLink context, this operator has a higher 
@@ -587,6 +536,7 @@ TextFragLink
     DEL
     UNDERLINE
     CODE
+    PRE
     ]+
  ;
 
@@ -696,11 +646,11 @@ GT_THAN
  Starts a BlockQuote
 
 
-CODE_FENCE
+PRE
  | [`]{3,} (?=NL)
  ;
 
-COMMENT_DELIM
+COMMENT
  | [/]{4,} (?=NL)
  ;
  

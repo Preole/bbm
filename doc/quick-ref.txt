@@ -1,5 +1,5 @@
-BakaBakaMark Quick Syntax Reference
-===================================
+BareBonesMarkup Quick Syntax Reference
+======================================
 
 
 
@@ -7,16 +7,10 @@ Inline Element: Links
 ---------------------
 
 ; `?<ExternalURL>-[Display Text]`
-: Default External Hyperlink. If protocol prefix such as `http://` is 
-  omitted, it is defined a relative link.
+: Default External Hyperlink. If protocol prefix such as `http://` is omitted, it is defined as a relative link.
 
 ; `#<PlatformSpecificURL>-[Display Text]`
-: By default, same effect as External hyperlink. However, its URL values 
-  may have special effects that transform the link into something else 
-  depending on the hosting backend. 
-  
-  For **BareBonesWiki**, This links to another entry within the wiki with 
-  the title denoted by the URL value.
+: By default, same effect as External hyperlink. However, its URL values may have special effects that transform the link into something else depending on the hosting backend. 
 
 ; `!<ImageURL>-[Optional Alt Text]`
 : Image element.
@@ -136,8 +130,8 @@ Block Element: One-liner Header
 ```
 
 
-Block Element: Fenced Code (Verbatim) Block
--------------------------------------------
+Block Element: Preformatted Block
+---------------------------------
 
 ````
 ```
@@ -145,13 +139,12 @@ Begin a line with at least three or
 more backticks (`), then press return.
 
 All text will be interpreted literally.
-**No text formatting**. All spaces and 
-line breaks are preserved.
+All spaces and line breaks are preserved.
 
 Place an equal number of backticks
 on the same column as the starting fence, 
-then end the line immediately to end 
-the code block.
+then end the line immediately to end the 
+block.
 ```
 ````
 
@@ -231,12 +224,12 @@ the previous line.
 
 
 
-Block Element: Aside Block
---------------------------
+Block Element: Div Block
+------------------------
 
 ```
 ****
-This is an aside, or an arbitrary 
+This is an Div, or an arbitrary 
 block. Use a pair of lines of four 
 or more asterisks to fence off the 
 block area, or prematurely end it 
@@ -287,8 +280,8 @@ Backslash Escape
 character as literal text.\\*\\*
 
 The leading backslash always 
-disappear, even in code blocks, 
-URLs and other verbatim text 
+disappear, even in preformatted 
+blocks URLs and other verbatim text 
 context.
 
 Double the number of backslashes 
