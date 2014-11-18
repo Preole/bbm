@@ -136,18 +136,18 @@ function printTagClose(node, opts)
 
 function printComment(node, opts)
 {
- var indent = printIndent(node, opts);
- return indent
+ return !opts.comment ? "" : printIndent(node, opts)
  + "<!--\n"
  + __.map(node.children(), printHTML, opts).join("")
- + indent
+ + printIndent(node, opts)
  + "-->"
  + (node.isLastChild() ? "" : printBlockEnd(node, opts));
 }
 
 function printText(node, opts)
 {
- return __.escapeHTML(opts.rmNL ? __.rmNL(node.text()) : node.text()); 
+ var rmNL = opts.rmNL && opts.stack.indexOf(AST.PRE) === -1;
+ return __.escapeHTML(rmNL ? __.rmNL(node.text()) : node.text());
 }
 
 function printHTML(node, opts)
@@ -155,24 +155,46 @@ function printHTML(node, opts)
  var str = "";
  
  opts.depth += 1;
- str = node.text().length > 0
+ opts.stack.push(node.type());
+ 
+ str = node.text()
  ? printText(node, opts)
  : node.type() === AST.COMMENT
- ? (opts.comment ? printComment(node, opts) : "")
+ ? printComment(node, opts)
  : printTagOpen(node, opts)
    + __.map(node.children(), printHTML, opts).join("")
    + printTagClose(node, opts);
+ 
+ opts.stack.pop();
  opts.depth -= 1;
  
  return str;
 }
 
 
-//TODO; Document this method.
+/**
+ * @method BBM.fn.toHTML
+ * @param {Object} options Configuration object for code generation. The
+ * following options are available:
+ * 
+ *   - **[maxAttrChars=2048]** *Number* The maximum number of characters 
+ *     allowed in attribute values and keys.
+ *
+ *   - **[headerOffset=0]** *Number* Increments header tags' level in the 
+ *     output. E.g: For a headerOffset of 1, `<h1>` will become `<h2>`, and 
+ *     `<h2>` will become `<h3>`, and so on, up to a maximum of `<h6>`.
+ *
+ *   - **[XHTML=false]** *Boolean* If true, output XHTML-compliant HTML.
+ *
+ *   - **[comments=false]** *Boolean* If true, output HTML comments.
+ * 
+ * @return {String} The HTML Output of this Subtree.
+ */
 BBM.fn.toHTML = function (options)
 {
  var opts = __.extend({}, options);
  opts.depth = printTagName(this) ? -1 : -2;
+ opts.stack = [];
  opts.maxAttrChars = Math.abs(parseInt(opts.maxAttrChars, 10) || 2048);
  opts.headerOffset = Math.abs(parseInt(opts.headerOffset, 10) || 0);
  return printHTML(this, opts);
