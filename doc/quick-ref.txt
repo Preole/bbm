@@ -1,5 +1,5 @@
-BareBonesMarkup Quick Syntax Reference
-======================================
+BareBonesMarkup Syntax Cheatsheet
+=================================
 
 
 

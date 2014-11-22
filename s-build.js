@@ -1,7 +1,5 @@
 "use strict";
 
-"use strict"
-
 var webpack = require("webpack");
 var mstr = require("mstring");
 var uglify = new webpack.optimize.UglifyJsPlugin({minimize: true});
