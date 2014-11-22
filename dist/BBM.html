@@ -19,6 +19,10 @@ color: #eee;
 background: #030;
 }
 
+a {
+color: #e0e000;
+}
+
 button {
 color: #e0e000;
 background: inherit;
@@ -434,7 +438,7 @@ function removeChildren(node)
 
 function compile()
 {
- htmlSrc.value = BBM.parse(srcInput.value).toHTML({headerOffset : 1});
+ htmlSrc.value = BBM.parse(srcInput.value).toHTML();
  htmlRender.innerHTML = htmlSrc.value;
  removeChildren(view).appendChild(htmlRender);
 }
