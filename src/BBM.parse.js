@@ -2,7 +2,7 @@
 "use strict";
 
 var BBM = module.exports = require("./BBM.fn.prune.js");
-var __ = require("./__.js");
+var __ = require("./utils.js");
 var Lexer = require("./Lexer.js");
 var LEX = Lexer.ENUM;
 var AST = BBM.ENUM;

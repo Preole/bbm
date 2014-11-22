@@ -1,1 +1,4 @@
-./*.log
+./v1.0.0
+./dist
+./tests
+./doc

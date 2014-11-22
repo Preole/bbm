@@ -1,7 +1,7 @@
 
 "use strict";
 
-var __ = require("./__.js");
+var __ = require("./utils.js");
 var BBM = module.exports = function (type)
 {
  var obj = Object.create(BBM.prototype);
