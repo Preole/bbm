@@ -1,9 +1,173 @@
-Temporary Notice
-================
+BareBonesMarkup (BBM) v2.0.0
+============================
 
-BakaBakaMark is currently under refactoring for performance and usability. 
-Compatibility-breaking changes in its API and the language are to be expected. 
-The previous stable release can be found inside the `old/` folder.
+BareBonesMarkup is the renamed second iteration of the lightweight markup 
+language markup language BakaBakaMark.
+
+BareBonesMarkup a plain text markup language. It's designed to be 
+easily read and written with just a plain text editor independent of 
+proprietary rendering software. Moreover, it's also meant to be easily 
+interpreted without ambiguity, while leaving plenty of room for further 
+customization.
+
+BareBonesMarkup is a also tool, a compiler to transform plain text written 
+in this language into a syntax tree, customize it, before finally outputting 
+strictly valid (X)HTML, which can be rendered by web browsers for a much 
+better viewing experience.
+
+Finally, BareBonesMarkup is an experiment to the following problem:
+
+> Is it possible to have a lightweight markup language that has just enough 
+  basic features, can be customized, produce valid output, and is unambiguous 
+  for any given texual input?
+
+
+  
+
+
+
+Usage
+-----
+
+### Browser ###
+
+Grab a built bundle in the `dist/` folder, then use a `<script>` tag 
+to include the library.
+
+
+```
+<!-- Namespace: jQuery, $ -->
+<script src="jquery.min.js"></script>
+
+<!-- Namespace: BBM -->
+<script src="BBM.min.js"></script> 
+<script>
+
+
+
+// Install BBM as a static jQuery plugin.
+// Install BBM as a jQuery method.
+
+(function ($, BBM){
+
+ var mailtoRegex = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+ var httpsRegex = /^([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+
+ $.BBM = BBM;
+ $.fn.BBM = function (bbmText)
+ {
+  // 1. Parse plain text (string) into AST (Abstract syntax tree).
+  // 2. Add "mailto:" and "https://" prefixes to links in the AST.
+  // 3. Convert the AST into HTML string.
+  
+  return this.html(BBM.parse(bbmText).eachPre(autolink).toHTML());
+ };
+
+ function autolink(node)
+ {
+  var href = node.attr("href") || "";
+  if (mailtoRegex.test(href))
+  {
+   href = "mailto:" + href;
+  }
+  if (httpsRegex.test(href))
+  {
+   href = "https://" + href;
+  }
+  if (href)
+  {
+   node.attr("href", href);
+  }
+ }
+
+}(jQuery, BBM));
+
+// textarea value to HTML string, then inserted inside a DOM element.
+$("#main").BBM($("#textBox").val());
+
+</script>
+```
+
+
+
+### node.js ###
+
+```
+npm install BBM
+```
+
+```
+var BBM = require("BBM");
+var fs = require("fs");
+var text = fs.readFileSync("./article-in-bbm.txt");
+var html = BBM.parse(text).eachPre(autolink).toHTML();
+
+function autolink(node)
+{
+ var href = node.attr("href") || "";
+ if (mailtoRegex.test(href))
+ {
+  href = "mailto:" + href;
+ }
+ if (httpsRegex.test(href))
+ {
+  href = "https://" + href;
+ }
+ if (href)
+ {
+  node.attr("href", href);
+ }
+}
+
+//Process the HTML string...
+```
+
+
+
+
+Features
+--------
+
+### No External Dependency ###
+
+It's just one built bundle; Simple as that.
+
+
+
+### Simple Grammar & Semantics ###
+
+The language itself is simple to parse, comprehend, and leaves virtually no 
+room for ambiguity.
+
+
+
+### Completeness ###
+
+Bullet & Numbered Lists, Tables, Definition Lists, and preformatted blocks,
+BareBonesMarkup has the all essentials of a plain text markup language.
+
+
+
+### Solid Test Suite ###
+
+A set of carefully designed test cases provide excellent defenses against 
+regressions from upgrading & refactoring, and a reference for alternative 
+implementations.
+
+
+
+### Abstract Syntax Tree API ###
+
+Finally, BareBonesMarkup has its own simple abstract syntax tree API, leaving 
+it plenty of room for custom plugins, processing, augmentation, and even 
+outputs to different markup languages. 
+
+
+
+
+
+
+
 
 
 
@@ -39,6 +203,7 @@ such are as follows, using `Fruit` as an example:
 
 
 
+
 API Reference
 -------------
 
@@ -56,10 +221,6 @@ underscore are meant for private use.
   The node's type name, which should be one of the enumerable types from 
   BBM.ENUM.
   
-- **Property** _Object_ `_attr`
-
-  Attribute key-value (String-String) pairs for the specific node.
-
 - **Property** _Array.BBM_ `_nodes`
 
   An array of child nodes contained by this instance.
@@ -67,6 +228,52 @@ underscore are meant for private use.
 - **Property** _BBM_ `_parent`
 
   The node's parent node.
+
+- **Property** _Object_ `_attr`
+
+  Attribute key-value (String-String) pairs for this specific node. The 
+  following attributes are defined for the following types of nodes for 
+  a freshly parsed tree:
+  
+  - **All (Global attributes; Optional)**
+  
+      - `id` The CSS Identifier of this node.
+      - `class` The CSS Class of this node.
+    
+  - **LINK\_EXT**, **LINK\_INT**, **LINK\_WIKI**
+  
+      `href` The link target's URL.
+    
+  - **LINK\_IMG**
+  
+      - `src` The image's URL.
+      - `alt` The alternative text to display.
+    
+
+
+Coming up next, some types of nodes will contain instance properties in 
+addition to ones common in all nodes. A node's type is determined by the 
+return value of the method `BBM.fn.type()`.
+
+#### HEADER ####
+
+- **Property** _Number_ `level`
+
+  Denotes the header node's importance level; A level 1 header translates to 
+  the most important header, which is `<h1>` in HTML, while higher level 
+  headers (N) are less important `<hN>` headers.
+
+#### ROOT ####
+
+- **Property** _Object_ `symTable`
+
+  A symbol table of reference identifiers to URLs. This map is used to 
+  substitute identifiers of the `href` and `src` attributes of hyperlink 
+  and image elements with the actual URL they're supposed to point to.
+
+  The URL substitution is already completed, if this subtree is generated 
+  through either the method `BBM.fn.parse()` or its static counterpart, 
+  `BBM.parse()`. No manipulation to this table should be necessary.
 
 
 
@@ -246,7 +453,7 @@ consecutive text nodes.
 * **Private**
 * **Return** _BBM_
 
-  The current node after its subtree have been validated.
+  The current node after its subtree have been validated & pruned.
 
 
 
