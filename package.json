@@ -36,6 +36,6 @@
   , "build" : "node s-lint.js && node s-build.js"
   , "test" : "node s-lint.js && node s-build.js && node s-test.js"
   , "clean" : ""
-  , "prepublish" : "npm run test && npm publish ."
+  , "prepublish" : "npm run test"
   }
 }
