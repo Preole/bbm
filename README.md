@@ -49,7 +49,7 @@ to include the library.
 // Install BBM as a jQuery method.
 
 (function ($, BBM){
-
+ "use strict";
  var mailtoRegex = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
  var httpsRegex = /^([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
 
