@@ -17,8 +17,8 @@ var webpackOpt =
 , plugins : [banner]
 , output :
   {
-    filename : "./dist/BBM.js"
-  , library : "BBM"
+    filename : "./dist/bbm.js"
+  , library : "bbm"
   , libraryTarget : "umd"
   }
 };
@@ -28,8 +28,8 @@ var webpackOptMin =
 , plugins : [banner, uglify]
 , output :
   {
-    filename : "./dist/BBM.min.js"
-  , library : "BBM"
+    filename : "./dist/bbm.min.js"
+  , library : "bbm"
   , libraryTarget : "umd"
   }
 };

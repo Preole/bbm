@@ -39,8 +39,8 @@ to include the library.
 <!-- Namespace: jQuery, $ -->
 <script src="jquery.min.js"></script>
 
-<!-- Namespace: BBM -->
-<script src="BBM.min.js"></script> 
+<!-- Namespace: bbm -->
+<script src="bbm.min.js"></script> 
 <script>
 
 
