@@ -438,7 +438,7 @@ function removeChildren(node)
 
 function compile()
 {
- htmlSrc.value = BBM.parse(srcInput.value).toHTML();
+ htmlSrc.value = bbm.parse(srcInput.value).toHTML();
  htmlRender.innerHTML = htmlSrc.value;
  removeChildren(view).appendChild(htmlRender);
 }
